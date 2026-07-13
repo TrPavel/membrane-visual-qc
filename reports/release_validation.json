@@ -1,10 +1,9 @@
 {
-  "timestamp": "2026-07-14T01:01:59.5237503+03:00",
+  "timestamp": "2026-07-14T01:12:00+03:00",
   "package_version": "0.1.0",
-  "release_status": "validated_release_candidate",
-  "release_blockers": [
-    "GitHub Actions is configured but no real workflow run exists"
-  ],
+  "release_status": "release_ready_limited_public_testing",
+  "readiness_statement": "v0.1 is release-ready for limited public testing.",
+  "release_blockers": [],
   "checks": {
     "ruff_check": {
       "status": "passed",
@@ -76,8 +75,10 @@
       "byte_for_byte_deterministic": true
     },
     "github_actions": {
-      "status": "not_run",
-      "detail": "Workflow corrected and the public baseline is prepared, but no remote run exists"
+      "status": "passed",
+      "run_id": 29288929550,
+      "commit": "cddcd1c8410343e21a207a8426b81289a6bf12c1",
+      "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29288929550"
     },
     "interactive_gui": {
       "status": "passed",

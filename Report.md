@@ -2,9 +2,8 @@
 
 ## Current status
 
-The Stage 1 correction and portability pass is complete. Graphical Plugin Manager installation
-and interactive GUI validation passed on 2026-07-14. v0.1 remains a validated release candidate,
-not release-ready, until the public repository has a real green GitHub Actions run.
+The Stage 1 correction and portability pass is complete. Graphical Plugin Manager installation,
+interactive GUI validation, and the public GitHub Actions workflow all passed.
 
 ## Environment
 
@@ -118,12 +117,9 @@ remain under `docs/screenshots/` and are identified as such in the manual valida
 
 ## Remaining limitations
 
-- no actual GitHub Actions run yet;
 - global-z manual orientation remains the only scientific orientation path;
 - no data manifest, exposure/context engine, comparison, or CLI yet.
 
 ## Readiness statement
 
-All requested automated Stage 1 correction checks pass on Windows and Linux, and the manual
-Plugin Manager/GUI validation passed. v0.1 is a validated release candidate but is not yet
-release-ready because no real green GitHub Actions run is available.
+v0.1 is release-ready for limited public testing.

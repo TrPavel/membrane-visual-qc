@@ -131,6 +131,6 @@ Incentive PyMOL 3.1.8 on Windows 10 build 26200. The synthetic summary, export, 
 validation, invalid-range handling, empty-ligand behaviour, and `mvqc_clear` all passed. No
 interactive-session screenshot was supplied; existing screenshots are from headless validation.
 
-Release blocker: no real GitHub Actions run exists yet. Establish the public Git baseline, push
-`main`, and require a green workflow before tagging or releasing v0.1.0. Stage 2 must not begin
-until that public release is complete.
+The public baseline workflow passed in GitHub Actions. v0.1 is release-ready for limited public
+testing; tag and release publication are the remaining closure operations. Stage 2 must not begin
+until the public release is complete.
