@@ -1,0 +1,109 @@
+{
+  "timestamp": "2026-07-14T01:01:59.5237503+03:00",
+  "package_version": "0.1.0",
+  "release_status": "validated_release_candidate",
+  "release_blockers": [
+    "GitHub Actions is configured but no real workflow run exists"
+  ],
+  "checks": {
+    "ruff_check": {
+      "status": "passed",
+      "version": "0.15.21"
+    },
+    "ruff_format_check": {
+      "status": "passed",
+      "files_formatted": 32
+    },
+    "windows_tests": {
+      "status": "passed",
+      "count": 56,
+      "python": "3.12"
+    },
+    "linux_tests": {
+      "status": "passed",
+      "count": 56,
+      "environment": "Docker python:3.12-slim",
+      "python": "3.12.13",
+      "checkout_mode": "read_only"
+    },
+    "linux_ci_commands": {
+      "status": "passed",
+      "environment": "Docker python:3.12-slim temporary writable copy",
+      "coverage_percent": 69,
+      "checks": [
+        "ruff check",
+        "ruff format check",
+        "pytest-cov",
+        "example report JSON Schema validation",
+        "wheel and sdist build",
+        "Plugin ZIP build and validation"
+      ]
+    },
+    "python_distribution_build": {
+      "status": "passed",
+      "wheel": "dist/membrane_vqc_pymol-0.1.0-py3-none-any.whl",
+      "sdist": "dist/membrane_vqc_pymol-0.1.0.tar.gz"
+    },
+    "pymol_smoke_import": {
+      "status": "passed",
+      "pymol": "Incentive PyMOL 3.1.8",
+      "python": "3.10.20"
+    },
+    "pymol_source_loader": {
+      "status": "passed",
+      "loader": "load_mvqc.py"
+    },
+    "pymol_structure_validation": {
+      "status": "passed",
+      "cases": ["1C3W", "2RH1", "1PCR", "1UBQ", "bad_core_lys"]
+    },
+    "example_report_schema_validation": {
+      "status": "passed",
+      "count": 5,
+      "schema": "schemas/mvqc-report-1.0.schema.json"
+    },
+    "synthetic_charged_review_items": {
+      "status": "passed",
+      "expected": 1,
+      "actual": 1
+    },
+    "plugin_zip": {
+      "status": "passed",
+      "path": "dist/MembraneVisualQC-0.1.0.zip",
+      "sha256": "2b42dfca836b20da4421394e7b71c9c02b100fc5d5948fee876ac2b50ac7f892",
+      "size_bytes": 17691,
+      "single_top_level": "membrane_vqc",
+      "byte_for_byte_deterministic": true
+    },
+    "github_actions": {
+      "status": "not_run",
+      "detail": "Workflow corrected and the public baseline is prepared, but no remote run exists"
+    },
+    "interactive_gui": {
+      "status": "passed",
+      "date": "2026-07-14",
+      "os": "Windows 10 build 26200",
+      "pymol": "Incentive PyMOL 3.1.8",
+      "python": "3.10.20",
+      "plugin_manager_installation": "passed",
+      "menu_after_restart": "passed",
+      "gui_open": "passed",
+      "synthetic_analysis": "passed",
+      "summary": "10 core residues; 1 charged core residue; 0 polar core residues; 0 ligand-neighbour residues",
+      "empty_ligand": "passed",
+      "action_specific_validation": "passed",
+      "invalid_z_range": "passed",
+      "export": "passed",
+      "mvqc_clear": "passed",
+      "interactive_screenshot_paths": [],
+      "headless_screenshot_paths": [
+        "docs/screenshots/1ubq_mvqc.png",
+        "docs/screenshots/1c3w_mvqc.png",
+        "docs/screenshots/2rh1_mvqc.png",
+        "docs/screenshots/1pcr_mvqc.png",
+        "docs/screenshots/bad_core_lys_mvqc.png"
+      ],
+      "checklist": "docs/manual_gui_validation.md"
+    }
+  }
+}

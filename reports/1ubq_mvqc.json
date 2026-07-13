@@ -1,0 +1,609 @@
+{
+  "capabilities": {},
+  "flagged_residues": [
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/11/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "11",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 12.331000328063965
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/12/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "12",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 10.652999877929688
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/14/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "14",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 6.51200008392334
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/16/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "16",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 4.275000095367432
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/18/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "18",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 5.980000019073486
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/2/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "2",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 3.8980000019073486
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/20/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "20",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 9.210000038146973
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/21/ASP",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "21",
+      "resn": "ASP",
+      "severity": "WARNING",
+      "z": 10.565999984741211
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/22/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "22",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 14.28600025177002
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/25/ASN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "25",
+      "resn": "ASN",
+      "severity": "INSPECT",
+      "z": 13.302000045776367
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/29/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "29",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 10.668000221252441
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/31/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "31",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 14.114999771118164
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/32/ASP",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "32",
+      "resn": "ASP",
+      "severity": "WARNING",
+      "z": 10.642999649047852
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/33/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "33",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 9.232999801635742
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/34/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "34",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 12.071999549865723
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/55/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "55",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 14.562999725341797
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/57/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "57",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 12.024999618530273
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/6/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 14.142999649047852
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/60/ASN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "60",
+      "resn": "ASN",
+      "severity": "INSPECT",
+      "z": 12.99899959564209
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/62/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "62",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 8.032999992370605
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/63/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "63",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 5.239999771118164
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/64/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "64",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 5.88100004196167
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/65/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "65",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 9.619999885559082
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/66/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "66",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 11.890999794006348
+    }
+  ],
+  "generated_at": "2026-07-13T20:34:24.972059+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "organic",
+    "path": "",
+    "provenance_status": "input_path_not_supplied",
+    "selection": "1UBQ",
+    "sha256": "",
+    "slab_mode": "manual",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Manual slab orientation was used.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "geometry": "planar",
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "manual",
+    "warnings": [
+      "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+    ]
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": "organic"
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/11/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "11",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 12.331000328063965
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/12/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "12",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 10.652999877929688
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/14/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "14",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 6.51200008392334
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/16/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "16",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 4.275000095367432
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/18/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "18",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 5.980000019073486
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/2/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "2",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 3.8980000019073486
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/20/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "20",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 9.210000038146973
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/21/ASP",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "21",
+      "resn": "ASP",
+      "severity": "WARNING",
+      "z": 10.565999984741211
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/22/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "22",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 14.28600025177002
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/25/ASN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "25",
+      "resn": "ASN",
+      "severity": "INSPECT",
+      "z": 13.302000045776367
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/29/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "29",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 10.668000221252441
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/31/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "31",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 14.114999771118164
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/32/ASP",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "32",
+      "resn": "ASP",
+      "severity": "WARNING",
+      "z": 10.642999649047852
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/33/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "33",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 9.232999801635742
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/34/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "34",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 12.071999549865723
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/55/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "55",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 14.562999725341797
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/57/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "57",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 12.024999618530273
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/6/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 14.142999649047852
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/60/ASN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "60",
+      "resn": "ASN",
+      "severity": "INSPECT",
+      "z": 12.99899959564209
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/62/GLN",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "62",
+      "resn": "GLN",
+      "severity": "INSPECT",
+      "z": 8.032999992370605
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/63/LYS",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "63",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 5.239999771118164
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/64/GLU",
+      "model": "1UBQ",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "64",
+      "resn": "GLU",
+      "severity": "WARNING",
+      "z": 5.88100004196167
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/65/SER",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "65",
+      "resn": "SER",
+      "severity": "INSPECT",
+      "z": 9.619999885559082
+    },
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "1UBQ/A/66/THR",
+      "model": "1UBQ",
+      "reason": "polar residue in manually defined membrane core; may be functional",
+      "resi": "66",
+      "resn": "THR",
+      "severity": "INSPECT",
+      "z": 11.890999794006348
+    }
+  ],
+  "runtime": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.0",
+  "software": {
+    "commit": "",
+    "commit_status": "unavailable",
+    "name": "membrane-vqc-pymol",
+    "version": "0.1.0"
+  },
+  "summary": {
+    "charged_core_residues": 11,
+    "core_residues": 40,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "REVIEW_ITEMS",
+    "polar_core_inspect_residues": 13,
+    "total_residues": 76
+  },
+  "timestamp": "2026-07-13T20:34:24.972059+00:00",
+  "version": "0.1.0",
+  "warnings": [
+    "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+    "No atoms found for ligand selection: organic"
+  ]
+}

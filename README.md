@@ -1,0 +1,111 @@
+# Membrane Visual QC
+
+An open-source PyMOL plugin for explainable, membrane-aware visual review of protein structures.
+
+> Membrane Visual QC is a review assistant. It does not prove that a structure is correct,
+> stable, membrane-inserted, or experimentally validated.
+
+## What it does
+
+- displays a manually defined membrane slab;
+- classifies residues as core, interface, or outside;
+- highlights charged and selected polar core residues for review;
+- applies a coarse Kyte-Doolittle-like hydropathy palette;
+- selects residues near a ligand/cofactor selection;
+- exports versioned JSON and deterministic CSV reports;
+- records manual-orientation warnings and conservative review statuses.
+
+The v0.1 workflow is command-first. The Qt dialog is a thin wrapper around the same commands.
+
+## Installation
+
+For PyMOL Plugin Manager, install `dist/MembraneVisualQC-0.1.0.zip`, restart PyMOL, and
+open **Plugin > Membrane Visual QC**. The ZIP contains only runtime package files and an
+integrity manifest; its SHA-256 is stored beside it in `.zip.sha256`.
+
+For source development:
+
+```bash
+conda env create -f environment.yml
+conda activate mvqc
+```
+
+For source development, start PyMOL in the checkout root and run:
+
+```pml
+run load_mvqc.py
+```
+
+Do not execute `membrane_vqc/commands.py` directly: it is a package module and uses relative
+imports. If the exact `pymol-open-source=3.1.0` pin is unavailable, use a compatible build and
+record the tested version.
+
+## 60-second quick start
+
+```pml
+load data/synthetic/bad_core_lys.pdb, bad_core_lys
+mvqc_check selection=bad_core_lys, zmin=-15, zmax=15, ligand=, cutoff=5.0
+mvqc_export path=reports/bad_core_lys_mvqc.json
+```
+
+The artificial structure must produce exactly one charged-core review item. This verifies
+software behaviour, not biology.
+
+## PyMOL commands
+
+- `mvqc_check selection=all, zmin=-15, zmax=15, ligand=organic, cutoff=5.0`
+- `mvqc_slab zmin=-15, zmax=15`
+- `mvqc_color_hydropathy selection=all`
+- `mvqc_ligand_shell protein=all, ligand=organic, cutoff=5.0`
+- `mvqc_export path=reports/mvqc_report.json`
+- `mvqc_clear`
+
+`mvqc_clear` removes only plugin-owned names beginning with `mvqc_`. A failed analysis
+clears partial plugin output so stale visuals do not appear current.
+
+## Reports and interpretation
+
+Schema v1 is documented in [docs/report_schema.md](docs/report_schema.md). Biological review
+states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
+`NO_FLAGS` means only that configured heuristics emitted no items.
+
+`runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
+caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
+retain source-file provenance. `software.commit` remains unavailable in this workspace because
+there is no Git repository.
+
+`runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
+caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
+retain source-file provenance. `software.commit` remains unavailable in this workspace because
+there is no Git repository.
+
+`runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
+caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
+retain source-file provenance. `software.commit` remains unavailable in this workspace because
+there is no Git repository.
+
+The v0.1 orientation is manual and assumes the membrane normal is the global z-axis.
+Ordinary RCSB coordinates are not assumed to be membrane-aligned. Charged or polar core
+residues may be functional near cofactors, ions, internal waters, active sites, or polar
+networks.
+
+## Validation and development status
+
+The pure-Python suite and headless workflows have been tested with Incentive PyMOL 3.1.8 /
+Python 3.10.20 on `1C3W`, `2RH1`, `1PCR`, `1UBQ`, and the synthetic fixture. See
+[Report.md](Report.md), [docs/validation.md](docs/validation.md), and
+[docs/development_state.md](docs/development_state.md).
+
+Interactive Plugin Manager installation and GUI appearance still require the short manual
+check in [docs/manual_gui_validation.md](docs/manual_gui_validation.md).
+
+## Current limitations
+
+No automatic orientation, exposure calculation, chemical interaction validation, MD,
+electrostatics, Rosetta energy analysis, model comparison, or HTML dashboard is included in
+v0.1. See [docs/known_limitations.md](docs/known_limitations.md).
+
+## Licence and citation
+
+MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.1.0` and the exact
+version used. The implementation is clean-room and does not copy GPL PyMOL plugin code.

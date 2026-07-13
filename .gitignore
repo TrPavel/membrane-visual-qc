@@ -1,0 +1,40 @@
+# Python caches and test output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Packaging output and environments
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Editors, operating systems, and local reports
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+reports/environment_report.json
+
+# Local agent state
+.agents/
+.codex/
+
+# Local planning inputs (not part of the public distribution)
+Context.md
+instruction.md
+
+# Local planning inputs (not part of the public distribution)
+Context.md
+instruction.md

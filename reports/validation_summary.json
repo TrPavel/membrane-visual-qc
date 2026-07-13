@@ -1,0 +1,82 @@
+{
+  "cases": {
+    "1C3W": {
+      "report": "reports/1c3w_mvqc.json",
+      "screenshot": "docs\\screenshots\\1c3w_mvqc.png",
+      "summary": {
+        "charged_core_residues": 11,
+        "core_residues": 147,
+        "ligand_neighbour_residues": 88,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 30,
+        "total_residues": 222
+      },
+      "warnings": [
+        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+      ]
+    },
+    "1PCR": {
+      "report": "reports/1pcr_mvqc.json",
+      "screenshot": "docs\\screenshots\\1pcr_mvqc.png",
+      "summary": {
+        "charged_core_residues": 43,
+        "core_residues": 176,
+        "ligand_neighbour_residues": 241,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 33,
+        "total_residues": 823
+      },
+      "warnings": [
+        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+      ]
+    },
+    "1UBQ": {
+      "report": "reports/1ubq_mvqc.json",
+      "screenshot": "docs\\screenshots\\1ubq_mvqc.png",
+      "summary": {
+        "charged_core_residues": 11,
+        "core_residues": 40,
+        "ligand_neighbour_residues": 0,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 13,
+        "total_residues": 76
+      },
+      "warnings": [
+        "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+        "No atoms found for ligand selection: organic"
+      ]
+    },
+    "2RH1": {
+      "report": "reports/2rh1_mvqc.json",
+      "screenshot": "docs\\screenshots\\2rh1_mvqc.png",
+      "summary": {
+        "charged_core_residues": 38,
+        "core_residues": 269,
+        "ligand_neighbour_residues": 96,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 66,
+        "total_residues": 442
+      },
+      "warnings": [
+        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+      ]
+    },
+    "bad_core_lys": {
+      "report": "reports/bad_core_lys_mvqc.json",
+      "screenshot": "docs\\screenshots\\bad_core_lys_mvqc.png",
+      "summary": {
+        "charged_core_residues": 1,
+        "core_residues": 10,
+        "ligand_neighbour_residues": 0,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 0,
+        "total_residues": 10
+      },
+      "warnings": [
+        "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+        "No atoms found for ligand selection: organic"
+      ]
+    }
+  },
+  "gui_status": "imported membrane_vqc.gui; open not attempted in headless PyMOL"
+}

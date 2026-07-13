@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:membrane-vqc:schema:report:1.0",
+  "title": "Membrane Visual QC single-structure review report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_type",
+    "software",
+    "runtime",
+    "input",
+    "orientation",
+    "parameters",
+    "summary",
+    "review_items",
+    "ligand_neighbours",
+    "warnings",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "report_type": {"const": "single_structure_review"},
+    "software": {
+      "type": "object",
+      "required": ["name", "version", "commit", "commit_status"],
+      "properties": {
+        "name": {"const": "membrane-vqc-pymol"},
+        "version": {"type": "string"},
+        "commit": {"type": "string"},
+        "commit_status": {"enum": ["recorded", "unavailable"]}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["python", "pymol", "pymol_status", "platform"],
+      "properties": {
+        "python": {"type": "string"},
+        "pymol": {"type": "string"},
+        "pymol_status": {"enum": ["recorded", "unavailable"]},
+        "platform": {"type": "string"}
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["path", "sha256", "selection", "format", "structure_source", "structure_type", "provenance_status"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^$|^[a-f0-9]{64}$"},
+        "selection": {"type": "string", "minLength": 1},
+        "format": {"type": "string"},
+        "structure_source": {"type": "string"},
+        "structure_type": {"type": "string"},
+        "provenance_status": {"enum": ["file_hashed", "input_path_not_supplied"]}
+      }
+    },
+    "orientation": {
+      "type": "object",
+      "required": ["source", "geometry", "parameters", "warnings"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "geometry": {"const": "planar"},
+        "parameters": {"type": "object"},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "parameters": {"type": "object"},
+    "summary": {
+      "type": "object",
+      "required": ["overall_status"],
+      "properties": {
+        "overall_status": {
+          "enum": ["NO_FLAGS", "REVIEW_ITEMS", "INSUFFICIENT_CONTEXT", "ANALYSIS_ERROR"]
+        }
+      }
+    },
+    "review_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "model",
+          "chain",
+          "resi",
+          "resn",
+          "classification",
+          "severity",
+          "reason",
+          "z"
+        ],
+        "properties": {
+          "model": {"type": "string"},
+          "chain": {"type": "string"},
+          "resi": {"type": "string"},
+          "resn": {"type": "string"},
+          "classification": {"const": "core"},
+          "severity": {"enum": ["WARNING", "INSPECT"]},
+          "reason": {"type": "string", "minLength": 1},
+          "z": {"type": "number"}
+        }
+      }
+    },
+    "ligand_neighbours": {"type": "array", "items": {"type": "object"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

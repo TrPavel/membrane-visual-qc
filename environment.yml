@@ -1,0 +1,13 @@
+name: mvqc
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pymol-open-source=3.1.0
+  # If solving fails, change pymol-open-source=3.1.0 to pymol-open-source.
+  - pytest
+  - pytest-cov
+  - numpy
+  - pip
+  - pip:
+      - ruff

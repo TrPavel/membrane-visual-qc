@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "membrane-vqc-pymol"
+version = "0.1.0"
+description = "A lightweight PyMOL plugin for visual QC of membrane protein structures."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "Pavel Trofimchik" }
+]
+keywords = ["pymol", "membrane-proteins", "structural-bioinformatics", "protein-design", "visualization"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.optional-dependencies]
+analysis = ["biopython", "freesasa"]
+dev = ["build", "jsonschema", "mypy", "pytest", "pytest-cov", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["membrane_vqc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
