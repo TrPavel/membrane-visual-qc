@@ -43,3 +43,23 @@ Plugin Manager session.
 The archive has one top-level directory, `membrane_vqc/`; integrity metadata is inside that
 directory and the archive checksum is beside the ZIP. Automated layout validation, headless
 package loading, and the graphical Plugin Manager check all passed.
+
+## Pending Stage 2 interactive acceptance
+
+Use the unreleased development archive `dist/MembraneVisualQC-0.2.0.dev0.zip`. This does not alter
+the published v0.1.0 release. Load `data/structures/1ubq.cif`, create the rotated fixture using the
+documented headless validation workflow, and select **Planar orientation file** with the exact
+orientation fixture `demo/rotated_1ubq_orientation.json`.
+
+- [ ] Install the `0.2.0.dev0` ZIP through Plugin Manager and restart PyMOL.
+- [ ] Confirm the GUI opens and identifies both legacy and planar file modes.
+- [ ] In planar file mode, run QC with `demo/rotated_1ubq_orientation.json` and confirm the status
+  text uses a correct ellipsis without mojibake.
+- [ ] Confirm the rotated 1UBQ summary matches the legacy 1UBQ summary completely.
+- [ ] Click **Show Slab** and confirm arbitrary-plane boundaries render around the rotated object.
+- [ ] Confirm the orientation source shown in the GUI matches the fixture metadata.
+- [ ] Export JSON and confirm `software.version` is `0.2.0.dev0`, schema version is `1.1`, and
+  orientation-file basename plus SHA-256 provenance are present.
+- [ ] Recheck invalid/missing orientation-file errors are readable and contain no traceback.
+- [ ] Run `mvqc_clear` and confirm plugin-owned objects/selections are removed without deleting the
+  loaded structure.

@@ -137,15 +137,16 @@ JSON uses schema 1.0 and new reports use additive schema 1.1. The legacy command
 ruff check .
 # All checks passed!
 ruff format --check .
-# 69 files already formatted
+# 39 files already formatted
 pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
-# 144 passed; 76% combined coverage
+# 145 passed; 76% combined coverage
 python scripts\validate_example_reports.py
 # Validated 6 report(s) (schema 1.1: 6)
 python -m build
-# Successfully built wheel and sdist
+# Successfully built membrane_vqc_pymol-0.2.0.dev0-py3-none-any.whl
+# and membrane_vqc_pymol-0.2.0.dev0.tar.gz
 python scripts\build_plugin_zip.py
-python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.1.0.zip
+python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.2.0.dev0.zip
 <PYMOL> -cq tests\pymol_smoke\smoke_import.py
 <PYMOL> -cq tests\pymol_smoke\validate_structures.py
 ```
@@ -154,9 +155,15 @@ Legacy summaries remain exactly 1UBQ `76/40/11/13/0`, 1C3W `222/147/11/30/88`, 2
 `442/269/38/66/96`, 1PCR `823/176/43/33/241`, and `bad_core_lys` `10/10/1/0/0`.
 Rotated 1UBQ with normal `[1,0,0]` has the same complete summary.
 
-The development ZIP is byte-deterministic with SHA-256
-`5ec56b350b5baa0338efa6cfa2c87c15eeda9a7d244539be79235c54e04969f0`. It does not replace the
-published v0.1.0 asset. Draft-PR
-[Actions run 29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133)
-passed on Python 3.10, 3.11, and 3.12. Remaining acceptance work is interactive validation of the
-new GUI file mode. The PR must not be merged automatically.
+Stage 2 builds and generated reports identify themselves as `0.2.0.dev0`; the development ZIP is
+`dist/MembraneVisualQC-0.2.0.dev0.zip`. All six generated schema-1.1 reports record
+`software.version = 0.2.0.dev0`. The correction-build ZIP SHA-256 is
+`a93010fad30c4ba2869fc65adb4ea72ae02230bf543d63c6dd98a9e6e58e8677`. It does not replace the
+published v0.1.0 asset.
+
+The final pre-correction Stage 2 head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed draft-PR
+[Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
+on Python 3.10, 3.11, and 3.12. Earlier Stage 2 implementation run
+[29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) is retained
+as historical evidence. Remaining acceptance work is interactive validation of the new GUI file
+mode. The PR must remain draft and must not be merged automatically.

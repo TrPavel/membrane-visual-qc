@@ -22,6 +22,8 @@ from .qc import format_summary
 _DIALOG = None
 LEGACY_MODE = "Legacy global-z"
 ORIENTATION_FILE_MODE = "Planar orientation file"
+PLANAR_REVIEW_STATUS = "Running planar membrane review…"
+PLANAR_BOUNDARIES_STATUS = "Creating planar membrane boundaries…"
 
 
 @dataclass(frozen=True)
@@ -202,7 +204,7 @@ class MembraneVQCDialog:
                 return
             self.orientation_source.setText(loaded.membrane.source)
             self._execute(
-                "Running planar membrane reviewâ€¦",
+                PLANAR_REVIEW_STATUS,
                 lambda: mvqc_check_orientation(
                     selection=values.selection,
                     orientation_file=orientation_path,
@@ -243,7 +245,7 @@ class MembraneVQCDialog:
                 return
             self.orientation_source.setText(loaded.membrane.source)
             self._execute(
-                "Creating planar membrane boundariesâ€¦",
+                PLANAR_BOUNDARIES_STATUS,
                 lambda: mvqc_slab_orientation(selection, orientation_path),
                 lambda _: "Planar membrane boundaries updated.",
             )

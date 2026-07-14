@@ -5,6 +5,8 @@ import pytest
 from membrane_vqc.gui import (
     GUIInputs,
     LigandShellInputs,
+    PLANAR_BOUNDARIES_STATUS,
+    PLANAR_REVIEW_STATUS,
     SlabInputs,
     parse_export_path,
     parse_gui_inputs,
@@ -12,6 +14,12 @@ from membrane_vqc.gui import (
     parse_selection,
     parse_slab_inputs,
 )
+
+
+def test_planar_status_messages_are_utf8_without_mojibake():
+    assert PLANAR_REVIEW_STATUS == "Running planar membrane review…"
+    assert PLANAR_BOUNDARIES_STATUS == "Creating planar membrane boundaries…"
+    assert "â" not in PLANAR_REVIEW_STATUS + PLANAR_BOUNDARIES_STATUS
 
 
 def test_parse_gui_inputs_strips_text_and_allows_empty_ligand():

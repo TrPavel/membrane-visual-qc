@@ -17,6 +17,13 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 - Routed the unchanged `mvqc_check zmin/zmax` workflow through the general planar engine while
   preserving all five fixture summaries.
+- Identified unreleased Stage 2 builds and generated reports as `0.2.0.dev0`, with a distinct
+  development Plugin ZIP name.
+
+### Fixed
+
+- Corrected the UTF-8 ellipsis in the planar GUI progress messages and added regression coverage
+  against mojibake.
 
 ### Documentation
 

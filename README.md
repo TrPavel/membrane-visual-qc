@@ -27,8 +27,9 @@ install the ZIP through PyMOL Plugin Manager, restart PyMOL, and open
 **Plugin > Membrane Visual QC**. The archive contains only runtime package files and an integrity
 manifest; verify it with the accompanying `.zip.sha256` file.
 
-`dist/MembraneVisualQC-0.1.0.zip` is the equivalent path created by a local development build; it
-is not the primary public installation route.
+`dist/MembraneVisualQC-0.2.0.dev0.zip` is the distinct local build path for the unreleased Stage 2
+development branch; it is not the primary public installation route and does not replace the
+published v0.1.0 asset.
 
 For source development:
 

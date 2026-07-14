@@ -28,12 +28,17 @@ exactly one charged review item. Rotated 1UBQ uses
 `R=[[0,0,1],[0,1,0],[-1,0,0]]`, `t=[10,-5,3]`, and normal `[1,0,0]`, with the complete summary
 equal to legacy 1UBQ.
 
-Local evidence before push: Ruff passes; 144 tests pass with 76% combined coverage; six schema-1.1
-reports validate; PyMOL 3.1.8 smoke plus five legacy and one rotated case pass; wheel/sdist build;
-two development ZIPs are byte-identical. The final development ZIP hash is recorded in
-`Report.md`; it is not a replacement for the published v0.1 asset.
+Stage 2 uses development version `0.2.0.dev0` consistently in package metadata, generated reports,
+wheel/sdist names, and `dist/MembraneVisualQC-0.2.0.dev0.zip`. Local correction evidence:
+Ruff passed; 145 tests passed with 76% combined coverage; six schema-1.1 reports validated; PyMOL
+3.1.8 smoke plus five legacy and one rotated case passed; wheel/sdist built; two development ZIPs
+were byte-identical. The correction-build ZIP SHA-256 is
+`a93010fad30c4ba2869fc65adb4ea72ae02230bf543d63c6dd98a9e6e58e8677`; it is not a replacement
+for the published v0.1 asset.
 
-Real draft-PR CI passed in
-[GitHub Actions run 29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133)
-for Python 3.10, 3.11, and 3.12. Remaining: an interactive check of the new GUI file mode and
-arbitrary plane. Do not merge automatically.
+The final pre-correction head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed real draft-PR
+CI in [GitHub Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
+for Python 3.10, 3.11, and 3.12. Earlier implementation run
+[29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) remains
+historical evidence. Remaining: interactive acceptance of the new GUI file mode and arbitrary
+plane. Keep PR #2 draft and do not merge it.
