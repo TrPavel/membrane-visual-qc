@@ -35,10 +35,10 @@ ruff check .
 # All checks passed!
 
 ruff format --check .
-# 62 files already formatted
+# 32 files already formatted
 
 pytest
-# 56 passed in 0.61s
+# 56 passed in 1.10s
 
 python -m build
 # Successfully built membrane_vqc_pymol-0.1.0.tar.gz
@@ -70,15 +70,19 @@ docker run --rm -e PYTHONDONTWRITEBYTECODE=1 \
 Result: 56 passed on Linux. In a preceding read-only-container command, `ruff check .` and
 `ruff format --check .` also passed with cache directed to `/tmp`.
 
-A second writable temporary Linux copy executed the complete workflow commands: Ruff check and
+A writable temporary Linux copy executed the complete workflow commands: Ruff check and
 format, pytest-cov (56 passed, 69% total coverage), JSON Schema validation, `python -m build`,
-Plugin ZIP build, and ZIP validation. All passed. This verifies the workflow commands on Linux;
-it is still not evidence of an actual GitHub Actions run.
+Plugin ZIP build, and ZIP validation. All passed.
 
-A second writable temporary Linux copy executed the complete workflow commands: Ruff check and
-format, pytest-cov (56 passed, 69% total coverage), JSON Schema validation, `python -m build`,
-Plugin ZIP build, and ZIP validation. All passed. This verifies the workflow commands on Linux;
-it is still not evidence of an actual GitHub Actions run.
+## Public workflow and release
+
+The final public [GitHub Actions run](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29289031923)
+completed successfully for release commit `a8c7959fb1d53dd99771a184443aa16afd287aa6`.
+All three matrix jobs passed: Python 3.10, 3.11, and 3.12.
+
+The [v0.1.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0)
+is published as a prerelease for limited public testing. The final Plugin ZIP SHA-256 is
+`2b42dfca836b20da4421394e7b71c9c02b100fc5d5948fee876ac2b50ac7f892`.
 
 PyMOL checks:
 

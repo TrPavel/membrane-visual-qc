@@ -5,11 +5,11 @@ release-candidate closure state.
 
 ## Source-control state
 
-- Git repository initialised with `main` as the default branch for the public baseline.
-- The initial release-candidate commit is prepared with the required release message.
+- Git repository initialised with `main` as the default branch and published to GitHub.
+- The immutable `v0.1.0` tag points to release commit
+  `a8c7959fb1d53dd99771a184443aa16afd287aa6`.
 - Git executable: `git version 2.53.0.windows.1`.
-- The public baseline establishes the first auditable source snapshot; GitHub Actions must pass on
-  the pushed commit before a tag or release is created.
+- The public release establishes the first auditable source snapshot and passed GitHub Actions.
 
 ## Repository tree
 
@@ -18,12 +18,10 @@ Generated caches and `__pycache__` entries are omitted.
 ```text
 .
 |-- CHANGELOG.md
-|-- Context.md
 |-- LICENSE
 |-- README.md
 |-- Report.md
 |-- environment.yml
-|-- instruction.md
 |-- pyproject.toml
 |-- data/
 |   |-- README.md
@@ -55,7 +53,7 @@ Generated caches and `__pycache__` entries are omitted.
 |-- reports/
 |   |-- *_mvqc.{json,csv}
 |   |-- validation_summary.json
-|   `-- environment_report.json
+|   `-- release_validation.json
 `-- tests/
     |-- test_*.py
     `-- pymol_smoke/*.py
@@ -107,12 +105,9 @@ review item. The root integration run regenerated these reports with schema v1 a
 
 ## Discrepancies and contradictions
 
-- `Report.md` says the unit suite contains 10 passing tests, while the fresh controlled run observed 17 passing tests before concurrent additions. The report is stale.
 - `docs/validation.md` says real PyMOL cases were not run and PyMOL was unavailable, but `Report.md`, screenshots, and `reports/validation_summary.json` record successful PyMOL 3.1.8 headless validation. Documentation is internally inconsistent.
-- `Report.md` contains an unredacted personal home path. Public documentation must use `<HOME>`; only ignored/local reports may contain machine paths.
 - Existing generated reports use `overall_status: WARNING`; the roadmap explicitly forbids pass/fail-style biological conclusions and the current report code uses a revised status vocabulary.
 - RCSB mmCIF fixtures exist, but no reproducible manifest with URL, timestamp, checksum, assembly decision, licence, and orientation provenance is present.
-- The package is described as `0.1.0`, but the working directory already contains partial release-foundation changes from parallel streams. With no Git history, the boundary between original MVP and new work is not auditable.
 - The manual z-slab is still the only implemented scientific orientation path. Ordinary RCSB coordinates must not be represented as membrane-aligned.
 - `environment.yml` targets Python 3.11/open-source PyMOL 3.1.0, while verified execution used bundled Python 3.10.20/Incentive PyMOL 3.1.8. Both environments should eventually be tested, not treated as equivalent without evidence.
 
@@ -131,6 +126,7 @@ Incentive PyMOL 3.1.8 on Windows 10 build 26200. The synthetic summary, export, 
 validation, invalid-range handling, empty-ligand behaviour, and `mvqc_clear` all passed. No
 interactive-session screenshot was supplied; existing screenshots are from headless validation.
 
-The public baseline workflow passed in GitHub Actions. v0.1 is release-ready for limited public
-testing; tag and release publication are the remaining closure operations. Stage 2 must not begin
-until the public release is complete.
+Stage 1 is closed and Stage 2 has not started. Tag `v0.1.0` is published as a GitHub prerelease
+for limited public testing from commit `a8c7959fb1d53dd99771a184443aa16afd287aa6`.
+The final release validation workflow passed in
+[GitHub Actions](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29289031923).

@@ -76,9 +76,21 @@
     },
     "github_actions": {
       "status": "passed",
-      "run_id": 29288929550,
-      "commit": "cddcd1c8410343e21a207a8426b81289a6bf12c1",
-      "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29288929550"
+      "release_validation": {
+        "run_id": 29289031923,
+        "commit": "a8c7959fb1d53dd99771a184443aa16afd287aa6",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29289031923",
+        "python_matrix": {
+          "3.10": "passed",
+          "3.11": "passed",
+          "3.12": "passed"
+        }
+      },
+      "baseline": {
+        "run_id": 29288929550,
+        "commit": "cddcd1c8410343e21a207a8426b81289a6bf12c1",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29288929550"
+      }
     },
     "interactive_gui": {
       "status": "passed",

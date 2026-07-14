@@ -6,7 +6,10 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
-No changes yet.
+### Documentation
+
+- Synchronized public release status and GitHub Releases installation instructions after v0.1.0
+  publication.
 
 ## [0.1.0] - 2026-07-14
 

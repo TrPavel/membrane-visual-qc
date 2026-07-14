@@ -19,9 +19,15 @@ The v0.1 workflow is command-first. The Qt dialog is a thin wrapper around the s
 
 ## Installation
 
-For PyMOL Plugin Manager, install `dist/MembraneVisualQC-0.1.0.zip`, restart PyMOL, and
-open **Plugin > Membrane Visual QC**. The ZIP contains only runtime package files and an
-integrity manifest; its SHA-256 is stored beside it in `.zip.sha256`.
+v0.1.0 is a prerelease for limited public testing. Public users should download
+`MembraneVisualQC-0.1.0.zip` and its checksum from the
+[v0.1.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0),
+install the ZIP through PyMOL Plugin Manager, restart PyMOL, and open
+**Plugin > Membrane Visual QC**. The archive contains only runtime package files and an integrity
+manifest; verify it with the accompanying `.zip.sha256` file.
+
+`dist/MembraneVisualQC-0.1.0.zip` is the equivalent path created by a local development build; it
+is not the primary public installation route.
 
 For source development:
 
@@ -71,18 +77,9 @@ states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERR
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
-retain source-file provenance. `software.commit` remains unavailable in this workspace because
-there is no Git repository.
-
-`runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
-caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
-retain source-file provenance. `software.commit` remains unavailable in this workspace because
-there is no Git repository.
-
-`runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
-caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
-retain source-file provenance. `software.commit` remains unavailable in this workspace because
-there is no Git repository.
+retain source-file provenance. Reports created before Git initialisation may record commit
+provenance as unavailable. Future reports produced from a Git checkout should record
+`software.commit` when the runtime can resolve the checkout commit.
 
 The v0.1 orientation is manual and assumes the membrane normal is the global z-axis.
 Ordinary RCSB coordinates are not assumed to be membrane-aligned. Charged or polar core
@@ -96,8 +93,9 @@ Python 3.10.20 on `1C3W`, `2RH1`, `1PCR`, `1UBQ`, and the synthetic fixture. See
 [Report.md](Report.md), [docs/validation.md](docs/validation.md), and
 [docs/development_state.md](docs/development_state.md).
 
-Interactive Plugin Manager installation and GUI appearance still require the short manual
-check in [docs/manual_gui_validation.md](docs/manual_gui_validation.md).
+Graphical Plugin Manager installation and GUI validation passed on Windows with Incentive PyMOL
+3.1.8. The evidence and checklist are recorded in
+[docs/manual_gui_validation.md](docs/manual_gui_validation.md).
 
 ## Current limitations
 
