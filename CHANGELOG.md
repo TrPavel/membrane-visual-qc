@@ -24,6 +24,9 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 - Corrected the UTF-8 ellipsis in the planar GUI progress messages and added regression coverage
   against mojibake.
+- Made orientation commands the sole owner of file parsing and failure cleanup so stale planar
+  source labels, review state, reports, and slab boundaries cannot survive invalid-file actions.
+- Added a shared, reproducible rotated-1UBQ preparation helper for headless and graphical PyMOL.
 
 ### Documentation
 

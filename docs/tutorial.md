@@ -27,6 +27,12 @@ objects and temporary report state without touching user objects.
 
 Stage 2 accepts a strict local JSON document instead of fragile comma-separated vectors:
 
+Prepare the validated manual fixture in graphical PyMOL without reproducing coordinate operations:
+
+```pml
+run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py
+```
+
 ```pml
 mvqc_check_orientation selection=1UBQ_rotated, orientation_file=demo/rotated_1ubq_orientation.json, ligand=
 ```

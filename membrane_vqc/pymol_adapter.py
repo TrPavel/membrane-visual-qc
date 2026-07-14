@@ -39,6 +39,13 @@ def clear_owned(cmd_obj: Any | None = None) -> None:
         cmd.delete(name)
 
 
+def clear_slab(cmd_obj: Any | None = None) -> None:
+    """Remove only the membrane-boundary objects owned by the plugin."""
+    cmd = get_cmd(cmd_obj)
+    for name in MVQC_SLAB_NAMES:
+        cmd.delete(name)
+
+
 def apply_review_style(cmd_obj: Any | None = None) -> None:
     """Re-apply high-priority review styling above base and context colours."""
     cmd = get_cmd(cmd_obj)

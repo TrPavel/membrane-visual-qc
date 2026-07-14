@@ -19,6 +19,7 @@ from membrane_vqc.commands import (
     register_commands,
 )
 import membrane_vqc.gui as gui_module
+from demo.rotated_1ubq_transform import transform_coordinates
 
 
 CASES = [
@@ -108,11 +109,7 @@ def main() -> None:
     source_path = Path("data/raw/1UBQ.cif")
     cmd.load(str(source_path), "1UBQ_rotated")
     coordinates = cmd.get_coords("1UBQ_rotated", state=1)
-    transformed = coordinates.copy()
-    transformed[:, 0] = coordinates[:, 2] + 10.0
-    transformed[:, 1] = coordinates[:, 1] - 5.0
-    transformed[:, 2] = -coordinates[:, 0] + 3.0
-    cmd.load_coords(transformed, "1UBQ_rotated", state=1)
+    cmd.load_coords(transform_coordinates(coordinates), "1UBQ_rotated", state=1)
     rotated_report = mvqc_check_orientation(
         selection="1UBQ_rotated",
         orientation_file="demo/rotated_1ubq_orientation.json",

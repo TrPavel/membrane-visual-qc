@@ -33,7 +33,7 @@ invariance, not biological orientation of RCSB coordinates.
 <PYMOL> -cq tests\pymol_smoke\validate_structures.py
 ```
 
-Stage 2 local result: 145 tests passed with 76% combined coverage; Ruff, schema validation, smoke
+Stage 2 local result: 153 tests passed with 80% combined coverage; Ruff, schema validation, smoke
 import, five legacy structures, and the rotated structure passed.
 The unreleased build and its generated schema-1.1 reports use development version `0.2.0.dev0`;
 the Plugin Manager archive is `dist/MembraneVisualQC-0.2.0.dev0.zip`.

@@ -137,9 +137,9 @@ JSON uses schema 1.0 and new reports use additive schema 1.1. The legacy command
 ruff check .
 # All checks passed!
 ruff format --check .
-# 39 files already formatted
+# 42 files already formatted
 pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
-# 145 passed; 76% combined coverage
+# 153 passed; 80% combined coverage
 python scripts\validate_example_reports.py
 # Validated 6 report(s) (schema 1.1: 6)
 python -m build
@@ -149,6 +149,7 @@ python scripts\build_plugin_zip.py
 python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.2.0.dev0.zip
 <PYMOL> -cq tests\pymol_smoke\smoke_import.py
 <PYMOL> -cq tests\pymol_smoke\validate_structures.py
+<PYMOL> -cq demo\prepare_rotated_1ubq.py
 ```
 
 Legacy summaries remain exactly 1UBQ `76/40/11/13/0`, 1C3W `222/147/11/30/88`, 2RH1
@@ -158,8 +159,14 @@ Rotated 1UBQ with normal `[1,0,0]` has the same complete summary.
 Stage 2 builds and generated reports identify themselves as `0.2.0.dev0`; the development ZIP is
 `dist/MembraneVisualQC-0.2.0.dev0.zip`. All six generated schema-1.1 reports record
 `software.version = 0.2.0.dev0`. The correction-build ZIP SHA-256 is
-`a93010fad30c4ba2869fc65adb4ea72ae02230bf543d63c6dd98a9e6e58e8677`. It does not replace the
+`841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`. It does not replace the
 published v0.1.0 asset.
+
+The lifecycle correction makes orientation commands the sole file parser. Failed planar QC clears
+all plugin-owned review visuals and `LAST_REPORT`; failed planar slab display clears both slab
+objects. The GUI replaces stale source text with `unavailable`. The graphical/manual fixture can
+be prepared reproducibly with `run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py`; the helper and
+headless validation share the same point transform.
 
 The final pre-correction Stage 2 head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed draft-PR
 [Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)

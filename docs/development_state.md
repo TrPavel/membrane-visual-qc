@@ -30,11 +30,16 @@ equal to legacy 1UBQ.
 
 Stage 2 uses development version `0.2.0.dev0` consistently in package metadata, generated reports,
 wheel/sdist names, and `dist/MembraneVisualQC-0.2.0.dev0.zip`. Local correction evidence:
-Ruff passed; 145 tests passed with 76% combined coverage; six schema-1.1 reports validated; PyMOL
+Ruff passed; 153 tests passed with 80% combined coverage; six schema-1.1 reports validated; PyMOL
 3.1.8 smoke plus five legacy and one rotated case passed; wheel/sdist built; two development ZIPs
 were byte-identical. The correction-build ZIP SHA-256 is
-`a93010fad30c4ba2869fc65adb4ea72ae02230bf543d63c6dd98a9e6e58e8677`; it is not a replacement
+`841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`; it is not a replacement
 for the published v0.1 asset.
+
+The final lifecycle correction removes duplicate GUI orientation parsing. Commands now clear stale
+review/report or slab state before orientation-file validation, while the GUI displays returned
+source metadata only after success and `unavailable` after failure. Manual and headless rotated
+1UBQ preparation share `demo/rotated_1ubq_transform.py`.
 
 The final pre-correction head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed real draft-PR
 CI in [GitHub Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)

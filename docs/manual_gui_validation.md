@@ -47,12 +47,22 @@ package loading, and the graphical Plugin Manager check all passed.
 ## Pending Stage 2 interactive acceptance
 
 Use the unreleased development archive `dist/MembraneVisualQC-0.2.0.dev0.zip`. This does not alter
-the published v0.1.0 release. Load `data/structures/1ubq.cif`, create the rotated fixture using the
-documented headless validation workflow, and select **Planar orientation file** with the exact
-orientation fixture `demo/rotated_1ubq_orientation.json`.
+the published v0.1.0 release. Confirm `data/raw/1UBQ.cif` is present, then prepare the validated
+rotated object from the graphical PyMOL command line with one command:
+
+```pml
+run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py
+```
+
+The helper locates the repository from its own file path, applies the same transform as the
+headless validation, displays `1UBQ_rotated` as cartoon, and prints the absolute orientation JSON
+path. It does not run QC or remove unrelated objects. Select **Planar orientation file** and use
+the printed `demo/rotated_1ubq_orientation.json` path.
 
 - [ ] Install the `0.2.0.dev0` ZIP through Plugin Manager and restart PyMOL.
 - [ ] Confirm the GUI opens and identifies both legacy and planar file modes.
+- [ ] Run the preparation helper above; confirm `1UBQ_rotated` is shown and the absolute
+  orientation JSON path is printed.
 - [ ] In planar file mode, run QC with `demo/rotated_1ubq_orientation.json` and confirm the status
   text uses a correct ellipsis without mojibake.
 - [ ] Confirm the rotated 1UBQ summary matches the legacy 1UBQ summary completely.
@@ -60,6 +70,9 @@ orientation fixture `demo/rotated_1ubq_orientation.json`.
 - [ ] Confirm the orientation source shown in the GUI matches the fixture metadata.
 - [ ] Export JSON and confirm `software.version` is `0.2.0.dev0`, schema version is `1.1`, and
   orientation-file basename plus SHA-256 provenance are present.
-- [ ] Recheck invalid/missing orientation-file errors are readable and contain no traceback.
+- [ ] After a successful planar Run QC, supply an invalid/missing orientation file; confirm the
+  source changes to `unavailable`, the error is readable, and old review objects/report are gone.
+- [ ] After successful **Show Slab**, supply an invalid/missing orientation file; confirm the old
+  slab boundaries disappear and no traceback is shown.
 - [ ] Run `mvqc_clear` and confirm plugin-owned objects/selections are removed without deleting the
   loaded structure.

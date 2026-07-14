@@ -72,6 +72,8 @@ software behaviour, not biology.
 
 `mvqc_clear` removes only plugin-owned names beginning with `mvqc_`. A failed analysis
 clears partial plugin output so stale visuals do not appear current.
+Planar orientation commands own file parsing and cleanup: an invalid file clears stale QC state or
+slab boundaries, and the GUI reports the orientation source as `unavailable`.
 
 ## Reports and interpretation
 

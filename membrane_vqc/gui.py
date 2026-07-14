@@ -16,7 +16,6 @@ from .commands import (
     mvqc_slab,
     mvqc_slab_orientation,
 )
-from .orientation_io import load_orientation_file
 from .qc import format_summary
 
 _DIALOG = None
@@ -197,12 +196,7 @@ class MembraneVQCDialog:
             if values is None:
                 return
             orientation_path = str(self.orientation_file.text()).strip()
-            try:
-                loaded = load_orientation_file(orientation_path)
-            except Exception as exc:
-                self._show_error(str(exc) or exc.__class__.__name__)
-                return
-            self.orientation_source.setText(loaded.membrane.source)
+            self.orientation_source.setText("unavailable")
             self._execute(
                 PLANAR_REVIEW_STATUS,
                 lambda: mvqc_check_orientation(
@@ -212,7 +206,7 @@ class MembraneVQCDialog:
                     cutoff=values.cutoff,
                     quiet=1,
                 ),
-                format_summary,
+                self._render_planar_report,
             )
             return
         values = self._inputs_or_error()
@@ -238,16 +232,11 @@ class MembraneVQCDialog:
             if selection is None:
                 return
             orientation_path = str(self.orientation_file.text()).strip()
-            try:
-                loaded = load_orientation_file(orientation_path)
-            except Exception as exc:
-                self._show_error(str(exc) or exc.__class__.__name__)
-                return
-            self.orientation_source.setText(loaded.membrane.source)
+            self.orientation_source.setText("unavailable")
             self._execute(
                 PLANAR_BOUNDARIES_STATUS,
                 lambda: mvqc_slab_orientation(selection, orientation_path),
-                lambda _: "Planar membrane boundaries updated.",
+                self._render_planar_slab,
             )
             return
         values = self._parse_or_error(
@@ -315,6 +304,14 @@ class MembraneVQCDialog:
             self.cutoff.text(),
         )
 
+    def _render_planar_report(self, report):
+        self.orientation_source.setText(_orientation_source(report.get("orientation")))
+        return format_summary(report)
+
+    def _render_planar_slab(self, membrane):
+        self.orientation_source.setText(_orientation_source(membrane))
+        return "Planar membrane boundaries updated."
+
     def _parse_or_error(self, parser, *values):
         try:
             return parser(*values)
@@ -348,3 +345,11 @@ class MembraneVQCDialog:
         message_box = getattr(self.QtWidgets, "QMessageBox", None)
         if message_box is not None:
             message_box.warning(self.window, "Membrane Visual QC", text)
+
+
+def _orientation_source(value) -> str:
+    if isinstance(value, dict):
+        source = str(value.get("source", "")).strip()
+        if source:
+            return source
+    return "unavailable"

@@ -12,6 +12,7 @@ from .orientation_io import load_orientation_file
 from .pymol_adapter import (
     MVQC_NAMES,
     clear_owned,
+    clear_slab,
     color_hydropathy,
     create_membrane_planes,
     create_slab,
@@ -72,14 +73,14 @@ def mvqc_check_orientation(
     input_path: str = "",
 ):
     """Run QC using a validated local planar-orientation JSON document."""
-    selection = _selection(selection)
-    orientation_file = str(orientation_file).strip()
-    if not orientation_file:
-        raise ValueError("orientation_file must not be empty.")
-    cutoff = _positive_float(cutoff, "cutoff")
     clear_owned()
     qc.LAST_REPORT = None
     try:
+        selection = _selection(selection)
+        orientation_file = str(orientation_file).strip()
+        if not orientation_file:
+            raise ValueError("orientation_file must not be empty.")
+        cutoff = _positive_float(cutoff, "cutoff")
         loaded = load_orientation_file(orientation_file)
         return qc.run_check_with_membrane(
             selection=selection,
@@ -99,14 +100,19 @@ def mvqc_check_orientation(
 
 def mvqc_slab_orientation(selection: str = "all", orientation_file: str = ""):
     """Render boundaries from a validated local planar-orientation document."""
-    selection = _selection(selection)
-    orientation_file = str(orientation_file).strip()
-    if not orientation_file:
-        raise ValueError("orientation_file must not be empty.")
-    loaded = load_orientation_file(orientation_file)
-    atoms = protein_atoms(selection)
-    create_membrane_planes(loaded.membrane, atoms, selection)
-    return loaded.membrane.as_dict()
+    clear_slab()
+    try:
+        selection = _selection(selection)
+        orientation_file = str(orientation_file).strip()
+        if not orientation_file:
+            raise ValueError("orientation_file must not be empty.")
+        loaded = load_orientation_file(orientation_file)
+        atoms = protein_atoms(selection)
+        create_membrane_planes(loaded.membrane, atoms, selection)
+        return loaded.membrane.as_dict()
+    except Exception:
+        clear_slab()
+        raise
 
 
 def mvqc_color_hydropathy(selection: str = "all"):
