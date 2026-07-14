@@ -156,6 +156,7 @@ Rotated 1UBQ with normal `[1,0,0]` has the same complete summary.
 
 The development ZIP is byte-deterministic with SHA-256
 `5ec56b350b5baa0338efa6cfa2c87c15eeda9a7d244539be79235c54e04969f0`. It does not replace the
-published v0.1.0 asset. Remaining
-acceptance work is green draft-PR CI and interactive validation of the new GUI file mode. The PR
-must not be merged automatically.
+published v0.1.0 asset. Draft-PR
+[Actions run 29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133)
+passed on Python 3.10, 3.11, and 3.12. Remaining acceptance work is interactive validation of the
+new GUI file mode. The PR must not be merged automatically.

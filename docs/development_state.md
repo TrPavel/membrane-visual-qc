@@ -33,5 +33,7 @@ reports validate; PyMOL 3.1.8 smoke plus five legacy and one rotated case pass; 
 two development ZIPs are byte-identical. The final development ZIP hash is recorded in
 `Report.md`; it is not a replacement for the published v0.1 asset.
 
-Remaining: green real GitHub Actions for the draft PR and an interactive check of the new GUI file
-mode/arbitrary plane. Do not merge automatically.
+Real draft-PR CI passed in
+[GitHub Actions run 29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133)
+for Python 3.10, 3.11, and 3.12. Remaining: an interactive check of the new GUI file mode and
+arbitrary plane. Do not merge automatically.
