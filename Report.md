@@ -119,11 +119,43 @@ observed summary was `10 core residues; 1 charged core residue; 0 polar core res
 ligand-neighbour residues`. No interactive-session screenshot was supplied; headless screenshots
 remain under `docs/screenshots/` and are identified as such in the manual validation record.
 
-## Remaining limitations
+## Released v0.1 limitations
 
-- global-z manual orientation remains the only scientific orientation path;
+- global-z manual orientation is the only path in the immutable v0.1 release;
 - no data manifest, exposure/context engine, comparison, or CLI yet.
 
 ## Readiness statement
 
 v0.1 is release-ready for limited public testing.
+
+## Unreleased Stage 2 validation
+
+Stage 2 is isolated on `feat/planar-orientation-depth`; `v0.1.0` remains immutable. Orientation
+JSON uses schema 1.0 and new reports use additive schema 1.1. The legacy command is unchanged.
+
+```powershell
+ruff check .
+# All checks passed!
+ruff format --check .
+# 69 files already formatted
+pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
+# 144 passed; 76% combined coverage
+python scripts\validate_example_reports.py
+# Validated 6 report(s) (schema 1.1: 6)
+python -m build
+# Successfully built wheel and sdist
+python scripts\build_plugin_zip.py
+python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.1.0.zip
+<PYMOL> -cq tests\pymol_smoke\smoke_import.py
+<PYMOL> -cq tests\pymol_smoke\validate_structures.py
+```
+
+Legacy summaries remain exactly 1UBQ `76/40/11/13/0`, 1C3W `222/147/11/30/88`, 2RH1
+`442/269/38/66/96`, 1PCR `823/176/43/33/241`, and `bad_core_lys` `10/10/1/0/0`.
+Rotated 1UBQ with normal `[1,0,0]` has the same complete summary.
+
+The development ZIP is byte-deterministic with SHA-256
+`5ec56b350b5baa0338efa6cfa2c87c15eeda9a7d244539be79235c54e04969f0`. It does not replace the
+published v0.1.0 asset. Remaining
+acceptance work is green draft-PR CI and interactive validation of the new GUI file mode. The PR
+must not be merged automatically.

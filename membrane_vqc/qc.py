@@ -7,11 +7,12 @@ from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
 from .errors import InputValidationError
-from .membrane import classify_residues, flag_core_residues, residue_dicts
+from .membrane import classify_residues_for_membrane, flag_core_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
+from .orientation import PlanarMembrane, legacy_global_z
 from .pymol_adapter import (
     color_hydropathy,
-    create_slab,
+    create_membrane_planes,
     ligand_atoms,
     protein_atoms,
     show_ligand_shell,
@@ -33,14 +34,49 @@ def run_check(
     cmd_obj: Any | None = None,
     input_path: str = "",
 ) -> dict[str, Any]:
-    """Run membrane visual QC using the active PyMOL session."""
-    global LAST_REPORT
+    """Run the unchanged legacy global-z workflow through the planar engine."""
     selection, zmin, zmax, ligand, cutoff = validate_analysis_inputs(
         selection, zmin, zmax, ligand, cutoff
     )
-    warnings = [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
-    ]
+    membrane = legacy_global_z(zmin, zmax, DEFAULT_INTERFACE_WIDTH)
+    return run_check_with_membrane(
+        selection=selection,
+        membrane=membrane,
+        ligand=ligand,
+        cutoff=cutoff,
+        quiet=quiet,
+        export_path=export_path,
+        cmd_obj=cmd_obj,
+        input_path=input_path,
+    )
+
+
+def run_check_with_membrane(
+    *,
+    selection: str,
+    membrane: PlanarMembrane,
+    ligand: str = "organic",
+    cutoff: float = DEFAULT_LIGAND_CUTOFF,
+    quiet: int = 1,
+    export_path: str = "",
+    cmd_obj: Any | None = None,
+    input_path: str = "",
+    orientation_import: Any | None = None,
+) -> dict[str, Any]:
+    """Run membrane visual QC against an explicit arbitrary planar membrane."""
+    global LAST_REPORT
+    selection, ligand, cutoff = validate_context_inputs(selection, ligand, cutoff)
+    warnings = list(membrane.warnings)
+    if membrane.source.startswith("manual") or membrane.source in {"unknown", "unspecified"}:
+        warnings.append(
+            "Membrane orientation was manually defined or is unverified. "
+            "Interpret core flags as geometric inspection only."
+        )
+    if not membrane.lower_offset < 0.0 < membrane.upper_offset:
+        warnings.append(
+            "The membrane centre plane is not between both core boundaries; "
+            "normalised in-core depth is unavailable."
+        )
     atoms = protein_atoms(selection, cmd_obj)
     if not atoms:
         warnings.append(f"No protein atoms found in selection: {selection}")
@@ -48,14 +84,14 @@ def run_check(
         flags = []
         neighbours = []
     else:
-        residues = classify_residues(atoms, float(zmin), float(zmax), DEFAULT_INTERFACE_WIDTH)
-        flags = flag_core_residues(residues)
+        residues = classify_residues_for_membrane(atoms, membrane)
+        flags = flag_core_residues(residues, membrane.source)
         lig_atoms = ligand_atoms(selection, ligand, cmd_obj) if ligand else []
         if ligand and not lig_atoms:
             warnings.append(f"No atoms found for ligand selection: {ligand}")
         neighbours = ligand_neighbor_residues(atoms, lig_atoms, float(cutoff))
 
-        create_slab(float(zmin), float(zmax), cmd_obj)
+        create_membrane_planes(membrane, atoms, selection, cmd_obj)
         color_hydropathy(selection, residues, cmd_obj)
         if ligand:
             show_ligand_shell(selection, ligand, neighbours, cmd_obj)
@@ -64,17 +100,20 @@ def run_check(
 
     report = build_report(
         selection=selection,
-        zmin=float(zmin),
-        zmax=float(zmax),
+        zmin=membrane.lower_offset,
+        zmax=membrane.upper_offset,
         ligand_selection=ligand,
         cutoff=float(cutoff),
         total_residues=len(residues),
         core_residues=sum(1 for residue in residues if residue.classification == "core"),
         flagged_residues=[flag.as_dict() for flag in flags],
         ligand_neighbours=residue_dicts(neighbours),
-        warnings=warnings,
+        warnings=list(dict.fromkeys(warnings)),
+        slab_mode=membrane.source,
         input_path=input_path or None,
         pymol_version=_pymol_version(cmd_obj),
+        membrane=membrane,
+        orientation_import=orientation_import,
     )
     LAST_REPORT = report
 
@@ -83,6 +122,23 @@ def run_check(
     if not int(quiet):
         print(format_summary(report))
     return report
+
+
+def validate_context_inputs(selection: str, ligand: str, cutoff: float) -> tuple[str, str, float]:
+    """Validate fields shared by legacy and arbitrary-plane analysis."""
+    selection = str(selection).strip()
+    ligand = str(ligand).strip()
+    if not selection:
+        raise InputValidationError("Protein selection must not be empty.")
+    try:
+        cutoff = float(cutoff)
+    except (TypeError, ValueError) as exc:
+        raise InputValidationError("Ligand cutoff must be numeric.") from exc
+    if not math.isfinite(cutoff):
+        raise InputValidationError("Ligand cutoff must be finite.")
+    if cutoff <= 0:
+        raise InputValidationError("Ligand cutoff must be greater than zero.")
+    return selection, ligand, cutoff
 
 
 def _pymol_version(cmd_obj: Any | None = None) -> str:

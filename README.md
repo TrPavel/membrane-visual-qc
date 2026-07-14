@@ -15,7 +15,8 @@ An open-source PyMOL plugin for explainable, membrane-aware visual review of pro
 - exports versioned JSON and deterministic CSV reports;
 - records manual-orientation warnings and conservative review statuses.
 
-The v0.1 workflow is command-first. The Qt dialog is a thin wrapper around the same commands.
+The released v0.1 workflow is command-first. Unreleased Stage 2 work adds an arbitrary planar
+normal, geometric depth, orientation JSON import, and matching PyMOL rendering.
 
 ## Installation
 
@@ -60,6 +61,8 @@ software behaviour, not biology.
 ## PyMOL commands
 
 - `mvqc_check selection=all, zmin=-15, zmax=15, ligand=organic, cutoff=5.0`
+- `mvqc_check_orientation selection=all, orientation_file=demo/rotated_1ubq_orientation.json`
+- `mvqc_slab_orientation selection=all, orientation_file=demo/rotated_1ubq_orientation.json`
 - `mvqc_slab zmin=-15, zmax=15`
 - `mvqc_color_hydropathy selection=all`
 - `mvqc_ligand_shell protein=all, ligand=organic, cutoff=5.0`
@@ -71,7 +74,8 @@ clears partial plugin output so stale visuals do not appear current.
 
 ## Reports and interpretation
 
-Schema v1 is documented in [docs/report_schema.md](docs/report_schema.md). Biological review
+Released v0.1 reports use schema 1.0; unreleased Stage 2 reports use additive schema 1.1. Both are
+documented in [docs/report_schema.md](docs/report_schema.md). Biological review
 states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
 `NO_FLAGS` means only that configured heuristics emitted no items.
 
@@ -81,10 +85,10 @@ retain source-file provenance. Reports created before Git initialisation may rec
 provenance as unavailable. Future reports produced from a Git checkout should record
 `software.commit` when the runtime can resolve the checkout commit.
 
-The v0.1 orientation is manual and assumes the membrane normal is the global z-axis.
-Ordinary RCSB coordinates are not assumed to be membrane-aligned. Charged or polar core
-residues may be functional near cofactors, ions, internal waters, active sites, or polar
-networks.
+The v0.1 orientation is manual and assumes the membrane normal is the global z-axis. Stage 2 maps
+that command to the general planar model as `manual_global_z`; it can also import a local,
+versioned orientation JSON file. No external orientation adapter is included. Ordinary RCSB
+coordinates are not assumed to be membrane-aligned.
 
 ## Validation and development status
 

@@ -2,7 +2,7 @@
 
 Membrane Visual QC is an inspection helper, not a definitive validator of membrane protein correctness.
 
-## MVP Limitations
+## Released v0.1 limitations
 
 - The membrane slab is manually defined by `zmin` and `zmax`.
 - No automatic orientation from OPM, PDBTM, UniTmp, or other databases is included in v0.1.
@@ -12,6 +12,13 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - Ligand-neighbour detection is distance-based and does not classify interaction chemistry.
 - JSON/CSV reports are summaries for review, not validation certificates.
 - The Qt GUI is a convenience wrapper and does not contain separate scientific logic.
+
+## Unreleased Stage 2 limitations
+
+- Only one planar membrane is modelled; curved and double membranes are out of scope.
+- Orientation import is local and generic; no OPM/PPM/PDBTM/TmDet network adapter is implemented.
+- Depth uses CA or a residue-coordinate average, not side-chain functional groups.
+- Exposure, hydration, interaction chemistry, energetics, comparisons, and batch work are deferred.
 
 ## Data Limitations
 

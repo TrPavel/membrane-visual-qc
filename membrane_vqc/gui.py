@@ -7,10 +7,21 @@ import math
 from pathlib import Path
 
 from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
-from .commands import mvqc_check, mvqc_color_hydropathy, mvqc_export, mvqc_ligand_shell, mvqc_slab
+from .commands import (
+    mvqc_check,
+    mvqc_check_orientation,
+    mvqc_color_hydropathy,
+    mvqc_export,
+    mvqc_ligand_shell,
+    mvqc_slab,
+    mvqc_slab_orientation,
+)
+from .orientation_io import load_orientation_file
 from .qc import format_summary
 
 _DIALOG = None
+LEGACY_MODE = "Legacy global-z"
+ORIENTATION_FILE_MODE = "Planar orientation file"
 
 
 @dataclass(frozen=True)
@@ -119,6 +130,10 @@ class MembraneVQCDialog:
         layout = QtWidgets.QFormLayout(self.window)
 
         self.selection = QtWidgets.QLineEdit("all")
+        self.orientation_mode = QtWidgets.QComboBox()
+        self.orientation_mode.addItems([LEGACY_MODE, ORIENTATION_FILE_MODE])
+        self.orientation_file = QtWidgets.QLineEdit("")
+        self.orientation_source = QtWidgets.QLabel("manual_global_z")
         self.zmin = QtWidgets.QLineEdit(str(DEFAULT_ZMIN))
         self.zmax = QtWidgets.QLineEdit(str(DEFAULT_ZMAX))
         self.ligand = QtWidgets.QLineEdit("organic")
@@ -138,6 +153,9 @@ class MembraneVQCDialog:
             self.cutoff.setValidator(positive)
 
         layout.addRow("Selection", self.selection)
+        layout.addRow("Orientation mode", self.orientation_mode)
+        layout.addRow("Orientation JSON", self.orientation_file)
+        layout.addRow("Orientation source", self.orientation_source)
         layout.addRow("zmin", self.zmin)
         layout.addRow("zmax", self.zmax)
         layout.addRow("Ligand selection", self.ligand)
@@ -167,9 +185,38 @@ class MembraneVQCDialog:
         self.window.raise_()
 
     def run_qc(self):
+        if self.orientation_mode.currentText() == ORIENTATION_FILE_MODE:
+            values = self._parse_or_error(
+                parse_ligand_shell_inputs,
+                self.selection.text(),
+                self.ligand.text(),
+                self.cutoff.text(),
+            )
+            if values is None:
+                return
+            orientation_path = str(self.orientation_file.text()).strip()
+            try:
+                loaded = load_orientation_file(orientation_path)
+            except Exception as exc:
+                self._show_error(str(exc) or exc.__class__.__name__)
+                return
+            self.orientation_source.setText(loaded.membrane.source)
+            self._execute(
+                "Running planar membrane reviewâ€¦",
+                lambda: mvqc_check_orientation(
+                    selection=values.selection,
+                    orientation_file=orientation_path,
+                    ligand=values.ligand,
+                    cutoff=values.cutoff,
+                    quiet=1,
+                ),
+                format_summary,
+            )
+            return
         values = self._inputs_or_error()
         if values is None:
             return
+        self.orientation_source.setText("manual_global_z")
         self._execute(
             "Running membrane review…",
             lambda: mvqc_check(
@@ -184,6 +231,23 @@ class MembraneVQCDialog:
         )
 
     def show_slab(self):
+        if self.orientation_mode.currentText() == ORIENTATION_FILE_MODE:
+            selection = self._parse_or_error(parse_selection, self.selection.text())
+            if selection is None:
+                return
+            orientation_path = str(self.orientation_file.text()).strip()
+            try:
+                loaded = load_orientation_file(orientation_path)
+            except Exception as exc:
+                self._show_error(str(exc) or exc.__class__.__name__)
+                return
+            self.orientation_source.setText(loaded.membrane.source)
+            self._execute(
+                "Creating planar membrane boundariesâ€¦",
+                lambda: mvqc_slab_orientation(selection, orientation_path),
+                lambda _: "Planar membrane boundaries updated.",
+            )
+            return
         values = self._parse_or_error(
             parse_slab_inputs,
             self.zmin.text(),

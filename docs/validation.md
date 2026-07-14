@@ -3,7 +3,7 @@
 Validation demonstrates software reproducibility and graceful behaviour. It does not establish
 biological correctness or membrane orientation.
 
-## Automated results (2026-07-13)
+## Released v0.1 results
 
 Environment: Incentive PyMOL 3.1.8 with bundled Python 3.10.20.
 
@@ -15,8 +15,14 @@ Environment: Incentive PyMOL 3.1.8 with bundled Python 3.10.20.
 | 1PCR reaction centre | 823 | 176 | 43 | 33 | 241 | completed |
 | synthetic bad-core Lys | 10 | 10 | 1 | 0 | 0 | regression invariant satisfied |
 
-The 1UBQ slab intersection is arbitrary geometry and must not be interpreted as membrane
-biology. All generated reports record `orientation.source = manual`.
+The 1UBQ slab intersection is arbitrary geometry and must not be interpreted as membrane biology.
+
+## Unreleased Stage 2 rigid-transform result
+
+The script generates `r' = Rr+t` with `R=[[0,0,1],[0,1,0],[-1,0,0]]`, `t=[10,-5,3]`, centre
+`t`, and normal `[1,0,0]`. With offsets `[-15,15]`, rotated 1UBQ exactly preserves the legacy
+summary: 76 total, 40 core, 11 charged, 13 polar, zero ligand neighbours. This validates software
+invariance, not biological orientation of RCSB coordinates.
 
 ## Commands and results
 
@@ -27,9 +33,8 @@ biology. All generated reports record `orientation.source = manual`.
 <PYMOL> -cq tests\pymol_smoke\validate_structures.py
 ```
 
-Results: 40 unit tests passed; compilation passed; smoke import and five-structure headless
-validation passed. A third-party PyMOL licensing `DeprecationWarning` was the only warning.
+Stage 2 local result: 144 tests passed with 76% combined coverage; Ruff, schema validation, smoke
+import, five legacy structures, and the rotated structure passed.
 
-Plugin Manager installation and interactive Qt behaviour require the checklist in
-`docs/manual_gui_validation.md`. Ruff is configured for CI but unavailable in the verified
-local PyMOL interpreter.
+Released v0.1 interactive validation passed. The new Stage 2 file mode still needs an interactive
+GUI pass before Stage 2 completion.

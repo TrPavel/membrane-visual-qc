@@ -139,10 +139,10 @@ The stable extensibility boundary is a local JSON document with schema version `
 finite, and serialization is deterministic (`sort_keys`, stable arrays, UTF-8, final newline).
 There are no network calls.
 
-The legacy command remains unchanged. A manual-plane command, if exposed, uses explicit scalar
-arguments `cx, cy, cz, nx, ny, nz, lower, upper` rather than comma-separated vectors, because the
-PyMOL command parser also uses commas to delimit arguments. The GUI loads and validates a local
-orientation JSON through the same non-Qt parser.
+The legacy command remains unchanged. Stage 2 exposes the general plane through a local JSON file
+because PyMOL also uses commas to delimit command arguments, making compact vector syntax fragile.
+If a future manual-plane command is added, it will use explicit scalar arguments. The GUI uses the
+same non-Qt parser; advanced manual-plane fields are deferred.
 
 ### Report representation
 
@@ -166,9 +166,9 @@ silently assigned to schema `1.0`. The orientation record contains:
 ```
 
 The v0.1 `orientation.parameters`, input `zmin/zmax`, top-level aliases, review-item `z`, and CSV
-columns remain compatibility aliases during schema 1.x. The schema 1.1 additions are optional for
-consumers but always emitted by the 1.1 producer. Validation selects the schema declared by each
-report, allowing immutable released 1.0 examples and new 1.1 examples to be distinguished.
+columns remain compatibility aliases during schema 1.x. Schema 1.1 requires the newly defined
+fields from its producer; consumers may ignore fields they do not use. Validation selects the
+declared schema, distinguishing immutable released 1.0 artefacts from new 1.1 examples.
 
 ### Rendering
 

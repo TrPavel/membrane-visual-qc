@@ -1,44 +1,28 @@
-# Report schema
+# Report schemas
 
-Membrane Visual QC writes UTF-8 JSON reports using schema version `1.0`. The
-machine-readable schema is stored in `schemas/mvqc-report-1.0.schema.json`.
+Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. Unreleased Stage 2 analysis uses
+additive schema 1.1; schema 1.0 remains immutable and validation dispatches by declared version.
 
-The canonical v1 fields are:
+Schema 1.1 records the direct planar orientation fields, optional orientation-file basename and
+SHA-256, and residue depth evidence. For coordinate `r`, centre `c`, and unit normal `n`:
 
-- `software` and `runtime`: software and execution provenance;
-- `input`: portable input identity and SHA-256 when a local file is available;
-- `orientation`: orientation source, geometry, parameters, and warnings;
-- `parameters`: analysis parameters;
-- `summary.overall_status`: `NO_FLAGS`, `REVIEW_ITEMS`,
-  `INSUFFICIENT_CONTEXT`, or `ANALYSIS_ERROR`;
-- `review_items`: explainable residue-level items requiring review;
-- `ligand_neighbours`, `warnings`, and `limitations`.
+```text
+signed_distance = dot(r - c, n)
+```
 
-Manual orientation is always recorded and does not imply that the coordinates
-are biologically membrane-aligned. `NO_FLAGS` means only that the configured
-heuristics emitted no review items.
+Positive values point along `n`. Reports also include absolute centre distance, nearest-boundary
+distance, outside distance, and normalised depth. Normalised depth is defined only inside a core
+whose bounds bracket zero: 0 at either boundary and 1 at the centre, scaled separately on each
+side for asymmetric bounds. It is `null` outside or when the centre is not bracketed. These are
+geometric measurements, not proof of biological burial.
 
-`input.provenance_status` is `file_hashed` only when a real local path is explicitly supplied
-through `mvqc_check input_path=...` or the core API. Normal PyMOL selection analysis reports
-`input_path_not_supplied`; it does not guess a source file. `runtime.pymol_status` and
-`software.commit_status` similarly distinguish recorded metadata from unavailable metadata.
+CA is used when available, otherwise the residue atom-coordinate mean. Cartesian `z` remains for
+compatibility. Orientation-file provenance is separate from structure provenance. Structure
+SHA-256 is recorded only for an explicit real `input_path`; commit and PyMOL provenance use clear
+recorded/unavailable statuses.
 
-## Compatibility policy
-
-The v0.1 development fields `plugin`, `version`, `timestamp`,
-`flagged_residues`, and the legacy analysis keys inside `input` are retained as
-aliases throughout schema v1. New consumers should use the canonical fields.
-They may be deprecated only in a future major schema version with a migration
-guide and compatibility tests.
-
-## CSV contract
-
-The companion CSV contains review items in deterministic residue order with
-these columns:
+The v0.1 aliases and CSV columns remain compatible:
 
 ```text
 model,chain,resi,resn,classification,severity,reason,z
 ```
-
-JSON and CSV are written through a temporary file followed by an atomic
-replacement on the same filesystem.
