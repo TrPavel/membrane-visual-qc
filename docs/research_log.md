@@ -1,6 +1,63 @@
 # Research log
 
-Access date for all sources: 2026-07-13. Only official project/database documentation, official source repositories, standards documentation, and primary literature are used below.
+## 2026-07-14 — How should arbitrary planar orientation and depth be defined?
+
+### Hypothesis
+
+The v0.1 global-z slab can become one coordinate-frame-independent planar model without changing
+legacy classifications, provided signed-distance, boundary, depth, and coordinate-space
+conventions are explicit before implementation.
+
+### Search
+
+Reviewed PyMOL's official API and command documentation, the current open-source CGO constants,
+PyMOL model-space/coordinate notes, the primary OPM/PPM planar-slab papers (Lomize et al. 2006 and
+2012), the PPM 3.0 planar/curved method paper, and Duff et al.'s robust orthonormal-basis analysis.
+The exact sources are linked in ADR-0002.
+
+### Evidence
+
+- The 2006 OPM method approximates the membrane hydrocarbon core as an adjustable planar slab
+  bounded by parallel planes; this supports the Stage 2 geometry while reinforcing that it is an
+  approximation rather than a biological verdict.
+- OPM/PPM reports hydrophobic thickness, penetration/depth, tilt, and boundary planes from a
+  method-specific model. Source and provenance must therefore remain explicit.
+- PPM 3.0 models planar and curved membranes separately. A tagged `geometry=planar` domain is a
+  clean extension point; flattening future curved/double membranes would be misleading.
+- With a unit normal, `dot(r-c,n)` is the signed point-plane distance. Reversing the normal also
+  requires `lower'=-upper` and `upper'=-lower` to preserve the same physical slab.
+- PyMOL camera axes do not define model coordinates. Analysis should consistently use model-space
+  coordinates and must not derive orientation from `get_view` or rotate the user's structure.
+- Current PyMOL CGO supports triangle primitives while quad-like constants are not a safe portable
+  assumption. Two triangles per boundary are the conservative representation.
+
+### Decision
+
+Adopt the conventions in ADR-0002: angstrom model space, explicit unit normal and signed offsets,
+exact inclusive legacy boundaries, piecewise asymmetric normalized depth, `null` depth outside or
+when a legacy slab does not bracket its centre plane, schema 1.1 for new defined fields, and v0.1 z
+fields as compatibility aliases over the same classifier.
+
+Use explicit scalar arguments for any manual-plane PyMOL command and a versioned local orientation
+JSON as the stable future-adapter boundary. Render projected selection-sized triangle planes and
+keep the camera centred on the molecule.
+
+### Limitations
+
+The model does not infer biological topology, membrane identity, curvature, provider confidence,
+or correct orientation. Ordinary RCSB coordinates remain unoriented unless an explicit model is
+provided. Numerical tolerances are implementation stability thresholds and must not be presented
+as physical uncertainty.
+
+### Follow-up
+
+Implement pure geometry and invariance tests first, then JSON/report integration, and only then
+PyMOL rendering/GUI wiring. Validate a reproducibly rotated existing fixture without adding
+redundant coordinate files.
+
+Access dates are stated by section date (2026-07-13 or 2026-07-14). Only official
+project/database documentation, official source repositories, standards documentation, and
+primary literature are used below.
 
 ## 2026-07-13 — How should a PyMOL Plugin Manager ZIP and Qt lifecycle work?
 
