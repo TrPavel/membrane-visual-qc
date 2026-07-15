@@ -7,10 +7,11 @@ Stage 1 is closed. Immutable tag `v0.1.0` points to
 [29289031923](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29289031923) passed on
 Python 3.10, 3.11, and 3.12. Graphical v0.1 validation passed with Incentive PyMOL 3.1.8.
 
-## Unreleased Stage 2
+## Stage 2 — merged, unreleased
 
-Work is isolated on `feat/planar-orientation-depth` in draft PR
-[#2](https://github.com/TrPavel/membrane-visual-qc/pull/2); it is not merged or released.
+Stage 2 was squash-merged from
+[#2](https://github.com/TrPavel/membrane-visual-qc/pull/2) into `main`. It remains unreleased;
+no v0.2.0 tag or release has been created.
 
 Implemented:
 
@@ -46,11 +47,15 @@ graphical arbitrary plane, footprint/framing, summary equivalence, review stylin
 orientation/depth evidence, invalid-file lifecycle, source reset, zero-normal rejection, and
 `mvqc_clear` object preservation all passed. The installed ZIP correctly reported Git commit
 provenance as unavailable; structure provenance was unavailable because no explicit `input_path`
-was supplied. Stage 2 implementation and acceptance are complete; PR #2 closure and merge remain.
+was supplied. Stage 2 implementation, acceptance, and merge are complete.
 
-The final pre-correction head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed real draft-PR
-CI in [GitHub Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
-for Python 3.10, 3.11, and 3.12. Earlier implementation run
-[29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) remains
-historical evidence. The final interactive acceptance has passed. Keep PR #2 unmerged until its
-manual-acceptance closure workflow is green.
+Final PR head `272f288819965e72a53e4ea6fe3cb953131c3881` passed
+[PR workflow 29410043646](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410043646)
+on Python 3.10, 3.11, and 3.12. It was squash-merged as
+`faa7bae062c4ae43a9e9b738f6392bc2a228eb0e`; the corresponding
+[post-merge main workflow 29410159752](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410159752)
+also passed all three jobs.
+
+## Final Stage 2 status
+
+Stage 2 is complete and merged into main.

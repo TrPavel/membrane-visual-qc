@@ -196,9 +196,11 @@ path. Actual graphical screenshots are retained at:
 - `docs/screenshots/manual_stage2_planar_edge_view.png`
 - `docs/screenshots/manual_stage2_invalid_orientation.png`
 
-The final pre-correction Stage 2 head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed draft-PR
-[Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
-on Python 3.10, 3.11, and 3.12. Earlier Stage 2 implementation run
-[29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) is retained
-as historical evidence. Interactive Stage 2 acceptance is complete. PR #2 may move to review only
-after this manual-evidence closure workflow passes; merging remains a separate gated operation.
+Final PR head `272f288819965e72a53e4ea6fe3cb953131c3881` passed
+[PR workflow 29410043646](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410043646)
+on Python 3.10, 3.11, and 3.12. PR #2 was squash-merged as
+`faa7bae062c4ae43a9e9b738f6392bc2a228eb0e`; the
+[post-merge main workflow 29410159752](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410159752)
+also passed all three matrix jobs. No v0.2.0 tag or release was created.
+
+Stage 2 is complete and merged into main.
