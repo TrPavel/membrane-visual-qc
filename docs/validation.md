@@ -38,5 +38,22 @@ import, five legacy structures, and the rotated structure passed.
 The unreleased build and its generated schema-1.1 reports use development version `0.2.0.dev0`;
 the Plugin Manager archive is `dist/MembraneVisualQC-0.2.0.dev0.zip`.
 
-Released v0.1 interactive validation passed. The new Stage 2 file mode still needs an interactive
-GUI pass before Stage 2 completion.
+## Stage 2 graphical acceptance
+
+The Stage 2 file mode passed complete graphical acceptance on 2026-07-15 with Windows 10 build
+26200 and Incentive PyMOL 3.1.8 (bundled Python 3.10.20). The tested development ZIP SHA-256 was
+`841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`.
+
+Arbitrary-plane rendering, plane footprint/framing, source display, UTF-8 progress text, review
+styling, schema-1.1 export, orientation provenance, residue-depth fields, invalid zero-normal
+handling, and summary equivalence all passed. Invalid Run QC cleared stale report/review state;
+invalid Show Slab cleared stale slab objects; both reset the source to `unavailable` without a
+graphical traceback. `mvqc_clear` preserved `1UBQ_rotated`.
+
+The manual report contains 24 review items (11 `WARNING`, 13 `INSPECT`) and is retained as
+`reports/manual_stage2_check.json` with its CSV companion. Installed-ZIP execution correctly
+records commit provenance as unavailable, and structure provenance is unavailable because no
+explicit `input_path` was supplied.
+
+The default schema-validation command includes this manual report alongside the six generated
+fixtures; all seven schema-1.1 reports validate in CI.

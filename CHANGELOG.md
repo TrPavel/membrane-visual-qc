@@ -32,6 +32,8 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 - Synchronized public release status and GitHub Releases installation instructions after v0.1.0
   publication.
+- Recorded complete graphical Stage 2 acceptance on Incentive PyMOL 3.1.8, including lifecycle,
+  arbitrary-plane rendering, export provenance, residue-depth evidence, and manual fixtures.
 
 ## [0.1.0] - 2026-07-14
 

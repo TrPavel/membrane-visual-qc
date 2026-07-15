@@ -44,35 +44,68 @@ The archive has one top-level directory, `membrane_vqc/`; integrity metadata is 
 directory and the archive checksum is beside the ZIP. Automated layout validation, headless
 package loading, and the graphical Plugin Manager check all passed.
 
-## Pending Stage 2 interactive acceptance
+## Stage 2 interactive acceptance — PASS
 
-Use the unreleased development archive `dist/MembraneVisualQC-0.2.0.dev0.zip`. This does not alter
-the published v0.1.0 release. Confirm `data/raw/1UBQ.cif` is present, then prepare the validated
-rotated object from the graphical PyMOL command line with one command:
+The complete graphical Stage 2 acceptance passed on 2026-07-15 using Windows 10 build 26200,
+Incentive PyMOL 3.1.8, bundled Python 3.10.20, and development build `0.2.0.dev0`. The tested
+archive was `MembraneVisualQC-0.2.0.dev0.zip`, SHA-256
+`841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`. This did not alter the
+published v0.1.0 release.
+
+With `data/raw/1UBQ.cif` present, the validated rotated object was prepared in graphical PyMOL with:
 
 ```pml
 run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py
 ```
 
-The helper locates the repository from its own file path, applies the same transform as the
-headless validation, displays `1UBQ_rotated` as cartoon, and prints the absolute orientation JSON
-path. It does not run QC or remove unrelated objects. Select **Planar orientation file** and use
-the printed `demo/rotated_1ubq_orientation.json` path.
+The helper located the repository from its own file path, applied the shared validated transform,
+displayed `1UBQ_rotated` as cartoon, and printed the absolute path to
+`demo/rotated_1ubq_orientation.json`. It did not run QC or remove unrelated objects.
 
-- [ ] Install the `0.2.0.dev0` ZIP through Plugin Manager and restart PyMOL.
-- [ ] Confirm the GUI opens and identifies both legacy and planar file modes.
-- [ ] Run the preparation helper above; confirm `1UBQ_rotated` is shown and the absolute
-  orientation JSON path is printed.
-- [ ] In planar file mode, run QC with `demo/rotated_1ubq_orientation.json` and confirm the status
-  text uses a correct ellipsis without mojibake.
-- [ ] Confirm the rotated 1UBQ summary matches the legacy 1UBQ summary completely.
-- [ ] Click **Show Slab** and confirm arbitrary-plane boundaries render around the rotated object.
-- [ ] Confirm the orientation source shown in the GUI matches the fixture metadata.
-- [ ] Export JSON and confirm `software.version` is `0.2.0.dev0`, schema version is `1.1`, and
-  orientation-file basename plus SHA-256 provenance are present.
-- [ ] After a successful planar Run QC, supply an invalid/missing orientation file; confirm the
-  source changes to `unavailable`, the error is readable, and old review objects/report are gone.
-- [ ] After successful **Show Slab**, supply an invalid/missing orientation file; confirm the old
-  slab boundaries disappear and no traceback is shown.
-- [ ] Run `mvqc_clear` and confirm plugin-owned objects/selections are removed without deleting the
-  loaded structure.
+| Interactive check | Result |
+|---|---|
+| Plugin Manager installation | PASS |
+| Both GUI orientation modes visible | PASS |
+| Preparation helper and `1UBQ_rotated` creation | PASS |
+| Absolute orientation path output | PASS |
+| Planar orientation-file Run QC | PASS |
+| Arbitrary-plane Show Slab rendering, footprint, and framing | PASS |
+| Orientation source display | PASS |
+| Correct UTF-8 progress text | PASS |
+| Complete summary equivalence | PASS |
+| Review styling | PASS |
+| JSON/CSV export | PASS |
+| Schema 1.1 and software version `0.2.0.dev0` | PASS |
+| Orientation provenance and residue-depth evidence | PASS |
+| Invalid-file Run QC lifecycle | PASS |
+| Invalid-file Show Slab lifecycle | PASS |
+| Source reset to `unavailable` | PASS |
+| Invalid zero-normal JSON handling | PASS |
+| `mvqc_clear` and preservation of `1UBQ_rotated` | PASS |
+| No graphical traceback | PASS |
+
+The observed summary was `76 total / 40 core / 11 charged / 13 polar / 0 ligand-neighbour`.
+Orientation evidence was source `synthetic_rigid_transform`, centre `[10.0, -5.0, 3.0]`, normal
+`[1.0, 0.0, 0.0]`, and offsets `[-15.0, 15.0]`. Import provenance recorded basename
+`rotated_1ubq_orientation.json`, orientation schema `1.0`, and SHA-256
+`75456606ebae906f9a131825a9a3edc05f74805fc03572979e1daec677ed7e2d`.
+
+The manual export evidence is `reports/manual_stage2_check.json` and
+`reports/manual_stage2_check.csv`. The JSON contains 24 review items: 11 `WARNING` and 13
+`INSPECT`. Every item contains signed distance, absolute centre distance, nearest-boundary
+distance, outside distance, and normalised depth.
+
+Because the plugin was installed from a ZIP, `software.commit_status` is `unavailable`. Structure
+input provenance is `input_path_not_supplied` because the GUI action did not receive an explicit
+`input_path`; no structure path or SHA-256 is implied.
+
+Lifecycle failures behaved conservatively: invalid Run QC cleared stale report and review state;
+invalid Show Slab cleared stale slab objects; both reset the source label to `unavailable` and
+showed readable errors without a traceback. `mvqc_clear` removed plugin-owned state while
+preserving `1UBQ_rotated`.
+
+Graphical evidence paths:
+
+- `docs/screenshots/manual_stage2_planar_qc.png`
+- `docs/screenshots/manual_stage2_planar_edge_view.png`
+- `docs/screenshots/manual_stage2_invalid_orientation.png`

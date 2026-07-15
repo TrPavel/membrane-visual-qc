@@ -1,0 +1,25 @@
+model,chain,resi,resn,classification,severity,reason,z
+1UBQ_rotated,A,11,LYS,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-28.19099998474121
+1UBQ_rotated,A,12,THR,core,INSPECT,polar residue in defined planar membrane core; may be functional,-26.54199981689453
+1UBQ_rotated,A,14,THR,core,INSPECT,polar residue in defined planar membrane core; may be functional,-27.5049991607666
+1UBQ_rotated,A,16,GLU,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-28.219999313354492
+1UBQ_rotated,A,18,GLU,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-25.468000411987305
+1UBQ_rotated,A,2,GLN,core,INSPECT,polar residue in defined planar membrane core; may be functional,-23.850000381469727
+1UBQ_rotated,A,20,SER,core,INSPECT,polar residue in defined planar membrane core; may be functional,-25.054000854492188
+1UBQ_rotated,A,21,ASP,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-27.79599952697754
+1UBQ_rotated,A,22,THR,core,INSPECT,polar residue in defined planar membrane core; may be functional,-28.398000717163086
+1UBQ_rotated,A,25,ASN,core,INSPECT,polar residue in defined planar membrane core; may be functional,-32.59000015258789
+1UBQ_rotated,A,29,LYS,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-34.47100067138672
+1UBQ_rotated,A,31,GLN,core,INSPECT,polar residue in defined planar membrane core; may be functional,-37.26900100708008
+1UBQ_rotated,A,32,ASP,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-38.71799850463867
+1UBQ_rotated,A,33,LYS,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-36.80799865722656
+1UBQ_rotated,A,34,GLU,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-36.67599868774414
+1UBQ_rotated,A,55,THR,core,INSPECT,polar residue in defined planar membrane core; may be functional,-24.573999404907227
+1UBQ_rotated,A,57,SER,core,INSPECT,polar residue in defined planar membrane core; may be functional,-19.923999786376953
+1UBQ_rotated,A,6,LYS,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-24.69099998474121
+1UBQ_rotated,A,60,ASN,core,INSPECT,polar residue in defined planar membrane core; may be functional,-16.065000534057617
+1UBQ_rotated,A,62,GLN,core,INSPECT,polar residue in defined planar membrane core; may be functional,-17.08099937438965
+1UBQ_rotated,A,63,LYS,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-18.6560001373291
+1UBQ_rotated,A,64,GLU,core,WARNING,charged residue in defined planar membrane core; inspect local environment,-18.906999588012695
+1UBQ_rotated,A,65,SER,core,INSPECT,polar residue in defined planar membrane core; may be functional,-18.41900062561035
+1UBQ_rotated,A,66,THR,core,INSPECT,polar residue in defined planar membrane core; may be functional,-20.211999893188477

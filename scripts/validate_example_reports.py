@@ -12,6 +12,15 @@ SCHEMA_BY_VERSION = {
 }
 
 
+def default_report_paths(root: Path = Path("reports")) -> list[Path]:
+    """Return generated fixtures plus retained manual-acceptance evidence when present."""
+    paths = set(root.glob("*_mvqc.json"))
+    manual_evidence = root / "manual_stage2_check.json"
+    if manual_evidence.is_file():
+        paths.add(manual_evidence)
+    return sorted(paths)
+
+
 def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
     """Raise on an invalid schema or the first invalid report."""
     try:
@@ -60,7 +69,7 @@ def main() -> int:
         help="Override schema for all reports (default: use each report's schema_version)",
     )
     args = parser.parse_args()
-    reports = args.reports or sorted(Path("reports").glob("*_mvqc.json"))
+    reports = args.reports or default_report_paths()
     if not reports:
         parser.error("no report files were supplied or discovered")
     if args.schema is not None:

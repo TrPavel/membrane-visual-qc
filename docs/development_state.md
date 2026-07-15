@@ -1,6 +1,6 @@
 # Development state
 
-Snapshot date: 2026-07-14 (Europe/Moscow).
+Snapshot date: 2026-07-15 (Europe/Moscow).
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -30,7 +30,7 @@ equal to legacy 1UBQ.
 
 Stage 2 uses development version `0.2.0.dev0` consistently in package metadata, generated reports,
 wheel/sdist names, and `dist/MembraneVisualQC-0.2.0.dev0.zip`. Local correction evidence:
-Ruff passed; 153 tests passed with 80% combined coverage; six schema-1.1 reports validated; PyMOL
+Ruff passed; 153 tests passed with 80% combined coverage; seven schema-1.1 reports validated; PyMOL
 3.1.8 smoke plus five legacy and one rotated case passed; wheel/sdist built; two development ZIPs
 were byte-identical. The correction-build ZIP SHA-256 is
 `841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`; it is not a replacement
@@ -41,9 +41,16 @@ review/report or slab state before orientation-file validation, while the GUI di
 source metadata only after success and `unavailable` after failure. Manual and headless rotated
 1UBQ preparation share `demo/rotated_1ubq_transform.py`.
 
+Complete interactive acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8. The
+graphical arbitrary plane, footprint/framing, summary equivalence, review styling, exports,
+orientation/depth evidence, invalid-file lifecycle, source reset, zero-normal rejection, and
+`mvqc_clear` object preservation all passed. The installed ZIP correctly reported Git commit
+provenance as unavailable; structure provenance was unavailable because no explicit `input_path`
+was supplied. Stage 2 implementation and acceptance are complete; PR #2 closure and merge remain.
+
 The final pre-correction head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed real draft-PR
 CI in [GitHub Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
 for Python 3.10, 3.11, and 3.12. Earlier implementation run
 [29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) remains
-historical evidence. Remaining: interactive acceptance of the new GUI file mode and arbitrary
-plane. Keep PR #2 draft and do not merge it.
+historical evidence. The final interactive acceptance has passed. Keep PR #2 unmerged until its
+manual-acceptance closure workflow is green.

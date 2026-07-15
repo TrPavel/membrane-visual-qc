@@ -141,7 +141,7 @@ ruff format --check .
 pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
 # 153 passed; 80% combined coverage
 python scripts\validate_example_reports.py
-# Validated 6 report(s) (schema 1.1: 6)
+# Validated 7 report(s) (schema 1.1: 7), including manual acceptance evidence
 python -m build
 # Successfully built membrane_vqc_pymol-0.2.0.dev0-py3-none-any.whl
 # and membrane_vqc_pymol-0.2.0.dev0.tar.gz
@@ -168,9 +168,37 @@ objects. The GUI replaces stale source text with `unavailable`. The graphical/ma
 be prepared reproducibly with `run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py`; the helper and
 headless validation share the same point transform.
 
+### Stage 2 graphical acceptance
+
+Complete graphical acceptance passed on 2026-07-15 using Windows 10 build 26200, Incentive PyMOL
+3.1.8, bundled Python 3.10.20, and `MembraneVisualQC-0.2.0.dev0.zip` with SHA-256
+`841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307`.
+
+The graphical arbitrary-plane view, plane footprint and framing, orientation source, UTF-8 status
+text, summary equivalence, review styling, schema-1.1 JSON/CSV export, orientation provenance,
+residue-depth evidence, invalid zero-normal handling, and `mvqc_clear` all passed. Invalid Run QC
+cleared stale report/review state; invalid Show Slab cleared stale slab objects; both changed the
+source label to `unavailable` and produced no graphical traceback. `mvqc_clear` preserved
+`1UBQ_rotated`.
+
+The observed summary was `76/40/11/13/0`. Orientation source was
+`synthetic_rigid_transform`, centre `[10.0,-5.0,3.0]`, normal `[1.0,0.0,0.0]`, and offsets
+`[-15.0,15.0]`. Import provenance recorded `rotated_1ubq_orientation.json`, schema `1.0`, and
+SHA-256 `75456606ebae906f9a131825a9a3edc05f74805fc03572979e1daec677ed7e2d`.
+
+Manual evidence is retained as `reports/manual_stage2_check.json` and `.csv`. The JSON has 24
+review items (11 `WARNING`, 13 `INSPECT`), each with all five depth/distance fields. It correctly
+records `software.commit_status = unavailable` because execution came from an installed ZIP and
+`input.provenance_status = input_path_not_supplied` because the GUI supplied no explicit source
+path. Actual graphical screenshots are retained at:
+
+- `docs/screenshots/manual_stage2_planar_qc.png`
+- `docs/screenshots/manual_stage2_planar_edge_view.png`
+- `docs/screenshots/manual_stage2_invalid_orientation.png`
+
 The final pre-correction Stage 2 head `29ab66a4e8bf35b6f73b70049f7595b3f3700139` passed draft-PR
 [Actions run 29350123791](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29350123791)
 on Python 3.10, 3.11, and 3.12. Earlier Stage 2 implementation run
 [29349967133](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29349967133) is retained
-as historical evidence. Remaining acceptance work is interactive validation of the new GUI file
-mode. The PR must remain draft and must not be merged automatically.
+as historical evidence. Interactive Stage 2 acceptance is complete. PR #2 may move to review only
+after this manual-evidence closure workflow passes; merging remains a separate gated operation.
