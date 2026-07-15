@@ -17,7 +17,7 @@ Environment: Incentive PyMOL 3.1.8 with bundled Python 3.10.20.
 
 The 1UBQ slab intersection is arbitrary geometry and must not be interpreted as membrane biology.
 
-## Unreleased Stage 2 rigid-transform result
+## v0.2.0 rigid-transform result
 
 The script generates `r' = Rr+t` with `R=[[0,0,1],[0,1,0],[-1,0,0]]`, `t=[10,-5,3]`, centre
 `t`, and normal `[1,0,0]`. With offsets `[-15,15]`, rotated 1UBQ exactly preserves the legacy
@@ -33,12 +33,11 @@ invariance, not biological orientation of RCSB coordinates.
 <PYMOL> -cq tests\pymol_smoke\validate_structures.py
 ```
 
-Stage 2 local result: 153 tests passed with 80% combined coverage; Ruff, schema validation, smoke
-import, five legacy structures, and the rotated structure passed.
-The unreleased build and its generated schema-1.1 reports use development version `0.2.0.dev0`;
-the Plugin Manager archive is `dist/MembraneVisualQC-0.2.0.dev0.zip`.
+The accepted development build produced 153 passing tests with 80% combined coverage; Ruff,
+schema validation, smoke import, five legacy structures, and the rotated structure passed. Final
+v0.2.0 release-candidate results are recorded separately below and in `Report.md`.
 
-## Stage 2 graphical acceptance
+## Historical Stage 2 graphical acceptance (`0.2.0.dev0`)
 
 The Stage 2 file mode passed complete graphical acceptance on 2026-07-15 with Windows 10 build
 26200 and Incentive PyMOL 3.1.8 (bundled Python 3.10.20). The tested development ZIP SHA-256 was
@@ -57,3 +56,22 @@ explicit `input_path` was supplied.
 
 The default schema-validation command includes this manual report alongside the six generated
 fixtures; all seven schema-1.1 reports validate in CI.
+
+These screenshots and manual exports are retained with their original `0.2.0.dev0` identity and
+are not represented as final-build output. The final `0.2.0` ZIP requires a shorter graphical
+release smoke test because the accepted feature implementation is unchanged.
+
+## v0.2.0 release-candidate validation
+
+The release candidate uses `dist/MembraneVisualQC-0.2.0.zip`; generated current example reports
+record `software.version = 0.2.0`. Report schema 1.0 remains immutable and v0.2.0 produces report
+schema 1.1. Ordinary RCSB coordinates are not automatically membrane-oriented, imported
+orientation metadata is not independently verified, and depth values are geometric evidence—not
+proof of biological burial.
+
+Automated validation passed: 153 tests with 80% combined coverage, seven valid schema-1.1 reports,
+PyMOL smoke import, five legacy structures, rotated 1UBQ, and the preparation helper. Wheel and
+sdist built successfully. Two independent Plugin ZIP builds were byte-for-byte identical; the
+27,459-byte candidate SHA-256 is
+`084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The short graphical
+release smoke is recorded separately from the historical Stage 2 acceptance.

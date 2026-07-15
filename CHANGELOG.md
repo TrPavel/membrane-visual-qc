@@ -6,19 +6,23 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-15
+
 ### Added
 
-- Added an immutable arbitrary planar-membrane model, signed-distance classification, asymmetric
-  depth metrics, and rigid-transform invariance tests.
-- Added strict orientation JSON import, orientation schema 1.0, additive report schema 1.1, and
-  arbitrary-plane PyMOL rendering with a minimal GUI file mode.
+- Added an immutable arbitrary planar-membrane model with signed-distance and membrane-depth
+  metrics, including asymmetric membrane boundaries.
+- Added strict orientation JSON import using orientation schema 1.0 and additive report schema
+  1.1 while preserving immutable report schema 1.0.
+- Added arbitrary-plane PyMOL rendering, a GUI orientation-file mode, and reproducible rotated
+  1UBQ validation.
 
 ### Changed
 
-- Routed the unchanged `mvqc_check zmin/zmax` workflow through the general planar engine while
-  preserving all five fixture summaries.
-- Identified unreleased Stage 2 builds and generated reports as `0.2.0.dev0`, with a distinct
-  development Plugin ZIP name.
+- Routed the legacy `mvqc_check zmin/zmax` workflow through the general planar engine while
+  preserving global-z compatibility and all five fixture summaries.
+- Promoted the accepted Stage 2 implementation from `0.2.0.dev0` to `0.2.0` for limited public
+  testing.
 
 ### Fixed
 
@@ -34,6 +38,12 @@ The format follows Keep a Changelog style, and this project intends to use seman
   publication.
 - Recorded complete graphical Stage 2 acceptance on Incentive PyMOL 3.1.8, including lifecycle,
   arbitrary-plane rendering, export provenance, residue-depth evidence, and manual fixtures.
+
+### Known limitations
+
+- No automatic OPM/PPM/PDBTM/TmDet adapter, exposure engine, FreeSASA integration,
+  interaction-context engine, comparison workflow, batch CLI, or curved/multiple-membrane model
+  is included.
 
 ## [0.1.0] - 2026-07-14
 

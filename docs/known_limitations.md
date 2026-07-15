@@ -13,7 +13,7 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - JSON/CSV reports are summaries for review, not validation certificates.
 - The Qt GUI is a convenience wrapper and does not contain separate scientific logic.
 
-## Unreleased Stage 2 limitations
+## v0.2.0 limitations
 
 - Only one planar membrane is modelled; curved and double membranes are out of scope.
 - Orientation import is local and generic; no OPM/PPM/PDBTM/TmDet network adapter is implemented.

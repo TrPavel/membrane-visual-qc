@@ -128,10 +128,11 @@ remain under `docs/screenshots/` and are identified as such in the manual valida
 
 v0.1 is release-ready for limited public testing.
 
-## Unreleased Stage 2 validation
+## Historical Stage 2 development validation
 
-Stage 2 is isolated on `feat/planar-orientation-depth`; `v0.1.0` remains immutable. Orientation
-JSON uses schema 1.0 and new reports use additive schema 1.1. The legacy command is unchanged.
+This section preserves validation evidence from the accepted `0.2.0.dev0` build; it is not
+rewritten as final `0.2.0` output. `v0.1.0` remains immutable. Orientation JSON uses schema 1.0,
+new reports use additive schema 1.1, and the legacy global-z command remains supported.
 
 ```powershell
 ruff check .
@@ -204,3 +205,47 @@ on Python 3.10, 3.11, and 3.12. PR #2 was squash-merged as
 also passed all three matrix jobs. No v0.2.0 tag or release was created.
 
 Stage 2 is complete and merged into main.
+
+## v0.2.0 release-candidate validation
+
+The release candidate promotes package metadata and current generated examples to `0.2.0` and
+builds these exact artifact names:
+
+- `dist/MembraneVisualQC-0.2.0.zip`
+- `dist/MembraneVisualQC-0.2.0.zip.sha256`
+- `dist/membrane_vqc_pymol-0.2.0-py3-none-any.whl`
+- `dist/membrane_vqc_pymol-0.2.0.tar.gz`
+
+Validation commands:
+
+```powershell
+ruff check .
+ruff format --check .
+pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
+python scripts\validate_example_reports.py
+python -m build
+python scripts\build_plugin_zip.py
+python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.2.0.zip
+<PYMOL> -cq tests\pymol_smoke\smoke_import.py
+<PYMOL> -cq tests\pymol_smoke\validate_structures.py
+<PYMOL> -cq C:\Pymol_script_1\demo\prepare_rotated_1ubq.py
+```
+
+Automated release-candidate validation passed on Windows: Ruff check and format check passed; 153
+tests passed with 80% combined coverage; seven schema-1.1 reports validated (six regenerated
+`0.2.0` examples plus one historical `0.2.0.dev0` manual report); PyMOL smoke import, all five
+legacy structures, rotated 1UBQ, and the preparation helper passed. Wheel and sdist built with the
+expected names.
+
+Two independent Plugin ZIP builds were byte-for-byte identical. The final candidate is 27,459
+bytes with SHA-256
+`084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The historical graphical
+acceptance files above retain their `0.2.0.dev0` identity. The short graphical smoke and public
+workflow/release URLs are recorded as their gates complete.
+
+Ordinary RCSB coordinates are not automatically membrane-oriented. Imported orientation metadata
+is not independently verified. Depth values are geometric evidence, not proof of biological
+burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
+
+Target readiness wording after all release gates pass: `v0.2.0 is release-ready for limited public
+testing.`

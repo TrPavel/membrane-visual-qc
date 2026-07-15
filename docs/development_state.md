@@ -7,11 +7,11 @@ Stage 1 is closed. Immutable tag `v0.1.0` points to
 [29289031923](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29289031923) passed on
 Python 3.10, 3.11, and 3.12. Graphical v0.1 validation passed with Incentive PyMOL 3.1.8.
 
-## Stage 2 — merged, unreleased
+## Stage 2 — merged and accepted
 
 Stage 2 was squash-merged from
-[#2](https://github.com/TrPavel/membrane-visual-qc/pull/2) into `main`. It remains unreleased;
-no v0.2.0 tag or release has been created.
+[#2](https://github.com/TrPavel/membrane-visual-qc/pull/2) into `main`. Release preparation is
+isolated on `release/v0.2.0`; Stage 3 has not started.
 
 Implemented:
 
@@ -29,8 +29,9 @@ exactly one charged review item. Rotated 1UBQ uses
 `R=[[0,0,1],[0,1,0],[-1,0,0]]`, `t=[10,-5,3]`, and normal `[1,0,0]`, with the complete summary
 equal to legacy 1UBQ.
 
-Stage 2 uses development version `0.2.0.dev0` consistently in package metadata, generated reports,
-wheel/sdist names, and `dist/MembraneVisualQC-0.2.0.dev0.zip`. Local correction evidence:
+The accepted Stage 2 build used development version `0.2.0.dev0` consistently in package metadata,
+generated reports, wheel/sdist names, and `dist/MembraneVisualQC-0.2.0.dev0.zip`. Historical local
+evidence:
 Ruff passed; 153 tests passed with 80% combined coverage; seven schema-1.1 reports validated; PyMOL
 3.1.8 smoke plus five legacy and one rotated case passed; wheel/sdist built; two development ZIPs
 were byte-identical. The correction-build ZIP SHA-256 is
@@ -59,3 +60,21 @@ also passed all three jobs.
 ## Final Stage 2 status
 
 Stage 2 is complete and merged into main.
+
+## v0.2.0 release candidate
+
+The release branch promotes package metadata, generated current examples, and artifact names to
+`0.2.0`. The final Plugin Manager candidate is `dist/MembraneVisualQC-0.2.0.zip`. Historical
+manual exports and screenshots retain their truthful `0.2.0.dev0` identity. Report schema 1.0
+remains immutable; v0.2.0 produces additive report schema 1.1.
+
+Automated release-candidate results and the short graphical smoke of the exact final ZIP are
+recorded separately in `Report.md` and `reports/release_validation.json`. No v0.2.0 tag or release
+is created until the release PR and post-merge workflows are green. The v0.1.0 tag and release
+remain immutable.
+
+Local automated release-candidate validation passed: 153 tests, 80% combined coverage, seven
+schema-1.1 reports, PyMOL smoke plus all five legacy and rotated fixtures, the preparation helper,
+wheel/sdist, and deterministic double ZIP build. The 27,459-byte candidate SHA-256 is
+`084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The exact-artifact
+graphical smoke remains the next release gate.

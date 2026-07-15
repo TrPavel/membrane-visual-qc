@@ -1,6 +1,6 @@
 # Report schemas
 
-Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. Unreleased Stage 2 analysis uses
+Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. v0.2.0 analysis uses
 additive schema 1.1; schema 1.0 remains immutable and validation dispatches by declared version.
 
 Schema 1.1 records the direct planar orientation fields, optional orientation-file basename and

@@ -109,3 +109,28 @@ Graphical evidence paths:
 - `docs/screenshots/manual_stage2_planar_qc.png`
 - `docs/screenshots/manual_stage2_planar_edge_view.png`
 - `docs/screenshots/manual_stage2_invalid_orientation.png`
+
+## v0.2.0 final-artifact graphical smoke — PENDING
+
+This short smoke is separate from, and does not overwrite, the full `0.2.0.dev0` acceptance above.
+It must use the exact final `dist/MembraneVisualQC-0.2.0.zip` release candidate.
+
+1. Install `MembraneVisualQC-0.2.0.zip` through graphical PyMOL Plugin Manager and restart PyMOL.
+2. Confirm both GUI orientation modes appear.
+3. Run `run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py`.
+4. Select the printed `demo/rotated_1ubq_orientation.json` path and run **Show Slab**.
+5. Run orientation-file QC and confirm summary `76/40/11/13/0`.
+6. Export JSON and confirm report schema `1.1` and software version `0.2.0`.
+7. Select an invalid orientation file and confirm a readable error without traceback.
+8. Run `mvqc_clear` and confirm `1UBQ_rotated` remains.
+
+| Release smoke check | Result |
+|---|---|
+| Plugin Manager installation of exact final ZIP | PENDING |
+| Both orientation modes visible | PENDING |
+| Rotated fixture helper | PENDING |
+| Arbitrary-plane Show Slab | PENDING |
+| Run QC summary `76/40/11/13/0` | PENDING |
+| Export schema 1.1 and software version 0.2.0 | PENDING |
+| Invalid-file readable error | PENDING |
+| `mvqc_clear` preserves `1UBQ_rotated` | PENDING |
