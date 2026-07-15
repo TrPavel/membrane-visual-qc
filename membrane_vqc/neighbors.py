@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from math import dist
 
-from .membrane import AtomRecord, ResidueRecord, classify_residues
+from .membrane import AtomRecord, ResidueRecord, aggregate_residues
 
 
 def ligand_neighbor_residues(
@@ -28,6 +28,4 @@ def ligand_neighbor_residues(
                 seen.add(key)
                 neighbor_atoms.append(atom)
 
-    return classify_residues(
-        neighbor_atoms, zmin=float("-inf"), zmax=float("inf"), interface_width=0
-    )
+    return aggregate_residues(neighbor_atoms)

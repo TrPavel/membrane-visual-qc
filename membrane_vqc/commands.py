@@ -6,12 +6,15 @@ import math
 
 from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
 from . import qc
-from .membrane import classify_residues, residue_dicts
+from .membrane import aggregate_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
+from .orientation_io import load_orientation_file
 from .pymol_adapter import (
     MVQC_NAMES,
     clear_owned,
+    clear_slab,
     color_hydropathy,
+    create_membrane_planes,
     create_slab,
     ligand_atoms,
     protein_atoms,
@@ -60,11 +63,63 @@ def mvqc_slab(zmin: float = DEFAULT_ZMIN, zmax: float = DEFAULT_ZMAX):
     create_slab(zmin, zmax)
 
 
+def mvqc_check_orientation(
+    selection: str = "all",
+    orientation_file: str = "",
+    ligand: str = "organic",
+    cutoff: float = DEFAULT_LIGAND_CUTOFF,
+    quiet: int = 1,
+    export_path: str = "",
+    input_path: str = "",
+):
+    """Run QC using a validated local planar-orientation JSON document."""
+    clear_owned()
+    qc.LAST_REPORT = None
+    try:
+        selection = _selection(selection)
+        orientation_file = str(orientation_file).strip()
+        if not orientation_file:
+            raise ValueError("orientation_file must not be empty.")
+        cutoff = _positive_float(cutoff, "cutoff")
+        loaded = load_orientation_file(orientation_file)
+        return qc.run_check_with_membrane(
+            selection=selection,
+            membrane=loaded.membrane,
+            ligand=str(ligand).strip(),
+            cutoff=cutoff,
+            quiet=int(quiet),
+            export_path=str(export_path).strip(),
+            input_path=str(input_path).strip(),
+            orientation_import=loaded,
+        )
+    except Exception:
+        clear_owned()
+        qc.LAST_REPORT = None
+        raise
+
+
+def mvqc_slab_orientation(selection: str = "all", orientation_file: str = ""):
+    """Render boundaries from a validated local planar-orientation document."""
+    clear_slab()
+    try:
+        selection = _selection(selection)
+        orientation_file = str(orientation_file).strip()
+        if not orientation_file:
+            raise ValueError("orientation_file must not be empty.")
+        loaded = load_orientation_file(orientation_file)
+        atoms = protein_atoms(selection)
+        create_membrane_planes(loaded.membrane, atoms, selection)
+        return loaded.membrane.as_dict()
+    except Exception:
+        clear_slab()
+        raise
+
+
 def mvqc_color_hydropathy(selection: str = "all"):
     """Colour selected protein residues by a simple hydropathy scale."""
     selection = _selection(selection)
     atoms = protein_atoms(selection)
-    residues = classify_residues(atoms, float("-inf"), float("inf"), interface_width=0)
+    residues = aggregate_residues(atoms)
     color_hydropathy(selection, residues)
     return residue_dicts(residues)
 
@@ -142,6 +197,8 @@ def register_commands(cmd_obj=None) -> None:
         from pymol import cmd as cmd_obj
 
     cmd_obj.extend("mvqc_check", mvqc_check)
+    cmd_obj.extend("mvqc_check_orientation", mvqc_check_orientation)
+    cmd_obj.extend("mvqc_slab_orientation", mvqc_slab_orientation)
     cmd_obj.extend("mvqc_slab", mvqc_slab)
     cmd_obj.extend("mvqc_color_hydropathy", mvqc_color_hydropathy)
     cmd_obj.extend("mvqc_ligand_shell", mvqc_ligand_shell)

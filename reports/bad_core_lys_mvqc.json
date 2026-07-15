@@ -2,18 +2,23 @@
   "capabilities": {},
   "flagged_residues": [
     {
+      "absolute_center_distance": 0.0,
       "chain": "A",
       "classification": "core",
       "id": "bad_core_lys/A/6/LYS",
       "model": "bad_core_lys",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
       "reason": "charged residue in manually defined membrane core; inspect local environment",
       "resi": "6",
       "resn": "LYS",
       "severity": "WARNING",
+      "signed_distance": 0.0,
       "z": 0.0
     }
   ],
-  "generated_at": "2026-07-13T20:34:32.497865+00:00",
+  "generated_at": "2026-07-14T17:03:30.302352+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -22,7 +27,7 @@
     "provenance_status": "input_path_not_supplied",
     "selection": "bad_core_lys",
     "sha256": "",
-    "slab_mode": "manual",
+    "slab_mode": "manual_global_z",
     "structure_source": "",
     "structure_type": "unknown",
     "zmax": 15.0,
@@ -30,11 +35,25 @@
   },
   "ligand_neighbours": [],
   "limitations": [
-    "Manual slab orientation was used.",
+    "Manual global-z membrane orientation was used.",
     "This plugin is a visual QC helper, not a definitive structural validator."
   ],
   "orientation": {
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "confidence": null,
     "geometry": "planar",
+    "interface_width": 3.0,
+    "lower_offset": -15.0,
+    "metadata": {},
+    "normal": [
+      0.0,
+      0.0,
+      1.0
+    ],
     "parameters": {
       "center": [
         0.0,
@@ -49,9 +68,11 @@
       "zmax": 15.0,
       "zmin": -15.0
     },
-    "source": "manual",
+    "source": "manual_global_z",
+    "source_version": null,
+    "upper_offset": 15.0,
     "warnings": [
-      "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+      "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
     ]
   },
   "parameters": {
@@ -62,14 +83,19 @@
   "report_type": "single_structure_review",
   "review_items": [
     {
+      "absolute_center_distance": 0.0,
       "chain": "A",
       "classification": "core",
       "id": "bad_core_lys/A/6/LYS",
       "model": "bad_core_lys",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
       "reason": "charged residue in manually defined membrane core; inspect local environment",
       "resi": "6",
       "resn": "LYS",
       "severity": "WARNING",
+      "signed_distance": 0.0,
       "z": 0.0
     }
   ],
@@ -79,12 +105,12 @@
     "pymol_status": "recorded",
     "python": "3.10.20"
   },
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "software": {
-    "commit": "",
-    "commit_status": "unavailable",
+    "commit": "ce1dcac4477e9676fe776e1b1d80d4611fd725c3",
+    "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
-    "version": "0.1.0"
+    "version": "0.2.0.dev0"
   },
   "summary": {
     "charged_core_residues": 1,
@@ -94,10 +120,10 @@
     "polar_core_inspect_residues": 0,
     "total_residues": 10
   },
-  "timestamp": "2026-07-13T20:34:32.497865+00:00",
-  "version": "0.1.0",
+  "timestamp": "2026-07-14T17:03:30.302352+00:00",
+  "version": "0.2.0.dev0",
   "warnings": [
-    "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+    "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",
     "No atoms found for ligand selection: organic"
   ]
 }

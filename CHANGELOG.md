@@ -6,10 +6,34 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Added an immutable arbitrary planar-membrane model, signed-distance classification, asymmetric
+  depth metrics, and rigid-transform invariance tests.
+- Added strict orientation JSON import, orientation schema 1.0, additive report schema 1.1, and
+  arbitrary-plane PyMOL rendering with a minimal GUI file mode.
+
+### Changed
+
+- Routed the unchanged `mvqc_check zmin/zmax` workflow through the general planar engine while
+  preserving all five fixture summaries.
+- Identified unreleased Stage 2 builds and generated reports as `0.2.0.dev0`, with a distinct
+  development Plugin ZIP name.
+
+### Fixed
+
+- Corrected the UTF-8 ellipsis in the planar GUI progress messages and added regression coverage
+  against mojibake.
+- Made orientation commands the sole owner of file parsing and failure cleanup so stale planar
+  source labels, review state, reports, and slab boundaries cannot survive invalid-file actions.
+- Added a shared, reproducible rotated-1UBQ preparation helper for headless and graphical PyMOL.
+
 ### Documentation
 
 - Synchronized public release status and GitHub Releases installation instructions after v0.1.0
   publication.
+- Recorded complete graphical Stage 2 acceptance on Incentive PyMOL 3.1.8, including lifecycle,
+  arbitrary-plane rendering, export provenance, residue-depth evidence, and manual fixtures.
 
 ## [0.1.0] - 2026-07-14
 

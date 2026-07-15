@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:membrane-vqc:schema:orientation:1.0",
+  "title": "Membrane Visual QC planar orientation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "geometry",
+    "center",
+    "normal",
+    "lower_offset",
+    "upper_offset",
+    "interface_width",
+    "source"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "geometry": {"const": "planar"},
+    "center": {"$ref": "#/$defs/vector3"},
+    "normal": {"$ref": "#/$defs/vector3"},
+    "lower_offset": {"type": "number"},
+    "upper_offset": {"type": "number"},
+    "interface_width": {"type": "number", "minimum": 0},
+    "source": {"type": "string", "minLength": 1},
+    "source_version": {"type": ["string", "null"]},
+    "confidence": {"type": ["string", "null"]},
+    "metadata": {"$ref": "#/$defs/jsonObject"}
+  },
+  "$defs": {
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "number"}
+    },
+    "jsonObject": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/jsonValue"}
+    },
+    "jsonValue": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "boolean"},
+        {"type": "number"},
+        {"type": "string"},
+        {"type": "array", "items": {"$ref": "#/$defs/jsonValue"}},
+        {"$ref": "#/$defs/jsonObject"}
+      ]
+    }
+  }
+}

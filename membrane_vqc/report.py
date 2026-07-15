@@ -7,15 +7,17 @@ import hashlib
 import json
 import os
 import platform
+import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .constants import LIMITATIONS, PLUGIN_NAME, VERSION
+from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
 from .errors import ReportError
+from .orientation import PlanarMembrane, legacy_global_z, measure_point
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
 
@@ -40,6 +42,8 @@ def build_report(
     software_commit: str = "",
     pymol_version: str = "",
     capabilities: dict[str, Any] | None = None,
+    membrane: PlanarMembrane | None = None,
+    orientation_import: Any | None = None,
 ) -> dict[str, Any]:
     """Build a versioned, machine-readable single-structure review report.
 
@@ -61,21 +65,39 @@ def build_report(
         else sum(1 for item in flagged_residues if item.get("classification") == "core")
     )
 
-    review_items = sorted((dict(item) for item in flagged_residues), key=_residue_sort_key)
-    neighbours = sorted((dict(item) for item in ligand_neighbours), key=_residue_sort_key)
+    membrane = membrane or legacy_global_z(zmin, zmax, DEFAULT_INTERFACE_WIDTH)
+    review_items = sorted(
+        (_with_depth_fields(item, membrane) for item in flagged_residues), key=_residue_sort_key
+    )
+    neighbours = sorted(
+        (_with_depth_fields(item, membrane) for item in ligand_neighbours), key=_residue_sort_key
+    )
     source_path, source_hash = _portable_input_metadata(input_path)
     timestamp = datetime.now(timezone.utc).isoformat()
     orientation_warnings = [
         warning for warning in warnings if "slab" in warning.lower() or "orient" in warning.lower()
     ]
+    resolved_commit = str(software_commit).strip() or _checkout_commit()
+    orientation = membrane.as_dict()
+    orientation["parameters"] = {
+        "center": list(membrane.center),
+        "normal": list(membrane.normal),
+        "zmin": float(zmin),
+        "zmax": float(zmax),
+    }
+    orientation["warnings"] = list(dict.fromkeys([*membrane.warnings, *orientation_warnings]))
+    import_record = _orientation_import_dict(orientation_import)
+    if import_record is not None:
+        orientation["import"] = import_record
+
     report = {
         "schema_version": SCHEMA_VERSION,
         "report_type": REPORT_TYPE,
         "software": {
             "name": PLUGIN_NAME,
             "version": VERSION,
-            "commit": software_commit,
-            "commit_status": "recorded" if software_commit else "unavailable",
+            "commit": resolved_commit,
+            "commit_status": "recorded" if resolved_commit else "unavailable",
         },
         "runtime": {
             "python": platform.python_version(),
@@ -97,17 +119,7 @@ def build_report(
             "structure_type": structure_type,
             "provenance_status": "file_hashed" if source_hash else "input_path_not_supplied",
         },
-        "orientation": {
-            "source": slab_mode,
-            "geometry": "planar",
-            "parameters": {
-                "center": [0.0, 0.0, 0.0],
-                "normal": [0.0, 0.0, 1.0],
-                "zmin": float(zmin),
-                "zmax": float(zmax),
-            },
-            "warnings": orientation_warnings,
-        },
+        "orientation": orientation,
         "parameters": {
             "ligand_selection": ligand_selection,
             "ligand_cutoff_angstrom": float(cutoff),
@@ -123,7 +135,7 @@ def build_report(
         "review_items": review_items,
         "ligand_neighbours": neighbours,
         "warnings": list(warnings),
-        "limitations": list(LIMITATIONS),
+        "limitations": _orientation_limitations(membrane),
     }
     # Transitional aliases for scripts written against the v0.1 development schema.
     report["input"].update(
@@ -216,6 +228,11 @@ def validate_report(report: dict[str, Any]) -> None:
         "severity",
         "reason",
         "z",
+        "signed_distance",
+        "absolute_center_distance",
+        "nearest_boundary_distance",
+        "outside_distance",
+        "normalized_depth",
     }
     for index, item in enumerate(report.get("review_items", [])):
         if not isinstance(item, dict):
@@ -247,6 +264,79 @@ def _portable_input_metadata(path: str | Path | None) -> tuple[str, str]:
 
 def _residue_sort_key(item: dict[str, Any]) -> tuple[str, str, str, str]:
     return tuple(str(item.get(key, "")) for key in ("model", "chain", "resi", "resn"))
+
+
+def _with_depth_fields(item: dict[str, Any], membrane: PlanarMembrane) -> dict[str, Any]:
+    enriched = dict(item)
+    required = {
+        "signed_distance",
+        "absolute_center_distance",
+        "nearest_boundary_distance",
+        "outside_distance",
+        "normalized_depth",
+    }
+    numeric_depths = required - {"normalized_depth"}
+    if required.issubset(enriched) and all(enriched[key] is not None for key in numeric_depths):
+        return enriched
+    if all(key in enriched for key in ("x", "y", "z")):
+        point = (enriched["x"], enriched["y"], enriched["z"])
+    elif membrane.normal == (0.0, 0.0, 1.0) and "z" in enriched:
+        point = (membrane.center[0], membrane.center[1], enriched["z"])
+    else:
+        for key in required:
+            enriched.setdefault(key, None)
+        return enriched
+    measurement = measure_point(point, membrane).as_dict()
+    enriched.update({key: measurement[key] for key in required})
+    return enriched
+
+
+def _orientation_import_dict(value: Any | None) -> dict[str, str] | None:
+    if value is None:
+        return None
+    if hasattr(value, "orientation_path"):
+        return {
+            "path": str(value.orientation_path),
+            "sha256": str(value.sha256),
+            "schema_version": str(value.schema_version),
+        }
+    if isinstance(value, dict):
+        return {
+            "path": str(value.get("path", value.get("basename", ""))),
+            "sha256": str(value.get("sha256", "")),
+            "schema_version": str(value.get("schema_version", "1.0")),
+        }
+    raise ReportError("Orientation import provenance must be a loaded orientation or mapping.")
+
+
+def _checkout_commit() -> str:
+    """Resolve commit provenance from this checkout without making it a hard dependency."""
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "--verify", "HEAD"],
+            cwd=Path(__file__).resolve().parents[1],
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    commit = completed.stdout.strip()
+    return commit if completed.returncode == 0 and len(commit) == 40 else ""
+
+
+def _orientation_limitations(membrane: PlanarMembrane) -> list[str]:
+    limitations = list(LIMITATIONS)
+    if membrane.source == "manual_global_z":
+        limitations[0] = "Manual global-z membrane orientation was used."
+    elif membrane.source.startswith("manual"):
+        limitations[0] = "Manual planar membrane orientation was used."
+    else:
+        limitations[0] = (
+            "Explicit planar orientation metadata was used and was not independently verified."
+        )
+    return limitations
 
 
 def _atomic_write_text(path: Path, text: str) -> None:

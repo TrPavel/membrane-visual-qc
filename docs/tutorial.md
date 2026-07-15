@@ -23,11 +23,29 @@ The structure must already be in a meaningful coordinate frame. The plugin recor
 orientation and does not infer membrane alignment. Use `mvqc_clear` to remove all plugin-owned
 objects and temporary report state without touching user objects.
 
+## Unreleased planar-orientation workflow
+
+Stage 2 accepts a strict local JSON document instead of fragile comma-separated vectors:
+
+Prepare the validated manual fixture in graphical PyMOL without reproducing coordinate operations:
+
+```pml
+run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py
+```
+
+```pml
+mvqc_check_orientation selection=1UBQ_rotated, orientation_file=demo/rotated_1ubq_orientation.json, ligand=
+```
+
+The demo orientation belongs only to the documented rigid transform in the validation script.
+The GUI offers **Legacy global-z** and **Planar orientation file** modes. Advanced manual-plane
+fields and automatic external adapters are deferred.
+
 ## GUI workflow
 
-Open **Plugin > Membrane Visual QC**, enter a non-empty selection, finite `zmin < zmax`, and a
-positive cutoff. Ligand selection may be empty. Invalid input produces a readable dialog rather
-than a traceback. Buttons are disabled while an action runs.
+Open **Plugin > Membrane Visual QC**, select the orientation mode, enter a non-empty selection and
+a positive cutoff. Legacy mode requires finite `zmin < zmax`; file mode requires valid local JSON.
+Ligand selection may be empty.
 
 See `docs/manual_gui_validation.md` for the release checklist.
 

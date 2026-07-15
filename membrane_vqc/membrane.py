@@ -7,6 +7,12 @@ from itertools import groupby
 from operator import attrgetter
 
 from .constants import CHARGED_RESIDUES, DEFAULT_INTERFACE_WIDTH, POLAR_INSPECT_RESIDUES
+from .orientation import (
+    PlanarMembrane,
+    classify_signed_distance,
+    legacy_global_z,
+    measure_point,
+)
 
 
 @dataclass(frozen=True)
@@ -35,6 +41,11 @@ class ResidueRecord:
     y: float
     z: float
     classification: str
+    signed_distance: float | None = None
+    absolute_center_distance: float | None = None
+    nearest_boundary_distance: float | None = None
+    outside_distance: float | None = None
+    normalized_depth: float | None = None
 
     @property
     def identifier(self) -> str:
@@ -54,6 +65,11 @@ class ResidueFlag:
     severity: str
     reason: str
     z: float
+    signed_distance: float | None = None
+    absolute_center_distance: float | None = None
+    nearest_boundary_distance: float | None = None
+    outside_distance: float | None = None
+    normalized_depth: float | None = None
 
     @property
     def identifier(self) -> str:
@@ -61,7 +77,7 @@ class ResidueFlag:
         return f"{self.model}/{chain}/{self.resi}/{self.resn}"
 
     def as_dict(self) -> dict[str, object]:
-        return {
+        result = {
             "id": self.identifier,
             "model": self.model,
             "chain": self.chain or "_",
@@ -72,18 +88,13 @@ class ResidueFlag:
             "reason": self.reason,
             "z": self.z,
         }
+        result.update(_depth_dict(self))
+        return result
 
 
 def classify_z(z: float, zmin: float, zmax: float, interface_width: float = 0.0) -> str:
     """Classify a z coordinate relative to a manual membrane slab."""
-    zmin, zmax = sorted((float(zmin), float(zmax)))
-    if zmin <= z <= zmax:
-        return "core"
-    if 0 < interface_width and zmax < z <= zmax + interface_width:
-        return "upper_interface"
-    if 0 < interface_width and zmin - interface_width <= z < zmin:
-        return "lower_interface"
-    return "outside"
+    return classify_signed_distance(float(z), legacy_global_z(zmin, zmax, interface_width))
 
 
 def classify_residues(
@@ -93,12 +104,17 @@ def classify_residues(
     interface_width: float = DEFAULT_INTERFACE_WIDTH,
 ) -> list[ResidueRecord]:
     """Classify residues using CA coordinates, falling back to residue atom averages."""
+    membrane = legacy_global_z(zmin, zmax, interface_width)
+    return classify_residues_for_membrane(atoms, membrane)
+
+
+def aggregate_residues(atoms: list[AtomRecord]) -> list[ResidueRecord]:
+    """Return one representative coordinate per residue without membrane classification."""
     sorted_atoms = sorted(atoms, key=_residue_key)
     residues: list[ResidueRecord] = []
     for _, group in groupby(sorted_atoms, key=_residue_key):
         residue_atoms = list(group)
         representative = _representative_atom(residue_atoms)
-        classification = classify_z(representative.z, zmin, zmax, interface_width)
         residues.append(
             ResidueRecord(
                 model=representative.model,
@@ -108,14 +124,49 @@ def classify_residues(
                 x=representative.x,
                 y=representative.y,
                 z=representative.z,
-                classification=classification,
+                classification="outside",
             )
         )
     return residues
 
 
-def flag_core_residues(residues: list[ResidueRecord]) -> list[ResidueFlag]:
+def classify_residues_for_membrane(
+    atoms: list[AtomRecord], membrane: PlanarMembrane
+) -> list[ResidueRecord]:
+    """Classify residue representative points against an arbitrary planar membrane."""
+    classified: list[ResidueRecord] = []
+    for residue in aggregate_residues(atoms):
+        measurement = measure_point((residue.x, residue.y, residue.z), membrane)
+        classified.append(
+            ResidueRecord(
+                model=residue.model,
+                chain=residue.chain,
+                resi=residue.resi,
+                resn=residue.resn,
+                x=residue.x,
+                y=residue.y,
+                z=residue.z,
+                classification=measurement.classification,
+                signed_distance=measurement.signed_distance,
+                absolute_center_distance=measurement.absolute_center_distance,
+                nearest_boundary_distance=measurement.nearest_boundary_distance,
+                outside_distance=measurement.outside_distance,
+                normalized_depth=measurement.normalized_depth,
+            )
+        )
+    return classified
+
+
+def flag_core_residues(
+    residues: list[ResidueRecord], orientation_source: str = "manual_global_z"
+) -> list[ResidueFlag]:
     """Flag charged and polar residues inside the membrane core for inspection."""
+    if orientation_source == "manual_global_z":
+        core_description = "manually defined membrane core"
+    elif orientation_source.startswith("manual"):
+        core_description = "manually defined planar membrane core"
+    else:
+        core_description = "defined planar membrane core"
     flags: list[ResidueFlag] = []
     for residue in residues:
         if residue.classification != "core":
@@ -129,8 +180,13 @@ def flag_core_residues(residues: list[ResidueRecord]) -> list[ResidueFlag]:
                     resn=residue.resn,
                     classification=residue.classification,
                     severity="WARNING",
-                    reason="charged residue in manually defined membrane core; inspect local environment",
+                    reason=f"charged residue in {core_description}; inspect local environment",
                     z=residue.z,
+                    signed_distance=residue.signed_distance,
+                    absolute_center_distance=residue.absolute_center_distance,
+                    nearest_boundary_distance=residue.nearest_boundary_distance,
+                    outside_distance=residue.outside_distance,
+                    normalized_depth=residue.normalized_depth,
                 )
             )
         elif residue.resn in POLAR_INSPECT_RESIDUES:
@@ -142,8 +198,13 @@ def flag_core_residues(residues: list[ResidueRecord]) -> list[ResidueFlag]:
                     resn=residue.resn,
                     classification=residue.classification,
                     severity="INSPECT",
-                    reason="polar residue in manually defined membrane core; may be functional",
+                    reason=f"polar residue in {core_description}; may be functional",
                     z=residue.z,
+                    signed_distance=residue.signed_distance,
+                    absolute_center_distance=residue.absolute_center_distance,
+                    nearest_boundary_distance=residue.nearest_boundary_distance,
+                    outside_distance=residue.outside_distance,
+                    normalized_depth=residue.normalized_depth,
                 )
             )
     return flags
@@ -162,9 +223,20 @@ def residue_dicts(residues: list[ResidueRecord]) -> list[dict[str, object]]:
             "y": residue.y,
             "z": residue.z,
             "classification": residue.classification,
+            **_depth_dict(residue),
         }
         for residue in residues
     ]
+
+
+def _depth_dict(residue: ResidueRecord | ResidueFlag) -> dict[str, float | None]:
+    return {
+        "signed_distance": residue.signed_distance,
+        "absolute_center_distance": residue.absolute_center_distance,
+        "nearest_boundary_distance": residue.nearest_boundary_distance,
+        "outside_distance": residue.outside_distance,
+        "normalized_depth": residue.normalized_depth,
+    }
 
 
 def _residue_key(atom: AtomRecord) -> tuple[str, str, str, str]:

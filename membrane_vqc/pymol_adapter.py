@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from math import isfinite
 from pathlib import Path
 from typing import Any
 
 from .hydropathy import color_name_for_residue
 from .membrane import AtomRecord, ResidueFlag, ResidueRecord
+from .orientation import PlanarMembrane, orthonormal_basis
 
 MVQC_NAMES = frozenset(
     {
@@ -34,6 +36,13 @@ def clear_owned(cmd_obj: Any | None = None) -> None:
     """Remove only objects and selections owned by Membrane Visual QC."""
     cmd = get_cmd(cmd_obj)
     for name in sorted(MVQC_NAMES):
+        cmd.delete(name)
+
+
+def clear_slab(cmd_obj: Any | None = None) -> None:
+    """Remove only the membrane-boundary objects owned by the plugin."""
+    cmd = get_cmd(cmd_obj)
+    for name in MVQC_SLAB_NAMES:
         cmd.delete(name)
 
 
@@ -108,22 +117,127 @@ def residue_selection(residues: list[ResidueRecord] | list[ResidueFlag]) -> str:
     return " or ".join(parts) if parts else "none"
 
 
-def create_slab(zmin: float, zmax: float, cmd_obj: Any | None = None) -> None:
-    """Create simple CGO plane markers for the membrane slab boundaries."""
+def _dot(left: tuple[float, float, float], right: tuple[float, float, float]) -> float:
+    return sum(a * b for a, b in zip(left, right, strict=True))
+
+
+def projected_coordinates(
+    membrane: PlanarMembrane, atoms: list[AtomRecord]
+) -> list[tuple[float, float]]:
+    """Project atom coordinates onto the two axes spanning a membrane plane."""
+    axis_u, axis_v = orthonormal_basis(membrane.normal)
+    center = membrane.center
+    return [
+        (
+            _dot((atom.x - center[0], atom.y - center[1], atom.z - center[2]), axis_u),
+            _dot((atom.x - center[0], atom.y - center[1], atom.z - center[2]), axis_v),
+        )
+        for atom in atoms
+    ]
+
+
+def _clamped_interval(
+    values: list[float], margin: float, minimum_size: float, maximum_size: float
+) -> tuple[float, float]:
+    if values:
+        lower = min(values) - margin
+        upper = max(values) + margin
+        midpoint = (lower + upper) / 2.0
+        size = min(max(upper - lower, minimum_size), maximum_size)
+    else:
+        midpoint = 0.0
+        size = minimum_size
+    return midpoint - size / 2.0, midpoint + size / 2.0
+
+
+def projected_footprint(
+    membrane: PlanarMembrane,
+    atoms: list[AtomRecord],
+    *,
+    margin: float = 6.0,
+    minimum_size: float = 20.0,
+    maximum_size: float = 120.0,
+) -> tuple[float, float, float, float]:
+    """Return clamped ``(u_min, u_max, v_min, v_max)`` display bounds."""
+    dimensions = (margin, minimum_size, maximum_size)
+    if not all(isfinite(float(value)) for value in dimensions):
+        raise ValueError("Plane footprint dimensions must be finite.")
+    if margin < 0:
+        raise ValueError("Plane footprint margin must be non-negative.")
+    if minimum_size <= 0 or maximum_size < minimum_size:
+        raise ValueError("Plane footprint sizes must satisfy 0 < minimum <= maximum.")
+
+    projected = projected_coordinates(membrane, atoms)
+    u_min, u_max = _clamped_interval(
+        [point[0] for point in projected], margin, minimum_size, maximum_size
+    )
+    v_min, v_max = _clamped_interval(
+        [point[1] for point in projected], margin, minimum_size, maximum_size
+    )
+    return u_min, u_max, v_min, v_max
+
+
+def _plane_vertices(
+    membrane: PlanarMembrane,
+    offset: float,
+    footprint: tuple[float, float, float, float],
+) -> tuple[tuple[float, float, float], ...]:
+    axis_u, axis_v = orthonormal_basis(membrane.normal)
+    origin = tuple(membrane.center[index] + offset * membrane.normal[index] for index in range(3))
+    u_min, u_max, v_min, v_max = footprint
+
+    def point(u_value: float, v_value: float) -> tuple[float, float, float]:
+        return tuple(
+            origin[index] + u_value * axis_u[index] + v_value * axis_v[index] for index in range(3)
+        )
+
+    lower_left = point(u_min, v_min)
+    lower_right = point(u_max, v_min)
+    upper_right = point(u_max, v_max)
+    upper_left = point(u_min, v_max)
+    return (
+        lower_left,
+        lower_right,
+        upper_right,
+        lower_left,
+        upper_right,
+        upper_left,
+    )
+
+
+def create_membrane_planes(
+    membrane: PlanarMembrane,
+    atoms: list[AtomRecord],
+    selection: str,
+    cmd_obj: Any | None = None,
+    *,
+    margin: float = 6.0,
+    minimum_size: float = 20.0,
+    maximum_size: float = 120.0,
+) -> None:
+    """Render arbitrary planar membrane boundaries without rotating coordinates."""
     cmd = get_cmd(cmd_obj)
     try:
-        from pymol.cgo import ALPHA, BEGIN, COLOR, END, TRIANGLES, VERTEX
+        from pymol.cgo import ALPHA, BEGIN, COLOR, END, NORMAL, TRIANGLES, VERTEX
     except Exception:
-        print("Could not import PyMOL CGO constants; slab objects were not created.")
+        print("Could not import PyMOL CGO constants; membrane planes were not created.")
         return
 
     for name in MVQC_SLAB_NAMES:
         cmd.delete(name)
-    size = 80.0
 
-    def plane(z: float, color: tuple[float, float, float]) -> list[float]:
+    footprint = projected_footprint(
+        membrane,
+        atoms,
+        margin=margin,
+        minimum_size=minimum_size,
+        maximum_size=maximum_size,
+    )
+
+    def plane(offset: float, color: tuple[float, float, float], normal_sign: float) -> list[float]:
         r, g, b = color
-        return [
+        normal = tuple(normal_sign * value for value in membrane.normal)
+        cgo = [
             ALPHA,
             0.28,
             BEGIN,
@@ -132,35 +246,54 @@ def create_slab(zmin: float, zmax: float, cmd_obj: Any | None = None) -> None:
             r,
             g,
             b,
-            VERTEX,
-            -size,
-            -size,
-            z,
-            VERTEX,
-            size,
-            -size,
-            z,
-            VERTEX,
-            size,
-            size,
-            z,
-            VERTEX,
-            -size,
-            -size,
-            z,
-            VERTEX,
-            size,
-            size,
-            z,
-            VERTEX,
-            -size,
-            size,
-            z,
-            END,
+            NORMAL,
+            *normal,
         ]
+        for vertex in _plane_vertices(membrane, offset, footprint):
+            cgo.extend((VERTEX, *vertex))
+        cgo.append(END)
+        return cgo
 
-    cmd.load_cgo(plane(float(zmin), (0.2, 0.5, 1.0)), "mvqc_slab_lower")
-    cmd.load_cgo(plane(float(zmax), (1.0, 0.5, 0.2)), "mvqc_slab_upper")
+    cmd.load_cgo(
+        plane(membrane.lower_offset, (0.2, 0.5, 1.0), -1.0),
+        "mvqc_slab_lower",
+    )
+    cmd.load_cgo(
+        plane(membrane.upper_offset, (1.0, 0.5, 0.2), 1.0),
+        "mvqc_slab_upper",
+    )
+
+    if selection.strip():
+        try:
+            cmd.center(selection)
+        except (AttributeError, TypeError):
+            pass
+        try:
+            cmd.zoom(selection)
+        except (AttributeError, TypeError):
+            pass
+
+
+def create_slab(zmin: float, zmax: float, cmd_obj: Any | None = None) -> None:
+    """Legacy global-z rendering wrapper retained for command compatibility."""
+    membrane = PlanarMembrane(
+        center=(0.0, 0.0, 0.0),
+        normal=(0.0, 0.0, 1.0),
+        lower_offset=float(zmin),
+        upper_offset=float(zmax),
+        interface_width=0.0,
+        source="manual_global_z",
+    )
+
+    create_membrane_planes(
+        membrane,
+        [],
+        "",
+        cmd_obj,
+        margin=0.0,
+        minimum_size=160.0,
+        maximum_size=160.0,
+    )
 
 
 def show_residue_selections(

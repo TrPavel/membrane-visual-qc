@@ -12,7 +12,7 @@
         "total_residues": 222
       },
       "warnings": [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+        "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
       ]
     },
     "1PCR": {
@@ -27,7 +27,7 @@
         "total_residues": 823
       },
       "warnings": [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+        "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
       ]
     },
     "1UBQ": {
@@ -42,7 +42,52 @@
         "total_residues": 76
       },
       "warnings": [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+        "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",
+        "No atoms found for ligand selection: organic"
+      ]
+    },
+    "1UBQ_rotated": {
+      "equivalent_to": "1UBQ",
+      "report": "reports/1ubq_rotated_mvqc.json",
+      "screenshot": "docs\\screenshots\\1ubq_rotated_mvqc.png",
+      "summary": {
+        "charged_core_residues": 11,
+        "core_residues": 40,
+        "ligand_neighbour_residues": 0,
+        "overall_status": "REVIEW_ITEMS",
+        "polar_core_inspect_residues": 13,
+        "total_residues": 76
+      },
+      "transform": {
+        "orientation_normal": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "rotation_matrix_row_major": [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "translation": [
+          10.0,
+          -5.0,
+          3.0
+        ]
+      },
+      "warnings": [
         "No atoms found for ligand selection: organic"
       ]
     },
@@ -58,7 +103,7 @@
         "total_residues": 442
       },
       "warnings": [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+        "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
       ]
     },
     "bad_core_lys": {
@@ -73,7 +118,7 @@
         "total_residues": 10
       },
       "warnings": [
-        "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+        "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",
         "No atoms found for ligand selection: organic"
       ]
     }

@@ -6,6 +6,20 @@ import argparse
 import json
 from pathlib import Path
 
+SCHEMA_BY_VERSION = {
+    "1.0": Path("schemas/mvqc-report-1.0.schema.json"),
+    "1.1": Path("schemas/mvqc-report-1.1.schema.json"),
+}
+
+
+def default_report_paths(root: Path = Path("reports")) -> list[Path]:
+    """Return generated fixtures plus retained manual-acceptance evidence when present."""
+    paths = set(root.glob("*_mvqc.json"))
+    manual_evidence = root / "manual_stage2_check.json"
+    if manual_evidence.is_file():
+        paths.add(manual_evidence)
+    return sorted(paths)
+
 
 def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
     """Raise on an invalid schema or the first invalid report."""
@@ -24,6 +38,22 @@ def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
         validator.validate(report)
 
 
+def validate_reports_by_version(report_paths: list[Path]) -> dict[str, int]:
+    """Validate each report against the schema version it declares."""
+    grouped: dict[str, list[Path]] = {}
+    for report_path in report_paths:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        version = str(report.get("schema_version", ""))
+        if version not in SCHEMA_BY_VERSION:
+            raise ValueError(
+                f"{report_path} declares unsupported report schema version {version!r}"
+            )
+        grouped.setdefault(version, []).append(report_path)
+    for version, paths in grouped.items():
+        validate_reports(SCHEMA_BY_VERSION[version], paths)
+    return {version: len(paths) for version, paths in sorted(grouped.items())}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -35,14 +65,20 @@ def main() -> int:
     parser.add_argument(
         "--schema",
         type=Path,
-        default=Path("schemas/mvqc-report-1.0.schema.json"),
+        default=None,
+        help="Override schema for all reports (default: use each report's schema_version)",
     )
     args = parser.parse_args()
-    reports = args.reports or sorted(Path("reports").glob("*_mvqc.json"))
+    reports = args.reports or default_report_paths()
     if not reports:
         parser.error("no report files were supplied or discovered")
-    validate_reports(args.schema, reports)
-    print(f"Validated {len(reports)} report(s) against {args.schema}")
+    if args.schema is not None:
+        validate_reports(args.schema, reports)
+        print(f"Validated {len(reports)} report(s) against {args.schema}")
+    else:
+        counts = validate_reports_by_version(reports)
+        summary = ", ".join(f"schema {version}: {count}" for version, count in counts.items())
+        print(f"Validated {len(reports)} report(s) ({summary})")
     return 0
 
 
