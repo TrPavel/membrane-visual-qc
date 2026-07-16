@@ -110,7 +110,7 @@ Graphical evidence paths:
 - `docs/screenshots/manual_stage2_planar_edge_view.png`
 - `docs/screenshots/manual_stage2_invalid_orientation.png`
 
-## v0.2.0 final-artifact graphical smoke — PENDING
+## v0.2.0 final-artifact graphical smoke — PASS
 
 This short smoke is separate from, and does not overwrite, the full `0.2.0.dev0` acceptance above.
 It must use the exact final `dist/MembraneVisualQC-0.2.0.zip` release candidate.
@@ -126,11 +126,16 @@ It must use the exact final `dist/MembraneVisualQC-0.2.0.zip` release candidate.
 
 | Release smoke check | Result |
 |---|---|
-| Plugin Manager installation of exact final ZIP | PENDING |
-| Both orientation modes visible | PENDING |
-| Rotated fixture helper | PENDING |
-| Arbitrary-plane Show Slab | PENDING |
-| Run QC summary `76/40/11/13/0` | PENDING |
-| Export schema 1.1 and software version 0.2.0 | PENDING |
-| Invalid-file readable error | PENDING |
-| `mvqc_clear` preserves `1UBQ_rotated` | PENDING |
+| Plugin Manager installation of exact final ZIP | PASS |
+| Both orientation modes visible | PASS |
+| Rotated fixture helper | PASS |
+| Arbitrary-plane Show Slab | PASS |
+| Run QC summary `76/40/11/13/0` | PASS |
+| Export schema 1.1 and software version 0.2.0 | PASS |
+| Invalid-file readable error | PASS |
+| `mvqc_clear` preserves `1UBQ_rotated` | PASS |
+
+The user-reported smoke passed on 2026-07-16 with the exact 27,459-byte candidate whose SHA-256
+is `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. This was a focused
+packaging/version smoke, not a repetition of the full scientific and lifecycle acceptance recorded
+for `0.2.0.dev0`.

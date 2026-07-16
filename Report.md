@@ -240,12 +240,17 @@ expected names.
 Two independent Plugin ZIP builds were byte-for-byte identical. The final candidate is 27,459
 bytes with SHA-256
 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The historical graphical
-acceptance files above retain their `0.2.0.dev0` identity. The short graphical smoke and public
-workflow/release URLs are recorded as their gates complete.
+acceptance files above retain their `0.2.0.dev0` identity.
+
+The short graphical smoke passed with this exact final artifact: Plugin Manager installation and
+restart, both orientation modes, `prepare_rotated_1ubq.py`, arbitrary-plane Show Slab, QC summary
+`76/40/11/13/0`, export schema 1.1 with `software.version = 0.2.0`, readable invalid-orientation
+handling without traceback, and `mvqc_clear` preserving `1UBQ_rotated`. This was packaging/version
+smoke evidence, not a repetition or replacement of the detailed `0.2.0.dev0` acceptance. Public
+workflow and release URLs are recorded as their gates complete.
 
 Ordinary RCSB coordinates are not automatically membrane-oriented. Imported orientation metadata
 is not independently verified. Depth values are geometric evidence, not proof of biological
 burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
 
-Target readiness wording after all release gates pass: `v0.2.0 is release-ready for limited public
-testing.`
+v0.2.0 is release-ready for limited public testing.

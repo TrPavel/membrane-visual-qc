@@ -77,4 +77,5 @@ Local automated release-candidate validation passed: 153 tests, 80% combined cov
 schema-1.1 reports, PyMOL smoke plus all five legacy and rotated fixtures, the preparation helper,
 wheel/sdist, and deterministic double ZIP build. The 27,459-byte candidate SHA-256 is
 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The exact-artifact
-graphical smoke remains the next release gate.
+graphical smoke also passed with that exact artifact. The release PR and public CI are the next
+gates; Stage 3 has not started.

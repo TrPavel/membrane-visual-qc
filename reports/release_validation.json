@@ -1,10 +1,9 @@
 {
-  "timestamp": "2026-07-15T14:36:22+03:00",
+  "timestamp": "2026-07-16T12:35:24+03:00",
   "package_version": "0.2.0",
-  "release_status": "release_candidate_automated_pass_graphical_smoke_pending",
-  "readiness_statement": "Pending the final-artifact graphical smoke and public release gates.",
+  "release_status": "release_candidate_validated_public_ci_pending",
+  "readiness_statement": "v0.2.0 is release-ready for limited public testing.",
   "release_blockers": [
-    "short graphical smoke of the exact final MembraneVisualQC-0.2.0.zip",
     "green release pull-request workflow and squash merge",
     "green post-merge main workflow",
     "annotated tag and GitHub prerelease publication"
@@ -68,9 +67,21 @@
       ]
     },
     "final_artifact_graphical_smoke": {
-      "status": "pending",
-      "required_zip": "dist/MembraneVisualQC-0.2.0.zip",
-      "required_sha256": "084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054"
+      "status": "passed",
+      "date": "2026-07-16",
+      "tested_zip": "dist/MembraneVisualQC-0.2.0.zip",
+      "tested_sha256": "084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054",
+      "scope": "focused packaging and version smoke; not a repetition of full Stage 2 acceptance",
+      "checks": {
+        "plugin_manager_installation_and_restart": "passed",
+        "both_orientation_modes": "passed",
+        "prepare_rotated_1ubq": "passed",
+        "arbitrary_plane_show_slab": "passed",
+        "run_qc_summary_76_40_11_13_0": "passed",
+        "export_schema_1_1_and_version_0_2_0": "passed",
+        "invalid_orientation_without_traceback": "passed",
+        "mvqc_clear_preserved_1ubq_rotated": "passed"
+      }
     },
     "github_actions": {
       "release_pr": {"status": "pending", "run_id": null, "commit": null, "url": null},

@@ -74,4 +74,8 @@ PyMOL smoke import, five legacy structures, rotated 1UBQ, and the preparation he
 sdist built successfully. Two independent Plugin ZIP builds were byte-for-byte identical; the
 27,459-byte candidate SHA-256 is
 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The short graphical
-release smoke is recorded separately from the historical Stage 2 acceptance.
+release smoke passed separately from the historical Stage 2 acceptance. It used the exact final
+ZIP with SHA-256 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`:
+Plugin Manager installation/restart, both orientation modes, the rotated helper, arbitrary-plane
+Show Slab, summary `76/40/11/13/0`, schema-1.1/version-0.2.0 export, readable invalid-file handling,
+and preservation of `1UBQ_rotated` by `mvqc_clear` all passed.
