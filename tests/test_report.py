@@ -27,7 +27,7 @@ def test_build_report_contains_required_fields_and_timestamp():
     assert report["plugin"] == "membrane-vqc-pymol"
     assert report["schema_version"] == "1.1"
     assert report["software"]["name"] == "membrane-vqc-pymol"
-    assert report["software"]["version"] == "0.2.0.dev0"
+    assert report["software"]["version"] == "0.2.0"
     assert report["software"]["commit_status"] == "recorded"
     assert report["runtime"]["pymol_status"] == "unavailable"
     assert report["input"]["provenance_status"] == "input_path_not_supplied"

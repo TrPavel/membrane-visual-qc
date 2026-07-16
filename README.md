@@ -15,21 +15,22 @@ An open-source PyMOL plugin for explainable, membrane-aware visual review of pro
 - exports versioned JSON and deterministic CSV reports;
 - records manual-orientation warnings and conservative review statuses.
 
-The released v0.1 workflow is command-first. Unreleased Stage 2 work adds an arbitrary planar
-normal, geometric depth, orientation JSON import, and matching PyMOL rendering.
+The v0.2.0 workflow supports both the original global-z slab and an arbitrary planar membrane
+defined by a local orientation JSON file. It reports geometric depth and renders matching planar
+boundaries in PyMOL.
 
 ## Installation
 
-v0.1.0 is a prerelease for limited public testing. Public users should download
-`MembraneVisualQC-0.1.0.zip` and its checksum from the
-[v0.1.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0),
+v0.2.0 is a prerelease for limited public testing. Public users should download
+`MembraneVisualQC-0.2.0.zip` and its checksum from the
+[v0.2.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0),
 install the ZIP through PyMOL Plugin Manager, restart PyMOL, and open
 **Plugin > Membrane Visual QC**. The archive contains only runtime package files and an integrity
 manifest; verify it with the accompanying `.zip.sha256` file.
 
-`dist/MembraneVisualQC-0.2.0.dev0.zip` is the distinct local build path for the unreleased Stage 2
-development branch; it is not the primary public installation route and does not replace the
-published v0.1.0 asset.
+`dist/MembraneVisualQC-0.2.0.zip` is the local-development/build path. GitHub Releases is the
+primary public installation route. The published v0.1.0 tag and assets remain available and
+unchanged.
 
 For source development:
 
@@ -77,7 +78,7 @@ slab boundaries, and the GUI reports the orientation source as `unavailable`.
 
 ## Reports and interpretation
 
-Released v0.1 reports use schema 1.0; unreleased Stage 2 reports use additive schema 1.1. Both are
+v0.1 reports use immutable schema 1.0; v0.2.0 produces additive schema 1.1. Both are
 documented in [docs/report_schema.md](docs/report_schema.md). Biological review
 states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
 `NO_FLAGS` means only that configured heuristics emitted no items.
@@ -88,10 +89,12 @@ retain source-file provenance. Reports created before Git initialisation may rec
 provenance as unavailable. Future reports produced from a Git checkout should record
 `software.commit` when the runtime can resolve the checkout commit.
 
-The v0.1 orientation is manual and assumes the membrane normal is the global z-axis. Stage 2 maps
-that command to the general planar model as `manual_global_z`; it can also import a local,
-versioned orientation JSON file. No external orientation adapter is included. Ordinary RCSB
-coordinates are not assumed to be membrane-aligned.
+The legacy orientation remains supported and assumes the membrane normal is the global z-axis.
+v0.2.0 maps that command to the general planar model as `manual_global_z`; it can also import a
+local, versioned orientation JSON file. No external orientation adapter is included. Ordinary
+RCSB coordinates are not automatically membrane-oriented, and imported orientation metadata is
+not independently verified. Reported depth values are geometric evidence, not proof of biological
+burial.
 
 ## Validation and development status
 
@@ -106,11 +109,11 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 
 ## Current limitations
 
-No automatic orientation, exposure calculation, chemical interaction validation, MD,
-electrostatics, Rosetta energy analysis, model comparison, or HTML dashboard is included in
-v0.1. See [docs/known_limitations.md](docs/known_limitations.md).
+No automatic OPM/PPM/PDBTM/TmDet adapter, exposure engine, FreeSASA integration,
+interaction-context engine, comparison workflow, batch CLI, or curved/multiple-membrane model is
+included in v0.2.0. See [docs/known_limitations.md](docs/known_limitations.md).
 
 ## Licence and citation
 
-MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.1.0` and the exact
+MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.2.0` and the exact
 version used. The implementation is clean-room and does not copy GPL PyMOL plugin code.
