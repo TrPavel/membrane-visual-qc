@@ -63,19 +63,27 @@ Stage 2 is complete and merged into main.
 
 ## v0.2.0 release candidate
 
-The release branch promotes package metadata, generated current examples, and artifact names to
-`0.2.0`. The final Plugin Manager candidate is `dist/MembraneVisualQC-0.2.0.zip`. Historical
+The release branch promoted package metadata, generated current examples, and artifact names to
+`0.2.0`. The final Plugin Manager artifact is `dist/MembraneVisualQC-0.2.0.zip`. Historical
 manual exports and screenshots retain their truthful `0.2.0.dev0` identity. Report schema 1.0
 remains immutable; v0.2.0 produces additive report schema 1.1.
 
 Automated release-candidate results and the short graphical smoke of the exact final ZIP are
-recorded separately in `Report.md` and `reports/release_validation.json`. No v0.2.0 tag or release
-is created until the release PR and post-merge workflows are green. The v0.1.0 tag and release
+recorded separately in `Report.md` and `reports/release_validation.json`. The v0.1.0 tag and release
 remain immutable.
 
 Local automated release-candidate validation passed: 153 tests, 80% combined coverage, seven
 schema-1.1 reports, PyMOL smoke plus all five legacy and rotated fixtures, the preparation helper,
 wheel/sdist, and deterministic double ZIP build. The 27,459-byte candidate SHA-256 is
 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. The exact-artifact
-graphical smoke also passed with that exact artifact. The release PR and public CI are the next
-gates; Stage 3 has not started.
+graphical smoke also passed with that exact artifact.
+
+Release PR [#3](https://github.com/TrPavel/membrane-visual-qc/pull/3) passed
+[workflow 29487841498](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29487841498)
+and was squash-merged as `7877fed3c83419e6affa1e4353a65f8756e9303a`. The
+[post-merge workflow 29488017586](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29488017586)
+passed on Python 3.10, 3.11, and 3.12. Annotated tag `v0.2.0` points to that release commit, and the
+[v0.2.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0)
+contains the four verified assets. PyPI was not used. Stage 3 has not started.
+
+v0.2.0 is published as a prerelease for limited public testing.

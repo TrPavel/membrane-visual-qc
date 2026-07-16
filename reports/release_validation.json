@@ -1,13 +1,9 @@
 {
-  "timestamp": "2026-07-16T12:35:24+03:00",
+  "timestamp": "2026-07-16T12:46:37+03:00",
   "package_version": "0.2.0",
-  "release_status": "release_candidate_validated_public_ci_pending",
-  "readiness_statement": "v0.2.0 is release-ready for limited public testing.",
-  "release_blockers": [
-    "green release pull-request workflow and squash merge",
-    "green post-merge main workflow",
-    "annotated tag and GitHub prerelease publication"
-  ],
+  "release_status": "published_prerelease_limited_public_testing",
+  "readiness_statement": "v0.2.0 is published as a prerelease for limited public testing.",
+  "release_blockers": [],
   "checks": {
     "ruff_check": {"status": "passed", "version": "0.15.21"},
     "ruff_format_check": {"status": "passed", "files_checked": 42},
@@ -84,8 +80,21 @@
       }
     },
     "github_actions": {
-      "release_pr": {"status": "pending", "run_id": null, "commit": null, "url": null},
-      "post_merge": {"status": "pending", "run_id": null, "commit": null, "url": null},
+      "release_pr": {
+        "status": "passed",
+        "pull_request": "https://github.com/TrPavel/membrane-visual-qc/pull/3",
+        "run_id": 29487841498,
+        "commit": "98c67039a9bbf09e3236e49d7da4b8a801541fef",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29487841498",
+        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"}
+      },
+      "post_merge": {
+        "status": "passed",
+        "run_id": 29488017586,
+        "commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29488017586",
+        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"}
+      },
       "historical_stage2_main": {
         "status": "passed",
         "run_id": 29410446044,
@@ -93,7 +102,17 @@
         "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410446044"
       }
     },
-    "release_publication": {"status": "pending", "tag": "v0.2.0", "release_url": null, "pypi": "not_planned"},
+    "release_publication": {
+      "status": "published_prerelease",
+      "tag": "v0.2.0",
+      "tag_object": "96b6ef4d8e68b85d230268eb3baaf7ad2b0d02b9",
+      "tag_commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
+      "release_commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
+      "release_url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0",
+      "assets_uploaded": 4,
+      "assets_verified_against_local": true,
+      "pypi": "not_published"
+    },
     "v0_1_immutability": {
       "status": "confirmed",
       "tag": "v0.1.0",

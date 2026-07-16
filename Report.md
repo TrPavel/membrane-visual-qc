@@ -246,11 +246,21 @@ The short graphical smoke passed with this exact final artifact: Plugin Manager 
 restart, both orientation modes, `prepare_rotated_1ubq.py`, arbitrary-plane Show Slab, QC summary
 `76/40/11/13/0`, export schema 1.1 with `software.version = 0.2.0`, readable invalid-orientation
 handling without traceback, and `mvqc_clear` preserving `1UBQ_rotated`. This was packaging/version
-smoke evidence, not a repetition or replacement of the detailed `0.2.0.dev0` acceptance. Public
-workflow and release URLs are recorded as their gates complete.
+smoke evidence, not a repetition or replacement of the detailed `0.2.0.dev0` acceptance.
+
+Release PR [#3](https://github.com/TrPavel/membrane-visual-qc/pull/3), head
+`98c67039a9bbf09e3236e49d7da4b8a801541fef`, passed
+[workflow 29487841498](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29487841498)
+on Python 3.10, 3.11, and 3.12. It was squash-merged as release commit
+`7877fed3c83419e6affa1e4353a65f8756e9303a`; the
+[post-merge workflow 29488017586](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29488017586)
+also passed all matrix jobs. Annotated tag `v0.2.0` points to that commit. The
+[GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0) contains all
+four assets, which were downloaded again and verified byte-for-byte against the local artifacts.
+No PyPI publication occurred, and v0.1.0 remains unchanged.
 
 Ordinary RCSB coordinates are not automatically membrane-oriented. Imported orientation metadata
 is not independently verified. Depth values are geometric evidence, not proof of biological
 burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
 
-v0.2.0 is release-ready for limited public testing.
+v0.2.0 is published as a prerelease for limited public testing.
