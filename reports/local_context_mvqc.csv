@@ -1,0 +1,5 @@
+model,chain,resi,resn,classification,severity,reason,z
+mvqc_context_fixture,A,1,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,0.0
+mvqc_context_fixture,A,3,SER,core,INSPECT,polar residue in manually defined membrane core; may be functional,0.0
+mvqc_context_fixture,A,4,ASN,core,INSPECT,polar residue in manually defined membrane core; may be functional,0.0
+mvqc_context_fixture,B,2,ASP,core,WARNING,charged residue in manually defined membrane core; inspect local environment,0.0

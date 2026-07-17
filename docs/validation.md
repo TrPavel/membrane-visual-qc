@@ -160,7 +160,7 @@ eleven schema 1.2. Wheel and sdist built successfully. Two Plugin ZIP builds wer
 Headless Incentive PyMOL 3.1.8 passed smoke import, all legacy summaries, rotated 1UBQ, Stage 3A
 exposure, the preparation helper, the deterministic context fixture, all four context visual
 objects, and five-structure timing. Observed local-context times at Standard quality were 0.001 s
-synthetic, 0.122 s 1UBQ, 0.887 s 1C3W, 4.597 s 2RH1, and 6.638 s 1PCR. These are observations, not
+synthetic, 0.126 s 1UBQ, 0.682 s 1C3W, 4.245 s 2RH1, and 7.966 s 1PCR. These are observations, not
 promises. The blocking Ubuntu/FreeSASA job remains required in PR CI.
 
 Graphical integration remains unaccepted until the Stage 3B checklist passes. Draft PR #5 must

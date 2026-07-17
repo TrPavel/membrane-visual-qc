@@ -349,8 +349,8 @@ retained headless PyMOL suite. The 48,995-byte development ZIP has SHA-256
 The headless synthetic PDB produced four `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` review items. The
 independent state fixtures cover one buried/no-support, one buried/with-support, one
 accessible/no-support, one accessible/with-support, and two insufficient-context cases. Observed
-Standard-quality local-context times were 0.001 s synthetic, 0.122 s 1UBQ, 0.887 s 1C3W, 4.597 s
-2RH1, and 6.638 s 1PCR. Every legacy structure summary remained unchanged.
+Standard-quality local-context times were 0.001 s synthetic, 0.126 s 1UBQ, 0.682 s 1C3W, 4.245 s
+2RH1, and 7.966 s 1PCR. Every legacy structure summary remained unchanged.
 
 Contacts are distance-only; histidine ionic interpretation is disabled; arbitrary ligand
 chemistry, water bridges, protonation, coordination energetics, curved/multiple membranes,

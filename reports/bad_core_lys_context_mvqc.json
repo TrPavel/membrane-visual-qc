@@ -1,0 +1,265 @@
+{
+  "capabilities": {},
+  "context_analysis": {
+    "exposure": {
+      "alternate_atoms_discarded": 0,
+      "alternate_atoms_seen": 0,
+      "alternate_location_policy": "highest_occupancy_blank_A_lexical_v1",
+      "backend": "builtin_shrake_rupley",
+      "backend_version": "1",
+      "buried_rsa_threshold": 0.05,
+      "elapsed_seconds": 0.021117700001923367,
+      "exposed_rsa_threshold": 0.25,
+      "freesasa_status": "unavailable",
+      "include_hydrogens": false,
+      "include_nonprotein_occluders": false,
+      "models": [
+        "bad_core_lys"
+      ],
+      "probe_radius_angstrom": 1.4,
+      "radii_model": "element_vdw_v1",
+      "rsa_reference": "tien_2013_theoretical",
+      "sphere_points": 240,
+      "target_scope": "review_items",
+      "warnings": []
+    },
+    "local_context": {
+      "atom_role_policy": "standard_residue_roles_v1",
+      "category_atom_counts": {
+        "ion": 0,
+        "ligand": 0,
+        "other_hetatm": 0,
+        "protein": 51,
+        "water": 0
+      },
+      "context_state_counts": {
+        "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 0,
+        "BURIED_NO_DETECTED_SUPPORT": 0,
+        "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+        "INSUFFICIENT_CONTEXT": 0
+      },
+      "elapsed_seconds": 0.0009120000031543896,
+      "ion_cutoff_angstrom": 4.0,
+      "ligand_cutoff_angstrom": 5.0,
+      "polar_ligand_cutoff_angstrom": 3.8,
+      "potential_hbond_cutoff_angstrom": 3.5,
+      "salt_bridge_cutoff_angstrom": 4.0,
+      "warnings": [],
+      "water_cutoff_angstrom": 3.5
+    },
+    "status": "completed",
+    "target_scope": "review_items"
+  },
+  "flagged_residues": [
+    {
+      "absolute_center_distance": 0.0,
+      "chain": "A",
+      "classification": "core",
+      "exposure": {
+        "classification": "exposed",
+        "core_region_accessible_area": 132.31563065249867,
+        "core_region_accessible_fraction": 1.0,
+        "interface_region_accessible_area": 0.0,
+        "interface_region_accessible_fraction": 0.0,
+        "membrane_region_accessible_fraction": 1.0,
+        "outside_region_accessible_area": 0.0,
+        "outside_region_accessible_fraction": 0.0,
+        "reference_max_sasa": 236.0,
+        "reference_status": "available",
+        "relative_sasa": 0.5606594519173672,
+        "residue_sasa": 132.31563065249867,
+        "sidechain_core_region_accessible_area": 70.84815032620583,
+        "sidechain_core_region_accessible_fraction": 1.0,
+        "sidechain_interface_region_accessible_area": 0.0,
+        "sidechain_interface_region_accessible_fraction": 0.0,
+        "sidechain_membrane_region_accessible_fraction": 1.0,
+        "sidechain_outside_region_accessible_area": 0.0,
+        "sidechain_outside_region_accessible_fraction": 0.0,
+        "sidechain_sasa": 70.84815032620583,
+        "status": "completed",
+        "warnings": []
+      },
+      "id": "bad_core_lys/A/6/LYS",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "not_detected",
+        "contacts": [],
+        "context_state": "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 0,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
+      "model": "bad_core_lys",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "signed_distance": 0.0,
+      "z": 0.0
+    }
+  ],
+  "generated_at": "2026-07-17T14:22:02.768860+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "organic",
+    "path": "bad_core_lys.pdb",
+    "provenance_status": "file_hashed",
+    "selection": "bad_core_lys",
+    "sha256": "cfc2f76bf57bcf23454b3a46a7a019a6dff6398f5effe792c88e101ecab387e4",
+    "slab_mode": "manual_global_z",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Manual global-z membrane orientation was used.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "confidence": null,
+    "geometry": "planar",
+    "interface_width": 3.0,
+    "lower_offset": -15.0,
+    "metadata": {},
+    "normal": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "manual_global_z",
+    "source_version": null,
+    "upper_offset": 15.0,
+    "warnings": [
+      "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
+    ]
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": "organic"
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [
+    {
+      "absolute_center_distance": 0.0,
+      "chain": "A",
+      "classification": "core",
+      "exposure": {
+        "classification": "exposed",
+        "core_region_accessible_area": 132.31563065249867,
+        "core_region_accessible_fraction": 1.0,
+        "interface_region_accessible_area": 0.0,
+        "interface_region_accessible_fraction": 0.0,
+        "membrane_region_accessible_fraction": 1.0,
+        "outside_region_accessible_area": 0.0,
+        "outside_region_accessible_fraction": 0.0,
+        "reference_max_sasa": 236.0,
+        "reference_status": "available",
+        "relative_sasa": 0.5606594519173672,
+        "residue_sasa": 132.31563065249867,
+        "sidechain_core_region_accessible_area": 70.84815032620583,
+        "sidechain_core_region_accessible_fraction": 1.0,
+        "sidechain_interface_region_accessible_area": 0.0,
+        "sidechain_interface_region_accessible_fraction": 0.0,
+        "sidechain_membrane_region_accessible_fraction": 1.0,
+        "sidechain_outside_region_accessible_area": 0.0,
+        "sidechain_outside_region_accessible_fraction": 0.0,
+        "sidechain_sasa": 70.84815032620583,
+        "status": "completed",
+        "warnings": []
+      },
+      "id": "bad_core_lys/A/6/LYS",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "not_detected",
+        "contacts": [],
+        "context_state": "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 0,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
+      "model": "bad_core_lys",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "signed_distance": 0.0,
+      "z": 0.0
+    }
+  ],
+  "runtime": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.2",
+  "software": {
+    "commit": "c3ae8539089d090734c7248b36320d1b879b6ca4",
+    "commit_status": "recorded",
+    "name": "membrane-vqc-pymol",
+    "version": "0.3.0.dev0"
+  },
+  "summary": {
+    "charged_core_residues": 1,
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 0,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "core_residues": 10,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "REVIEW_ITEMS",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 10
+  },
+  "timestamp": "2026-07-17T14:22:02.768860+00:00",
+  "version": "0.3.0.dev0",
+  "warnings": [
+    "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",
+    "No atoms found for ligand selection: organic"
+  ]
+}
