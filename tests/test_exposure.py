@@ -13,7 +13,7 @@ from membrane_vqc.exposure import (
 )
 from membrane_vqc.membrane import AtomRecord
 from membrane_vqc.orientation import PlanarMembrane
-from membrane_vqc.pymol_adapter import atoms_from_selection
+from membrane_vqc.pymol_adapter import atoms_from_selection, structure_atoms
 
 
 def atom(
@@ -532,3 +532,35 @@ def test_pymol_adapter_extracts_optional_atom_metadata():
     assert extracted.occupancy == 0.75
     assert extracted.formal_charge == 1
     assert extracted.is_hetatm is False
+
+
+def test_structure_atoms_respects_exact_user_selection_scope():
+    selections = []
+    model = type("Model", (), {"atom": []})()
+
+    class Cmd:
+        def get_model(self, selection):
+            selections.append(selection)
+            return model
+
+    assert structure_atoms("obj and chain A", Cmd()) == []
+    assert selections == ["(obj and chain A)"]
+
+
+def test_nonprotein_occluders_remain_model_isolated():
+    target = atom("CB", (0.0, 0.0, 0.0), model="protein", is_hetatm=False)
+    cross_model_heteroatom = atom(
+        "I1",
+        (0.0, 0.0, 0.0),
+        model="ligand",
+        resi="900",
+        resn="IOD",
+        element="I",
+        is_hetatm=True,
+    )
+    config = ExposureConfig(include_nonprotein_occluders=True)
+
+    isolated = result_for([target], residue_key(target), config=config)
+    combined = result_for([target, cross_model_heteroatom], residue_key(target), config=config)
+
+    assert combined.residue_sasa == pytest.approx(isolated.residue_sasa, abs=1e-12)

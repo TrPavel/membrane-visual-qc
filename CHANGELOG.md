@@ -24,6 +24,10 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Set the unreleased development identity to `0.3.0.dev0`; released v0.2.0 remains immutable.
 - Replaced the unused combined analysis extra with an explicit optional
   `exposure-reference = ["freesasa>=2.2,<3"]` extra. Core analysis remains dependency-free.
+- Guarded the known native FreeSASA singleton-model crash with explicit unavailable/partial
+  evidence, without substituting the built-in backend.
+- Made `include_nonprotein_occluders` extract all atoms inside the user selection for occlusion
+  while keeping membrane classification and exposure targets protein-only.
 
 ### Documentation
 

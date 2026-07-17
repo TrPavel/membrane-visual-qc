@@ -108,15 +108,23 @@ An initial 28–30 s 1PCR path was investigated and traced to re-sorting all mod
 target atom. Reusing stable identity order removed that O(target × N log N) overhead while
 retaining the predeclared invariance tolerances. These timings are observations, not promises.
 
-FreeSASA is absent locally, so normal analysis reports `freesasa_status = unavailable` without a
-traceback and the local parity test is skipped. The separate Python 3.11 job in GitHub Actions run
-[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) installed the
-`exposure-reference` extra and passed the same-radii parity test. The core Python 3.10, 3.11, and
-3.12 jobs passed independently of FreeSASA.
+FreeSASA is absent in the Windows environment, so normal analysis reports
+`freesasa_status = unavailable` without a traceback and five local reference tests are skipped. A
+separate Ubuntu run with FreeSASA 2.2.1 passed all seven tests. It confirmed that singleton models
+never enter native `calcCoord`, return explicit unavailable evidence, and that mixed singleton plus
+valid models produce a partial result. Non-protein occluder tests also confirm exact selection
+scope, protein-only targets, truthful serialized configuration, and cross-model isolation.
 
-The complete local result is 207 passed, three FreeSASA reference tests skipped because FreeSASA
-is unavailable locally, and 83% combined coverage. Ruff check and format check passed. Wheel and
+The complete Windows result is 211 passed, five FreeSASA reference tests skipped, and 83% combined
+coverage. Ruff check and format check passed. Wheel and
 sdist built successfully. Two consecutive Plugin ZIP builds were byte-identical;
-`MembraneVisualQC-0.3.0.dev0.zip` is 40,062 bytes with SHA-256
-`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d`, and the project ZIP
+`MembraneVisualQC-0.3.0.dev0.zip` is 40,529 bytes with SHA-256
+`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51`, and the project ZIP
 validator accepted it.
+
+The previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.
+Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) are the
+validated correction baseline immediately before this final safety pass; all three Python matrix
+jobs and the blocking Python 3.11 FreeSASA reference job passed.

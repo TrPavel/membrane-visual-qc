@@ -299,14 +299,23 @@ schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.018
 1C3W 0.979 s, 2RH1 4.098 s, and 1PCR 2.854 s. FreeSASA was unavailable locally and produced an
 explicit typed status without traceback; parity remains covered by the blocking reference CI job.
 
-Final local Stage 3A result: Ruff check and format check passed; 207 tests passed, three FreeSASA
-reference tests skipped because FreeSASA is unavailable locally, and combined coverage was 83%.
+Final local Stage 3A result: Ruff check and format check passed; 211 tests passed, five FreeSASA
+reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
+coverage was 83%. A separate Ubuntu run with FreeSASA 2.2.1 passed all seven reference tests,
+including the singleton native-call guard and mixed-model partial result.
 The schema dispatcher validated 12
 reports (seven schema 1.1 and five draft schema 1.2). PyMOL smoke import, all five legacy fixtures,
 rotated 1UBQ, all five exposure timing cases, and the preparation helper passed. Wheel and sdist
 built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
-the 40,062-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
-`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d` and passed the ZIP
-validator. GitHub Actions run
-[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) then passed
-the Python 3.10/3.11/3.12 matrix and the separate Python 3.11 FreeSASA installation/parity job.
+the 40,529-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
+`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51` and passed the ZIP
+validator. The safety pass prevents native FreeSASA calls for models with fewer than two supported
+atoms and makes `include_nonprotein_occluders` control full-selection extraction while retaining
+protein-only targets and classification.
+
+The previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is retained as
+historical evidence. Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) are the
+validated correction baseline immediately preceding this final safety pass; that run passed Python
+3.10/3.11/3.12 and the blocking Python 3.11 FreeSASA job.

@@ -108,18 +108,23 @@ Draft PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) remains unme
 Measured 240-point exposure times were 0.018 s synthetic, 0.653 s 1UBQ, 0.979 s 1C3W, 4.098 s
 2RH1, and 2.854 s 1PCR. These are development observations, not runtime guarantees.
 
-Current local validation: Ruff check and format check passed; 207 tests passed, three FreeSASA
-reference tests skipped because FreeSASA is unavailable locally, and combined coverage is 83%.
+Current local validation: Ruff check and format check passed; 211 tests passed, five FreeSASA
+reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
+coverage is 83%. A separate Ubuntu/FreeSASA 2.2.1 run passed all seven reference tests.
 Twelve reports validated (seven schema
 1.1 and five draft schema 1.2). PyMOL smoke, five legacy fixtures, rotated 1UBQ, the exposure
 timing set, and the preparation helper passed. Wheel and sdist built as `0.3.0.dev0`. Two Plugin
 ZIP builds were byte-identical at SHA-256
-`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d`.
+`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51`; the ZIP is 40,529
+bytes. Singleton FreeSASA models are now guarded before native entry, and enabled non-protein
+occlusion uses all atoms inside the exact user selection while retaining protein-only targets.
 
-Implementation workflow
-[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) passed on
-Python 3.10, 3.11, and 3.12. Its separate Python 3.11 FreeSASA job also installed the optional
-extra and passed availability/parity tests. PR #4 remains draft and unmerged.
+Previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.
+Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) form the
+validated correction baseline immediately before the final safety pass. Python 3.10, 3.11, 3.12,
+and the blocking Python 3.11 FreeSASA job passed. PR #4 remains draft and unmerged.
 
 Stage 3B has not started and cannot begin until Stage 3A is reviewed, accepted, merged, and its
 post-merge workflow is green. No v0.3.0 release is being prepared.

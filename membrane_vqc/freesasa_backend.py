@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import time
 from collections import defaultdict
+from dataclasses import replace
 from typing import Iterable
 
 from .context_models import (
@@ -87,6 +88,8 @@ def calculate_freesasa_exposure(
     )
     atom_results: dict[int, AtomSASA] = {}
     indices_by_model: dict[str, list[int]] = defaultdict(list)
+    for model in models:
+        indices_by_model[model] = []
     for index, atom in enumerate(prepared.atoms):
         indices_by_model[atom.model].append(index)
 
@@ -98,8 +101,19 @@ def calculate_freesasa_exposure(
         }
     )
     unavailable_partition = SurfacePartition(None, None, None, None, None, None, None)
+    processed_models: set[str] = set()
+    skipped_model_warnings: dict[str, str] = {}
     for model in sorted(indices_by_model):
         indices = indices_by_model[model]
+        if len(indices) < 2:
+            warning = (
+                "FreeSASA reference calculation was skipped for model "
+                f"{model!r} because it has fewer than two supported atoms; "
+                "the native singleton calculation is not called."
+            )
+            warnings.append(warning)
+            skipped_model_warnings[model] = warning
+            continue
         coordinates = [
             coordinate
             for index in indices
@@ -111,6 +125,7 @@ def calculate_freesasa_exposure(
         ]
         radii = [prepared.radii[index] for index in indices]
         result = freesasa.calcCoord(coordinates, radii, parameters)
+        processed_models.add(model)
         for local_index, atom_index in enumerate(indices):
             atom = prepared.atoms[atom_index]
             if _residue_key(atom) not in requested:
@@ -133,18 +148,32 @@ def calculate_freesasa_exposure(
         None,
         warnings,
     )
+    residue_results = [
+        replace(
+            item,
+            warnings=tuple(dict.fromkeys((*item.warnings, skipped_model_warnings[item.model]))),
+        )
+        if item.status == "unavailable" and item.model in skipped_model_warnings
+        else item
+        for item in residue_results
+    ]
     version = str(getattr(freesasa, "__version__", ""))
+    completed_count = sum(item.status == "completed" for item in residue_results)
+    if not processed_models:
+        status = "unavailable"
+    elif skipped_model_warnings or completed_count != len(residue_results):
+        status = "partial"
+    else:
+        status = "completed"
     return ExposureAnalysis(
-        status="completed"
-        if all(item.status == "completed" for item in residue_results)
-        else "partial",
+        status=status,
         residues=tuple(residue_results),
         metadata=_metadata(
             config,
             models,
             alternate_seen,
             alternate_discarded,
-            "used",
+            "used" if processed_models else "available",
             version,
             warnings,
             started,

@@ -19,6 +19,7 @@ from .pymol_adapter import (
     protein_atoms,
     show_ligand_shell,
     show_residue_selections,
+    structure_atoms,
 )
 from .report import build_report, export_report
 
@@ -108,14 +109,23 @@ def run_check_with_membrane(
 
     exposure_analysis = None
     if exposure_config is not None:
+        protein_residue_keys = {(atom.model, atom.chain, atom.resi, atom.resn) for atom in atoms}
         if exposure_config.target_scope == "review_items":
-            targets = ((flag.model, flag.chain, flag.resi, flag.resn) for flag in flags)
+            targets = {(flag.model, flag.chain, flag.resi, flag.resn) for flag in flags}
         elif exposure_config.target_scope == "all_residues":
-            targets = None
+            targets = protein_residue_keys
         else:
-            targets = exposure_targets
+            targets = {
+                (str(model or "_"), str(chain or "_"), str(resi), str(resn).upper())
+                for model, chain, resi, resn in (exposure_targets or ())
+            } & protein_residue_keys
+        exposure_atoms = (
+            structure_atoms(selection, cmd_obj)
+            if exposure_config.include_nonprotein_occluders
+            else atoms
+        )
         exposure_analysis = calculate_exposure(
-            atoms,
+            exposure_atoms,
             config=exposure_config,
             target_residues=targets,
             membrane=membrane,

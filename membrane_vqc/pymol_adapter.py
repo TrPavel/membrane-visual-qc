@@ -140,6 +140,11 @@ def protein_atoms(selection: str, cmd_obj: Any | None = None) -> list[AtomRecord
     return atoms_from_selection(f"({selection}) and polymer.protein", cmd_obj)
 
 
+def structure_atoms(selection: str, cmd_obj: Any | None = None) -> list[AtomRecord]:
+    """Extract every atom inside the user-supplied structure selection."""
+    return atoms_from_selection(f"({selection})", cmd_obj)
+
+
 def ligand_atoms(selection: str, ligand: str, cmd_obj: Any | None = None) -> list[AtomRecord]:
     """Extract ligand atoms constrained to the selected object/structure."""
     return atoms_from_selection(f"({selection}) and ({ligand})", cmd_obj)

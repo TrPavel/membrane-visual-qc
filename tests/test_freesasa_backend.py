@@ -87,6 +87,57 @@ def test_freesasa_standard_240_point_parity_and_atom_mapping():
     assert_parity(builtin, reference)
 
 
+def test_freesasa_singleton_model_is_guarded_without_native_call(monkeypatch):
+    freesasa = pytest.importorskip("freesasa")
+
+    def forbidden_calc_coord(*args, **kwargs):
+        raise AssertionError("calcCoord must not be called for a singleton model")
+
+    monkeypatch.setattr(freesasa, "calcCoord", forbidden_calc_coord)
+    singleton = [AtomRecord("single", "A", "1", "ALA", "CB", 0, 0, 0, element="C")]
+    result = calculate_freesasa_exposure(
+        singleton,
+        config=ExposureConfig(sphere_points=240, target_scope="all_residues"),
+    )
+
+    residue = result.by_residue()[("single", "A", "1", "ALA")]
+    assert result.status == "unavailable"
+    assert result.metadata.freesasa_status == "available"
+    assert residue.status == "unavailable"
+    assert residue.residue_sasa is None
+    assert any("fewer than two supported atoms" in warning for warning in result.metadata.warnings)
+    assert any("fewer than two supported atoms" in warning for warning in residue.warnings)
+
+
+def test_freesasa_mixed_models_complete_valid_model_and_skip_singleton(monkeypatch):
+    freesasa = pytest.importorskip("freesasa")
+    real_calc_coord = freesasa.calcCoord
+    native_model_sizes = []
+
+    def recording_calc_coord(coordinates, radii, parameters):
+        native_model_sizes.append(len(radii))
+        return real_calc_coord(coordinates, radii, parameters)
+
+    monkeypatch.setattr(freesasa, "calcCoord", recording_calc_coord)
+    fixture = [
+        AtomRecord("single", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+        AtomRecord("valid", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+        AtomRecord("valid", "A", "2", "SER", "OG", 2.4, 0, 0, element="O"),
+    ]
+    result = calculate_freesasa_exposure(
+        fixture,
+        config=ExposureConfig(sphere_points=240, target_scope="all_residues"),
+    )
+
+    by_residue = result.by_residue()
+    assert native_model_sizes == [2]
+    assert result.status == "partial"
+    assert result.metadata.freesasa_status == "used"
+    assert by_residue[("single", "A", "1", "ALA")].status == "unavailable"
+    assert by_residue[("valid", "A", "1", "ALA")].status == "completed"
+    assert by_residue[("valid", "A", "2", "SER")].status == "completed"
+
+
 def test_freesasa_target_only_matches_all_residue_mapping():
     pytest.importorskip("freesasa")
     fixture = multi_element_atoms()
