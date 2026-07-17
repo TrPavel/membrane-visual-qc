@@ -306,4 +306,6 @@ rotated 1UBQ, all five exposure timing cases, and the preparation helper passed.
 built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
 the 40,071-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
 `ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3` and passed the ZIP
-validator. Draft PR CI remains the required independent Linux result before Stage 3A review.
+validator. GitHub Actions run
+[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) then passed
+the Python 3.10/3.11/3.12 matrix and the separate Python 3.11 FreeSASA installation/parity job.

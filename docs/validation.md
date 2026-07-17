@@ -109,8 +109,10 @@ target atom. Reusing stable identity order removed that O(target × N log N) ove
 retaining the predeclared invariance tolerances. These timings are observations, not promises.
 
 FreeSASA is absent locally, so normal analysis reports `freesasa_status = unavailable` without a
-traceback and the parity test is skipped. A separate non-blocking Python 3.11 CI job installs the
-`exposure-reference` extra and runs same-radii parity.
+traceback and the local parity test is skipped. The separate Python 3.11 job in GitHub Actions run
+[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) installed the
+`exposure-reference` extra and passed the same-radii parity test. The core Python 3.10, 3.11, and
+3.12 jobs passed independently of FreeSASA.
 
 The complete local result is 201 passed, one skipped, and 83% combined coverage. Ruff check and
 format check passed. Wheel and sdist built successfully. Two consecutive Plugin ZIP builds were

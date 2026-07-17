@@ -115,5 +115,10 @@ timing set, and the preparation helper passed. Wheel and sdist built as `0.3.0.d
 ZIP builds were byte-identical at SHA-256
 `ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3`.
 
+Implementation workflow
+[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) passed on
+Python 3.10, 3.11, and 3.12. Its separate Python 3.11 FreeSASA job also installed the optional
+extra and passed availability/parity tests. PR #4 remains draft and unmerged.
+
 Stage 3B has not started and cannot begin until Stage 3A is reviewed, accepted, merged, and its
 post-merge workflow is green. No v0.3.0 release is being prepared.
