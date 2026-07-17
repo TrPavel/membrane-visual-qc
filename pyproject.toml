@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "membrane-vqc-pymol"
-version = "0.2.0"
+version = "0.3.0.dev0"
 description = "A lightweight PyMOL plugin for visual QC of membrane protein structures."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-analysis = ["biopython", "freesasa"]
+exposure-reference = ["freesasa>=2.2,<3"]
 dev = ["build", "jsonschema", "mypy", "pytest", "pytest-cov", "ruff"]
 
 [tool.setuptools.packages.find]

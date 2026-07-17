@@ -32,6 +32,9 @@ manifest; verify it with the accompanying `.zip.sha256` file.
 primary public installation route. The published v0.1.0 tag and assets remain available and
 unchanged.
 
+Unreleased Stage 3A development uses version `0.3.0.dev0` and the distinct local artifact
+`dist/MembraneVisualQC-0.3.0.dev0.zip`. It does not replace the published v0.2.0 prerelease.
+
 For source development:
 
 ```bash

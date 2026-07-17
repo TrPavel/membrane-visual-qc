@@ -6,6 +6,23 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Began the separately reviewable Stage 3A exposure foundation with explicit scientific semantics
+  for SASA, RSA, membrane-region accessible area, atom/model preprocessing, and optional FreeSASA
+  parity.
+
+### Changed
+
+- Set the unreleased development identity to `0.3.0.dev0`; released v0.2.0 remains immutable.
+- Replaced the unused combined analysis extra with an explicit optional
+  `exposure-reference = ["freesasa>=2.2,<3"]` extra. Core analysis remains dependency-free.
+
+### Documentation
+
+- Added ADR-0003 for exposure semantics and ADR-0004 as the deferred Stage 3B chemical-context
+  contract, backed by the required primary-source review.
+
 ## [0.2.0] - 2026-07-15
 
 ### Added

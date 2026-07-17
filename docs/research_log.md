@@ -233,3 +233,122 @@ Homomers, chain renames, engineered tags, missing density, modified residues, ci
 ### Follow-up
 
 Test chain rename, insertion, deletion, mutation, duplicated chains, missing residues, and partial domains; require stable tie-breaking and explicit low-confidence output.
+
+## 2026-07-17 — What does a deterministic SASA calculation establish?
+
+### Search
+
+Reviewed Shrake and Rupley, *Environment and exposure to solvent of protein atoms*, DOI
+[10.1016/0022-2836(73)90011-9](https://doi.org/10.1016/0022-2836(73)90011-9), and Mitternacht,
+*FreeSASA*, DOI
+[10.12688/f1000research.7931.1](https://doi.org/10.12688/f1000research.7931.1). Also reviewed the
+official FreeSASA Python [functions](https://freesasa.github.io/python/functions.html) and
+[classes](https://freesasa.github.io/python/classes.html) documentation.
+
+### Evidence
+
+- Shrake–Rupley approximates solvent-accessible area by sampling points on probe-expanded atomic
+  spheres and retaining points not occluded by neighbouring atoms.
+- Results depend on probe radius, atomic radii, sampling density, included atoms, and preprocessing;
+  those are part of the method and must be reported.
+- FreeSASA implements Shrake–Rupley and Lee–Richards. Its official `calcCoord` API accepts an exact
+  flat coordinate array and an exact radius array, while `Parameters` controls algorithm, probe,
+  and point count and `Result.atomArea()` returns per-atom area.
+- Therefore a reference adapter can use the same prepared atoms/radii as the built-in backend
+  without a second structure parser or FreeSASA's default atom classifier.
+
+### Decision
+
+Implement a deterministic golden-spiral Shrake–Rupley backend with a spatial cell list. Treat SASA
+as solvent-accessible surface area only. Make FreeSASA lazy and optional, using `calcCoord` for
+parity/reference calculations. Record every parameter and missing capability explicitly.
+
+### Limitations
+
+Conventional SASA does not distinguish bulk water, a water-filled pore, detergent, or lipid. It is
+not evidence of membrane insertion, energetic stabilization, or biological correctness.
+
+## 2026-07-17 — Which scale defines relative solvent accessibility?
+
+### Search
+
+Reviewed Tien et al., *Maximum Allowed Solvent Accessibilities of Residues in Proteins*, DOI
+[10.1371/journal.pone.0080635](https://doi.org/10.1371/journal.pone.0080635), including Table 1's
+theoretical ALLOWED-region normalization values.
+
+### Evidence
+
+- RSA is residue SASA divided by a residue-type maximum ASA reference.
+- Tien et al. systematically enumerated Gly-X-Gly conformations and found earlier scales could
+  underestimate allowed exposure. Their theoretical Table 1 provides all 20 standard residues.
+- A non-standard residue has no value in that scale; inventing one or returning zero would conflate
+  unavailable normalization with burial.
+
+### Decision
+
+Use the complete theoretical Table 1 scale under identifier `tien_2013_theoretical`. Preserve
+absolute SASA for unsupported residues but set reference maximum, RSA, and bin to null/unknown.
+Use RSA 0.05 and 0.25 only as serialized project display heuristics.
+
+### Limitations
+
+RSA depends on structure completeness, atom/radius policy, conformational state, and the chosen
+reference scale. Values can exceed one and will not be clipped.
+
+## 2026-07-17 — Can membrane-region SASA be called lipid accessibility?
+
+### Search
+
+Reviewed Koehler Leman, Lyskov, and Bonneau, *Computing structure-based lipid accessibility of
+membrane proteins with mp_lipid_acc in RosettaMP*, DOI
+[10.1186/s12859-017-1541-z](https://doi.org/10.1186/s12859-017-1541-z).
+
+### Evidence
+
+- The paper explicitly distinguishes ordinary solvent-accessible surface calculations from lipid
+  accessibility and uses membrane-oriented structures plus additional architecture-aware surface
+  classification.
+- Its method addresses α-helical bundles, β-barrels, and water-filled pores; slab membership alone
+  does not resolve which medium faces an accessible point.
+- Imported orientation is itself computed metadata, not independently verified biological truth.
+
+### Decision
+
+Partition accessible sample points into core, interface, and outside regions using the existing
+`PlanarMembrane`, and call the result membrane-region accessible area or potential membrane-facing
+accessibility. Never call it lipid-accessible area in Stage 3A.
+
+### Limitations
+
+A pore-facing and lipid-facing surface may receive the same geometric partition. True lipid
+accessibility remains out of scope.
+
+## 2026-07-17 — What can local hydrogen-bond and salt-bridge geometry support?
+
+### Search
+
+Reviewed McDonald and Thornton, *Satisfying Hydrogen Bonding Potential in Proteins*, DOI
+[10.1006/jmbi.1994.1334](https://doi.org/10.1006/jmbi.1994.1334), and Donald, Kulp, and DeGrado,
+*Salt bridges: geometrically specific, designable interactions*, DOI
+[10.1002/prot.22927](https://doi.org/10.1002/prot.22927).
+
+### Evidence
+
+- Hydrogen-bond satisfaction depends on donor/acceptor identity and geometry; a heavy-atom distance
+  alone cannot establish a hydrogen bond when hydrogens and angles are absent.
+- Salt bridges have residue-specific, sequence-dependent, and three-dimensional geometric
+  preferences. A simple cutoff detects proximity, not energetic stabilization.
+- Protonation, dielectric environment, missing atoms, and interaction networks can change the
+  interpretation of both contact types.
+
+### Decision
+
+Stage 3B will use explicit standard-residue atom-role tables and conservative labels
+`distance_only_potential_hbond` and `putative_salt_bridge`. Contacts remain separate evidence and
+never turn WARNING/INSPECT into PASS. Exact definitions and thresholds are fixed in ADR-0004 before
+Stage 3B begins.
+
+### Limitations
+
+No protonation assignment, hydrogen/angle reconstruction, arbitrary ligand chemical perception,
+electrostatic energy, or membrane dielectric model is implied.

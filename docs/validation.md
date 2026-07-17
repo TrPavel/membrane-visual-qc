@@ -79,3 +79,12 @@ ZIP with SHA-256 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec160
 Plugin Manager installation/restart, both orientation modes, the rotated helper, arbitrary-plane
 Show Slab, summary `76/40/11/13/0`, schema-1.1/version-0.2.0 export, readable invalid-file handling,
 and preservation of `1UBQ_rotated` by `mvqc_clear` all passed.
+
+## Unreleased Stage 3A validation policy
+
+Stage 3A uses development version `0.3.0.dev0` and
+`dist/MembraneVisualQC-0.3.0.dev0.zip`. It must preserve every v0.2 legacy summary and keep
+exposure disabled unless explicitly requested. Required checks include analytical and invariance
+fixtures for the built-in backend, optional FreeSASA parity, timing on the synthetic fixture and
+1UBQ/1C3W/2RH1/1PCR, schema 1.2 draft validation, current PyMOL headless validation, and a
+deterministic double ZIP build. Coverage may not fall below 80%.

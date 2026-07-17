@@ -87,3 +87,14 @@ passed on Python 3.10, 3.11, and 3.12. Annotated tag `v0.2.0` points to that rel
 contains the four verified assets. PyPI was not used. Stage 3 has not started.
 
 v0.2.0 is published as a prerelease for limited public testing.
+
+## Stage 3A — exposure foundation
+
+Unreleased work is isolated on `feat/exposure-foundation` with development version `0.3.0.dev0`.
+Stage 3A begins with the research record and ADR-0003/ADR-0004 semantics gate. Its built-in
+Shrake–Rupley backend will report solvent-accessible surface area, relative solvent accessibility,
+and membrane-region accessible area without claiming lipid accessibility. FreeSASA is optional and
+lazy. Report schema 1.2 is an unreleased draft; released schemas 1.0 and 1.1 remain immutable.
+
+Stage 3B has not started and cannot begin until Stage 3A is reviewed, accepted, merged, and its
+post-merge workflow is green. No v0.3.0 release is being prepared.

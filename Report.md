@@ -264,3 +264,26 @@ is not independently verified. Depth values are geometric evidence, not proof of
 burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
 
 v0.2.0 is published as a prerelease for limited public testing.
+
+## Unreleased Stage 3A
+
+Stage 3A is isolated on `feat/exposure-foundation` with development identity `0.3.0.dev0`. The
+scientific contract is fixed in ADR-0003 before implementation: conventional SASA is solvent
+accessibility, not lipid accessibility; RSA uses the Tien et al. 2013 theoretical scale; and
+membrane-region accessible area is geometric review evidence only. ADR-0004 defines deferred Stage
+3B semantics but no Stage 3B implementation has begun.
+
+The development Plugin ZIP is `dist/MembraneVisualQC-0.3.0.dev0.zip`. Released tags, releases, and
+report schemas 1.0/1.1 remain immutable. Schema 1.2 is an unreleased draft.
+
+Stage 3A validation commands:
+
+```powershell
+ruff check .
+ruff format --check .
+pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
+python scripts\validate_example_reports.py
+python -m build
+python scripts\build_plugin_zip.py
+python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.3.0.dev0.zip
+```
