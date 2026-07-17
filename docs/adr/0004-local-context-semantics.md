@@ -1,8 +1,8 @@
 # ADR-0004: Local chemical-context evidence semantics
 
-- Status: Accepted as the design contract for deferred Stage 3B
+- Status: Accepted; implementation in progress in Stage 3B
 - Date: 2026-07-17
-- Implementation: deferred until Stage 3A is reviewed, merged, and post-merge CI is green
+- Implementation: `feat/local-chemical-context` after Stage 3A merge and green post-merge CI
 
 ## Context
 

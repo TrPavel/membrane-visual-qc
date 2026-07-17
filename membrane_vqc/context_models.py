@@ -9,6 +9,26 @@ from typing import Any
 
 EXPOSURE_CLASSES = frozenset({"buried", "intermediate", "exposed", "unknown"})
 TARGET_SCOPES = frozenset({"review_items", "all_residues", "explicit"})
+CONTACT_SUPPORT_VALUES = frozenset({"detected", "not_detected", "unavailable"})
+CONTEXT_STATES = frozenset(
+    {
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_WITH_POTENTIAL_SUPPORT",
+        "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+        "INSUFFICIENT_CONTEXT",
+    }
+)
+CONTACT_SUPPORT_VALUES = frozenset({"detected", "not_detected", "unavailable"})
+CONTEXT_STATES = frozenset(
+    {
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_WITH_POTENTIAL_SUPPORT",
+        "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+        "INSUFFICIENT_CONTEXT",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -188,4 +208,164 @@ class ExposureAnalysis:
             "status": self.status,
             "target_scope": self.metadata.config.target_scope,
             "exposure": self.metadata.as_report_dict(),
+        }
+
+
+@dataclass(frozen=True)
+class LocalContextConfig:
+    """Validated conservative distance thresholds for local-context evidence."""
+
+    salt_bridge_cutoff: float = 4.0
+    potential_hbond_cutoff: float = 3.5
+    water_cutoff: float = 3.5
+    ion_cutoff: float = 4.0
+    ligand_cutoff: float = 5.0
+    polar_ligand_cutoff: float = 3.8
+    atom_role_policy: str = "standard_residue_roles_v1"
+
+    def __post_init__(self) -> None:
+        for name in (
+            "salt_bridge_cutoff",
+            "potential_hbond_cutoff",
+            "water_cutoff",
+            "ion_cutoff",
+            "ligand_cutoff",
+            "polar_ligand_cutoff",
+        ):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not math.isfinite(float(value)) or float(value) <= 0:
+                raise ValueError(f"{name} must be finite and greater than zero.")
+        if self.atom_role_policy != "standard_residue_roles_v1":
+            raise ValueError("Unsupported atom_role_policy.")
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "salt_bridge_cutoff_angstrom": float(self.salt_bridge_cutoff),
+            "potential_hbond_cutoff_angstrom": float(self.potential_hbond_cutoff),
+            "water_cutoff_angstrom": float(self.water_cutoff),
+            "ion_cutoff_angstrom": float(self.ion_cutoff),
+            "ligand_cutoff_angstrom": float(self.ligand_cutoff),
+            "polar_ligand_cutoff_angstrom": float(self.polar_ligand_cutoff),
+            "atom_role_policy": self.atom_role_policy,
+        }
+
+
+@dataclass(frozen=True)
+class ContextContact:
+    """One minimum-distance, conservatively labelled contact record."""
+
+    contact_type: str
+    target_atom: str
+    partner_model: str
+    partner_chain: str
+    partner_resi: str
+    partner_resn: str
+    partner_atom: str
+    distance: float
+    partner_element: str = ""
+    notes: tuple[str, ...] = field(default_factory=tuple)
+
+    @property
+    def partner_key(self) -> tuple[str, str, str, str]:
+        return self.partner_model, self.partner_chain, self.partner_resi, self.partner_resn
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "type": self.contact_type,
+            "target_atom": self.target_atom,
+            "partner": {
+                "model": self.partner_model,
+                "chain": self.partner_chain,
+                "resi": self.partner_resi,
+                "resn": self.partner_resn,
+                "atom": self.partner_atom,
+                "element": self.partner_element,
+            },
+            "distance_angstrom": float(self.distance),
+            "notes": list(self.notes),
+        }
+
+
+@dataclass(frozen=True)
+class ResidueLocalContext:
+    """Independent local-context evidence for one review residue."""
+
+    model: str
+    chain: str
+    resi: str
+    resn: str
+    status: str
+    burial_state: str
+    contact_support: str
+    context_state: str
+    contacts: tuple[ContextContact, ...] = field(default_factory=tuple)
+    warnings: tuple[str, ...] = field(default_factory=tuple)
+
+    @property
+    def residue_key(self) -> tuple[str, str, str, str]:
+        return self.model, self.chain, self.resi, self.resn
+
+    def as_report_dict(self) -> dict[str, Any]:
+        counts = {
+            "putative_salt_bridges": 0,
+            "potential_hbonds": 0,
+            "waters": 0,
+            "ions": 0,
+            "ligand_contacts": 0,
+        }
+        count_keys = {
+            "putative_salt_bridge": "putative_salt_bridges",
+            "distance_only_potential_hbond": "potential_hbonds",
+            "nearby_water": "waters",
+            "nearby_ion": "ions",
+            "ligand_proximity": "ligand_contacts",
+            "polar_ligand_proximity": "ligand_contacts",
+        }
+        ligand_partners: set[tuple[str, str, str, str]] = set()
+        for contact in self.contacts:
+            key = count_keys[contact.contact_type]
+            if key == "ligand_contacts":
+                ligand_partners.add(contact.partner_key)
+            else:
+                counts[key] += 1
+        counts["ligand_contacts"] = len(ligand_partners)
+        return {
+            "status": self.status,
+            "burial_state": self.burial_state,
+            "contact_support": self.contact_support,
+            "context_state": self.context_state,
+            "counts": counts,
+            "contacts": [contact.as_dict() for contact in self.contacts],
+            "warnings": list(self.warnings),
+        }
+
+
+@dataclass(frozen=True)
+class LocalContextAnalysis:
+    """Complete immutable local-context result."""
+
+    status: str
+    residues: tuple[ResidueLocalContext, ...]
+    config: LocalContextConfig
+    warnings: tuple[str, ...] = field(default_factory=tuple)
+    elapsed_seconds: float = 0.0
+
+    def by_residue(self) -> dict[tuple[str, str, str, str], ResidueLocalContext]:
+        return {result.residue_key: result for result in self.residues}
+
+    def state_counts(self) -> dict[str, int]:
+        return {
+            state: sum(item.context_state == state for item in self.residues)
+            for state in sorted(CONTEXT_STATES)
+        }
+
+    def as_report_metadata(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "local_context": {
+                **self.config.as_dict(),
+                "warnings": list(self.warnings),
+                "elapsed_seconds": float(self.elapsed_seconds),
+                "context_state_counts": self.state_counts(),
+            },
         }
