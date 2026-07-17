@@ -295,17 +295,18 @@ FreeSASA adapter. No exposure runs unless explicitly requested. Schema 1.2 is dr
 only for opt-in exposure reports; context-disabled output remains schema 1.1.
 
 Local Incentive PyMOL 3.1.8 validation retained all five legacy summaries and generated five
-schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.014 s, 1UBQ 0.736 s,
-1C3W 1.032 s, 2RH1 3.940 s, and 1PCR 2.804 s. FreeSASA was unavailable locally and produced an
-explicit typed status without traceback; parity remains covered by the optional CI job.
+schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.018 s, 1UBQ 0.653 s,
+1C3W 0.979 s, 2RH1 4.098 s, and 1PCR 2.854 s. FreeSASA was unavailable locally and produced an
+explicit typed status without traceback; parity remains covered by the blocking reference CI job.
 
-Final local Stage 3A result: Ruff check and format check passed; 201 tests passed, one optional
-FreeSASA parity test skipped, and combined coverage was 83%. The schema dispatcher validated 12
+Final local Stage 3A result: Ruff check and format check passed; 207 tests passed, three FreeSASA
+reference tests skipped because FreeSASA is unavailable locally, and combined coverage was 83%.
+The schema dispatcher validated 12
 reports (seven schema 1.1 and five draft schema 1.2). PyMOL smoke import, all five legacy fixtures,
 rotated 1UBQ, all five exposure timing cases, and the preparation helper passed. Wheel and sdist
 built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
-the 40,071-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
-`ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3` and passed the ZIP
+the 40,062-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
+`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d` and passed the ZIP
 validator. GitHub Actions run
-[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) then passed
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) then passed
 the Python 3.10/3.11/3.12 matrix and the separate Python 3.11 FreeSASA installation/parity job.

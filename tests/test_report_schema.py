@@ -12,6 +12,7 @@ from scripts.validate_example_reports import (
 from membrane_vqc.context_models import ExposureConfig
 from membrane_vqc.exposure import calculate_exposure
 from membrane_vqc.membrane import AtomRecord
+from membrane_vqc.orientation import legacy_global_z
 from membrane_vqc.report import build_report
 
 
@@ -95,4 +96,52 @@ def test_exposure_report_validates_against_draft_schema_1_2(tmp_path):
 
     assert report["schema_version"] == "1.2"
     assert report["review_items"][0]["exposure"]["status"] == "completed"
+    validate_reports(SCHEMA_1_2, [path])
+
+
+def test_schema_1_2_accepts_zero_sasa_areas_with_null_fractions(tmp_path):
+    target = AtomRecord("m", "A", "1", "LYS", "NZ", 0, 0, 0, element="N")
+    enclosing = AtomRecord("m", "A", "2", "UNK", "I1", 0, 0, 0, element="I")
+    exposure = calculate_exposure(
+        [target, enclosing],
+        config=ExposureConfig(),
+        target_residues=[("m", "A", "1", "LYS")],
+        membrane=legacy_global_z(-15, 15),
+    )
+    report = build_report(
+        selection="m",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=2,
+        core_residues=1,
+        flagged_residues=[
+            {
+                "model": "m",
+                "chain": "A",
+                "resi": "1",
+                "resn": "LYS",
+                "classification": "core",
+                "severity": "WARNING",
+                "reason": "charged residue in membrane core",
+                "z": 0.0,
+            }
+        ],
+        ligand_neighbours=[],
+        warnings=[],
+        exposure_analysis=exposure,
+    )
+    evidence = report["review_items"][0]["exposure"]
+    path = tmp_path / "zero-sasa.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+
+    assert evidence["residue_sasa"] == 0.0
+    assert evidence["core_region_accessible_area"] == 0.0
+    assert evidence["interface_region_accessible_area"] == 0.0
+    assert evidence["outside_region_accessible_area"] == 0.0
+    assert evidence["core_region_accessible_fraction"] is None
+    assert evidence["interface_region_accessible_fraction"] is None
+    assert evidence["outside_region_accessible_fraction"] is None
+    assert evidence["membrane_region_accessible_fraction"] is None
     validate_reports(SCHEMA_1_2, [path])

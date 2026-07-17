@@ -8,7 +8,7 @@
       "backend": "builtin_shrake_rupley",
       "backend_version": "1",
       "buried_rsa_threshold": 0.05,
-      "elapsed_seconds": 0.014008400001330301,
+      "elapsed_seconds": 0.01805880000756588,
       "exposed_rsa_threshold": 0.25,
       "freesasa_status": "unavailable",
       "include_hydrogens": false,
@@ -33,7 +33,7 @@
       "classification": "core",
       "exposure": {
         "classification": "exposed",
-        "core_region_accessible_area": 133.18865830698024,
+        "core_region_accessible_area": 132.31563065249867,
         "core_region_accessible_fraction": 1.0,
         "interface_region_accessible_area": 0.0,
         "interface_region_accessible_fraction": 0.0,
@@ -42,16 +42,16 @@
         "outside_region_accessible_fraction": 0.0,
         "reference_max_sasa": 236.0,
         "reference_status": "available",
-        "relative_sasa": 0.5643587216397468,
-        "residue_sasa": 133.18865830698024,
-        "sidechain_core_region_accessible_area": 71.25629557178469,
+        "relative_sasa": 0.5606594519173672,
+        "residue_sasa": 132.31563065249867,
+        "sidechain_core_region_accessible_area": 70.84815032620583,
         "sidechain_core_region_accessible_fraction": 1.0,
         "sidechain_interface_region_accessible_area": 0.0,
         "sidechain_interface_region_accessible_fraction": 0.0,
         "sidechain_membrane_region_accessible_fraction": 1.0,
         "sidechain_outside_region_accessible_area": 0.0,
         "sidechain_outside_region_accessible_fraction": 0.0,
-        "sidechain_sasa": 71.25629557178469,
+        "sidechain_sasa": 70.84815032620583,
         "status": "completed",
         "warnings": []
       },
@@ -68,7 +68,7 @@
       "z": 0.0
     }
   ],
-  "generated_at": "2026-07-17T10:18:22.951335+00:00",
+  "generated_at": "2026-07-17T11:02:31.100324+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -138,7 +138,7 @@
       "classification": "core",
       "exposure": {
         "classification": "exposed",
-        "core_region_accessible_area": 133.18865830698024,
+        "core_region_accessible_area": 132.31563065249867,
         "core_region_accessible_fraction": 1.0,
         "interface_region_accessible_area": 0.0,
         "interface_region_accessible_fraction": 0.0,
@@ -147,16 +147,16 @@
         "outside_region_accessible_fraction": 0.0,
         "reference_max_sasa": 236.0,
         "reference_status": "available",
-        "relative_sasa": 0.5643587216397468,
-        "residue_sasa": 133.18865830698024,
-        "sidechain_core_region_accessible_area": 71.25629557178469,
+        "relative_sasa": 0.5606594519173672,
+        "residue_sasa": 132.31563065249867,
+        "sidechain_core_region_accessible_area": 70.84815032620583,
         "sidechain_core_region_accessible_fraction": 1.0,
         "sidechain_interface_region_accessible_area": 0.0,
         "sidechain_interface_region_accessible_fraction": 0.0,
         "sidechain_membrane_region_accessible_fraction": 1.0,
         "sidechain_outside_region_accessible_area": 0.0,
         "sidechain_outside_region_accessible_fraction": 0.0,
-        "sidechain_sasa": 71.25629557178469,
+        "sidechain_sasa": 70.84815032620583,
         "status": "completed",
         "warnings": []
       },
@@ -181,7 +181,7 @@
   },
   "schema_version": "1.2",
   "software": {
-    "commit": "16cdb3367e6fde163fc6459b115546ed62e48e24",
+    "commit": "0d53f9109832b8117159101279ac26968423b0ff",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
     "version": "0.3.0.dev0"
@@ -194,7 +194,7 @@
     "polar_core_inspect_residues": 0,
     "total_residues": 10
   },
-  "timestamp": "2026-07-17T10:18:22.951335+00:00",
+  "timestamp": "2026-07-17T11:02:31.100324+00:00",
   "version": "0.3.0.dev0",
   "warnings": [
     "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",

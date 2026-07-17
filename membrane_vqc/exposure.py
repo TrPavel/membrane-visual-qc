@@ -280,7 +280,7 @@ def _calculate_model_atoms(
         center = local_centers[target_local_index]
         expanded_radius = local_expanded[target_local_index]
         point_area = 4.0 * math.pi * expanded_radius * expanded_radius / config.sphere_points
-        sphere = _equivariant_sphere_points(atom_index, model_indices, atoms, base_sphere)
+        sphere = _equivariant_sphere_points(atom_index, model_indices, atoms, base_sphere, membrane)
         accessible = 0
         core = interface = outside = 0
         for unit in sphere:
@@ -488,9 +488,9 @@ def _unavailable_partition() -> SurfacePartition:
     return SurfacePartition(None, None, None, None, None, None, None)
 
 
-def _bounded_fraction(numerator: float, denominator: float | None) -> float:
-    if denominator is None:
-        return 0.0
+def _bounded_fraction(numerator: float, denominator: float | None) -> float | None:
+    if denominator is None or denominator <= 0.0:
+        return None
     return min(1.0, max(0.0, numerator / denominator))
 
 
@@ -563,18 +563,18 @@ def _equivariant_sphere_points(
     model_indices: list[int],
     atoms: tuple[AtomRecord, ...],
     base: tuple[tuple[float, float, float], ...],
+    membrane: PlanarMembrane | None = None,
 ) -> tuple[tuple[float, float, float], ...]:
-    """Orient points by neighbour geometry so joint rigid rotations preserve sampling."""
+    """Orient points by membrane/structure geometry so joint transforms are equivariant."""
     origin = _point(atoms[target_index])
-    z_axis = None
+    z_axis = membrane.normal if membrane is not None else None
     x_axis = None
     for index in model_indices:
         if index == target_index:
             continue
         point = _point(atoms[index])
         vector = (point[0] - origin[0], point[1] - origin[1], point[2] - origin[2])
-        length2 = _dot(vector, vector)
-        if length2 <= 1e-24:
+        if _dot(vector, vector) <= 1e-24:
             continue
         if z_axis is None:
             z_axis = _normalize(vector)
@@ -583,15 +583,14 @@ def _equivariant_sphere_points(
         if _dot(projected, projected) > 1e-20:
             x_axis = _normalize(projected)
             break
+
     if z_axis is None:
         return base
-    # model_indices follow the stable prepared-atom identity order. Selecting axes in that
-    # order avoids a per-target all-model sort while remaining input-order and rigid-transform
-    # invariant.
+
     if x_axis is None:
-        # Collinear occluders are axially symmetric, so any stable perpendicular is equivalent.
-        trial = (1.0, 0.0, 0.0) if abs(z_axis[0]) < 0.9 else (0.0, 1.0, 0.0)
-        x_axis = _normalize(_subtract(trial, _scale(z_axis, _dot(trial, z_axis))))
+        # With no non-parallel structural vector, occlusion/partition geometry is axially
+        # symmetric about z_axis, so this deterministic phase cannot change classified counts.
+        x_axis = _stable_perpendicular(z_axis)
     y_axis = _cross(z_axis, x_axis)
     return tuple(
         (
@@ -601,6 +600,12 @@ def _equivariant_sphere_points(
         )
         for point in base
     )
+
+
+def _stable_perpendicular(axis: tuple[float, float, float]) -> tuple[float, float, float]:
+    """Return a deterministic phase axis for axially symmetric geometry."""
+    trial = (1.0, 0.0, 0.0) if abs(axis[0]) < 0.9 else (0.0, 1.0, 0.0)
+    return _normalize(_subtract(trial, _scale(axis, _dot(trial, axis))))
 
 
 def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:

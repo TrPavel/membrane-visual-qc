@@ -16,6 +16,35 @@ def atoms():
     ]
 
 
+def multi_element_atoms():
+    return [
+        AtomRecord("m", "A", "1", "ALA", "CA", 0.0, 0.0, 0.0, element="C"),
+        AtomRecord("m", "A", "1", "ALA", "CB", 2.4, 0.0, 0.0, element="C"),
+        AtomRecord("m", "A", "2", "SER", "N", 4.1, 0.3, 0.0, element="N"),
+        AtomRecord("m", "A", "2", "SER", "OG", 5.7, 0.5, 0.2, element="O"),
+        AtomRecord("m", "A", "3", "CYS", "SG", 7.6, 0.8, 0.4, element="S"),
+    ]
+
+
+def assert_parity(builtin, reference):
+    assert reference.metadata.freesasa_status == "used"
+    assert set(builtin.by_residue()) == set(reference.by_residue())
+    for key, expected in reference.by_residue().items():
+        actual = builtin.by_residue()[key]
+        residue_tolerance = max(2.0, 0.05 * expected.residue_sasa)
+        sidechain_tolerance = max(2.0, 0.05 * expected.sidechain_sasa)
+        assert actual.residue_sasa == pytest.approx(expected.residue_sasa, abs=residue_tolerance)
+        assert actual.sidechain_sasa == pytest.approx(
+            expected.sidechain_sasa, abs=sidechain_tolerance
+        )
+        builtin_atoms = {item.atom_key: item for item in actual.atom_sasa}
+        reference_atoms = {item.atom_key: item for item in expected.atom_sasa}
+        assert set(builtin_atoms) == set(reference_atoms)
+        for atom_key, reference_atom in reference_atoms.items():
+            tolerance = max(2.0, 0.05 * reference_atom.sasa)
+            assert builtin_atoms[atom_key].sasa == pytest.approx(reference_atom.sasa, abs=tolerance)
+
+
 def test_importing_reference_adapter_does_not_import_freesasa():
     assert "freesasa" not in sys.modules
 
@@ -42,14 +71,60 @@ def test_missing_freesasa_returns_explicit_unavailable_result(monkeypatch):
     assert "unavailable" in result.metadata.warnings[-1].lower()
 
 
-def test_freesasa_reference_parity_when_optional_package_is_installed():
+def test_freesasa_standard_240_point_parity_and_atom_mapping():
     pytest.importorskip("freesasa")
-    config = ExposureConfig(sphere_points=960, target_scope="all_residues")
-    builtin = calculate_exposure(atoms(), config=config)
-    reference = calculate_freesasa_exposure(atoms(), config=config)
+    config = ExposureConfig(sphere_points=240, target_scope="all_residues")
+    fixture = multi_element_atoms()
+    builtin = calculate_exposure(fixture, config=config)
+    reference = calculate_freesasa_exposure(fixture, config=config)
 
-    assert reference.metadata.freesasa_status == "used"
-    for key, expected in builtin.by_residue().items():
-        actual = reference.by_residue()[key]
-        tolerance = max(2.0, 0.05 * expected.residue_sasa)
-        assert actual.residue_sasa == pytest.approx(expected.residue_sasa, abs=tolerance)
+    assert {atom.element for residue in reference.residues for atom in residue.atom_sasa} == {
+        "C",
+        "N",
+        "O",
+        "S",
+    }
+    assert_parity(builtin, reference)
+
+
+def test_freesasa_target_only_matches_all_residue_mapping():
+    pytest.importorskip("freesasa")
+    fixture = multi_element_atoms()
+    all_config = ExposureConfig(sphere_points=240, target_scope="all_residues")
+    target_config = ExposureConfig(sphere_points=240, target_scope="explicit")
+    target = ("m", "A", "2", "SER")
+    builtin_all = calculate_exposure(fixture, config=all_config)
+    reference_all = calculate_freesasa_exposure(fixture, config=all_config)
+    builtin_target = calculate_exposure(fixture, config=target_config, target_residues=[target])
+    reference_target = calculate_freesasa_exposure(
+        fixture, config=target_config, target_residues=[target]
+    )
+
+    assert (
+        builtin_target.by_residue()[target].as_report_dict()
+        == builtin_all.by_residue()[target].as_report_dict()
+    )
+    assert (
+        reference_target.by_residue()[target].as_report_dict()
+        == reference_all.by_residue()[target].as_report_dict()
+    )
+    assert_parity(builtin_target, reference_target)
+
+
+def test_freesasa_model_isolation_matches_builtin():
+    pytest.importorskip("freesasa")
+    fixture = [
+        AtomRecord("A", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+        AtomRecord("B", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+    ]
+    config = ExposureConfig(sphere_points=240, target_scope="all_residues")
+    builtin = calculate_exposure(fixture, config=config)
+    reference = calculate_freesasa_exposure(fixture, config=config)
+
+    assert builtin.residues[0].residue_sasa == pytest.approx(
+        builtin.residues[1].residue_sasa, abs=1e-12
+    )
+    assert reference.residues[0].residue_sasa == pytest.approx(
+        reference.residues[1].residue_sasa, abs=1e-12
+    )
+    assert_parity(builtin, reference)

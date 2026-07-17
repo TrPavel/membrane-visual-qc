@@ -64,30 +64,28 @@ def result_for(atoms, key, **kwargs):
 
 
 def test_tien_reference_has_complete_twenty_residue_table():
-    assert set(TIEN_2013_THEORETICAL_MAX_ASA) == {
-        "ALA",
-        "ARG",
-        "ASN",
-        "ASP",
-        "CYS",
-        "GLN",
-        "GLU",
-        "GLY",
-        "HIS",
-        "ILE",
-        "LEU",
-        "LYS",
-        "MET",
-        "PHE",
-        "PRO",
-        "SER",
-        "THR",
-        "TRP",
-        "TYR",
-        "VAL",
+    assert TIEN_2013_THEORETICAL_MAX_ASA == {
+        "ALA": 129.0,
+        "ARG": 274.0,
+        "ASN": 195.0,
+        "ASP": 193.0,
+        "CYS": 167.0,
+        "GLN": 225.0,
+        "GLU": 223.0,
+        "GLY": 104.0,
+        "HIS": 224.0,
+        "ILE": 197.0,
+        "LEU": 201.0,
+        "LYS": 236.0,
+        "MET": 224.0,
+        "PHE": 240.0,
+        "PRO": 159.0,
+        "SER": 155.0,
+        "THR": 172.0,
+        "TRP": 285.0,
+        "TYR": 263.0,
+        "VAL": 174.0,
     }
-    assert TIEN_2013_THEORETICAL_MAX_ASA["ALA"] == 129.0
-    assert TIEN_2013_THEORETICAL_MAX_ASA["TRP"] == 285.0
 
 
 def test_isolated_atom_matches_analytical_expanded_sphere_area():
@@ -266,6 +264,64 @@ def test_membrane_partition_sums_to_total_area():
     assert 0.0 <= result.partition.membrane_fraction <= 1.0
 
 
+def test_zero_sasa_preserves_zero_areas_and_null_fractions():
+    target = atom("CB", (0.0, 0.0, 0.0), resi="1", resn="ALA", element="C")
+    enclosing = atom("I1", (0.0, 0.0, 0.0), resi="2", resn="UNK", element="I")
+    result = result_for(
+        [target, enclosing],
+        residue_key(target),
+        membrane=membrane(lower=-1.0, upper=2.0, interface=1.0),
+    )
+
+    assert result.residue_sasa == 0.0
+    assert (
+        result.partition.core_area,
+        result.partition.interface_area,
+        result.partition.outside_area,
+    ) == (
+        0.0,
+        0.0,
+        0.0,
+    )
+    assert (
+        result.partition.core_fraction,
+        result.partition.interface_fraction,
+        result.partition.outside_fraction,
+        result.partition.membrane_fraction,
+    ) == (None, None, None, None)
+
+
+def test_glycine_zero_sidechain_areas_have_null_fractions():
+    gly_ca = atom("CA", (0.0, 0.0, 0.0), resn="GLY", element="C")
+    result = result_for(
+        [gly_ca],
+        residue_key(gly_ca),
+        membrane=membrane(lower=-1.0, upper=2.0, interface=1.0),
+    )
+
+    assert result.sidechain_sasa == 0.0
+    assert (
+        result.sidechain_partition.core_area,
+        result.sidechain_partition.interface_area,
+        result.sidechain_partition.outside_area,
+    ) == (0.0, 0.0, 0.0)
+    assert (
+        result.sidechain_partition.core_fraction,
+        result.sidechain_partition.interface_fraction,
+        result.sidechain_partition.outside_fraction,
+        result.sidechain_partition.membrane_fraction,
+    ) == (None, None, None, None)
+
+
+def test_unavailable_partition_never_materializes_zero():
+    unknown = atom("QX", (0.0, 0.0, 0.0), element="")
+    result = result_for([unknown], residue_key(unknown), membrane=membrane())
+
+    assert result.status == "unavailable"
+    assert set(result.partition.as_dict().values()) == {None}
+    assert set(result.sidechain_partition.as_dict(prefix="sidechain_").values()) == {None}
+
+
 def test_arbitrary_membrane_partition_is_joint_transform_invariant():
     atoms = [
         atom("CB", (0.0, 0.0, 0.0), resi="1"),
@@ -304,6 +360,91 @@ def test_arbitrary_membrane_partition_is_joint_transform_invariant():
         assert second.partition.outside_area == pytest.approx(
             first.partition.outside_area, abs=1e-7
         )
+
+
+def test_isolated_atom_asymmetric_membrane_partition_is_joint_transform_invariant():
+    target = atom("CB", (1.2, -0.5, 2.0))
+    original_membrane = membrane(
+        center=(0.3, -0.2, 0.4),
+        normal=(1.0, 2.0, 3.0),
+        lower=-1.3,
+        upper=2.1,
+        interface=0.7,
+    )
+    baseline = result_for([target], residue_key(target), membrane=original_membrane)
+    translation = (4.0, -3.0, 2.0)
+    transformed_target = atom(
+        "CB",
+        (target.z + translation[0], target.x + translation[1], target.y + translation[2]),
+    )
+    transformed_membrane = membrane(
+        center=(
+            original_membrane.center[2] + translation[0],
+            original_membrane.center[0] + translation[1],
+            original_membrane.center[1] + translation[2],
+        ),
+        normal=(
+            original_membrane.normal[2],
+            original_membrane.normal[0],
+            original_membrane.normal[1],
+        ),
+        lower=-1.3,
+        upper=2.1,
+        interface=0.7,
+    )
+    transformed = result_for(
+        [transformed_target], residue_key(transformed_target), membrane=transformed_membrane
+    )
+
+    assert transformed.residue_sasa == pytest.approx(baseline.residue_sasa, abs=1e-7)
+    assert transformed.partition.as_dict() == pytest.approx(baseline.partition.as_dict(), abs=1e-7)
+
+
+def test_collinear_atoms_oblique_membrane_partition_is_joint_transform_invariant():
+    atoms = [
+        atom("CB", (-1.0, -1.0, -1.0), resi="1"),
+        atom("CB", (1.0, 1.0, 1.0), resi="2"),
+    ]
+    original_membrane = membrane(
+        center=(0.2, -0.3, 0.5),
+        normal=(1.0, -2.0, 0.5),
+        lower=-1.1,
+        upper=1.8,
+        interface=0.9,
+    )
+    config = ExposureConfig(target_scope="all_residues")
+    baseline = calculate_exposure(atoms, config=config, membrane=original_membrane)
+    translation = (3.0, 4.0, -2.0)
+    transformed_atoms = [
+        atom(
+            item.name,
+            (item.z + translation[0], item.x + translation[1], item.y + translation[2]),
+            resi=item.resi,
+        )
+        for item in reversed(atoms)
+    ]
+    transformed_membrane = membrane(
+        center=(
+            original_membrane.center[2] + translation[0],
+            original_membrane.center[0] + translation[1],
+            original_membrane.center[1] + translation[2],
+        ),
+        normal=(
+            original_membrane.normal[2],
+            original_membrane.normal[0],
+            original_membrane.normal[1],
+        ),
+        lower=-1.1,
+        upper=1.8,
+        interface=0.9,
+    )
+    transformed = calculate_exposure(
+        transformed_atoms, config=config, membrane=transformed_membrane
+    )
+
+    for first, second in zip(baseline.residues, transformed.residues, strict=True):
+        assert second.residue_sasa == pytest.approx(first.residue_sasa, abs=1e-7)
+        assert second.partition.as_dict() == pytest.approx(first.partition.as_dict(), abs=1e-7)
 
 
 def test_asymmetric_boundaries_and_interfaces_receive_accessible_area():

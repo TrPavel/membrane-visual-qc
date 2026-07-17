@@ -105,18 +105,19 @@ calls still produce schema 1.1 and preserve the released v0.2 behaviour.
 
 Draft PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) remains unmerged. Local PyMOL
 3.1.8 validation produced five schema-1.2 exposure reports and retained every legacy summary.
-Measured 240-point exposure times were 0.014 s synthetic, 0.736 s 1UBQ, 1.032 s 1C3W, 3.940 s
-2RH1, and 2.804 s 1PCR. These are development observations, not runtime guarantees.
+Measured 240-point exposure times were 0.018 s synthetic, 0.653 s 1UBQ, 0.979 s 1C3W, 4.098 s
+2RH1, and 2.854 s 1PCR. These are development observations, not runtime guarantees.
 
-Current local validation: Ruff check and format check passed; 201 tests passed, one optional
-FreeSASA parity test skipped, and combined coverage is 83%. Twelve reports validated (seven schema
+Current local validation: Ruff check and format check passed; 207 tests passed, three FreeSASA
+reference tests skipped because FreeSASA is unavailable locally, and combined coverage is 83%.
+Twelve reports validated (seven schema
 1.1 and five draft schema 1.2). PyMOL smoke, five legacy fixtures, rotated 1UBQ, the exposure
 timing set, and the preparation helper passed. Wheel and sdist built as `0.3.0.dev0`. Two Plugin
 ZIP builds were byte-identical at SHA-256
-`ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3`.
+`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d`.
 
 Implementation workflow
-[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) passed on
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) passed on
 Python 3.10, 3.11, and 3.12. Its separate Python 3.11 FreeSASA job also installed the optional
 extra and passed availability/parity tests. PR #4 remains draft and unmerged.
 

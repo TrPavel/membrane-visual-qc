@@ -98,11 +98,11 @@ The opt-in built-in backend was exercised in Incentive PyMOL 3.1.8 with 240 sphe
 
 | Structure | protein atoms | review targets | exposure seconds |
 |---|---:|---:|---:|
-| synthetic `bad_core_lys` | 51 | 1 | 0.014 |
-| 1UBQ | 602 | 24 | 0.736 |
-| 1C3W | 1,720 | 41 | 1.032 |
-| 2RH1 | 3,601 | 104 | 3.940 |
-| 1PCR | 6,494 | 76 | 2.804 |
+| synthetic `bad_core_lys` | 51 | 1 | 0.018 |
+| 1UBQ | 602 | 24 | 0.653 |
+| 1C3W | 1,720 | 41 | 0.979 |
+| 2RH1 | 3,601 | 104 | 4.098 |
+| 1PCR | 6,494 | 76 | 2.854 |
 
 An initial 28–30 s 1PCR path was investigated and traced to re-sorting all model atoms for every
 target atom. Reusing stable identity order removed that O(target × N log N) overhead while
@@ -110,12 +110,13 @@ retaining the predeclared invariance tolerances. These timings are observations,
 
 FreeSASA is absent locally, so normal analysis reports `freesasa_status = unavailable` without a
 traceback and the local parity test is skipped. The separate Python 3.11 job in GitHub Actions run
-[29573804155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573804155) installed the
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) installed the
 `exposure-reference` extra and passed the same-radii parity test. The core Python 3.10, 3.11, and
 3.12 jobs passed independently of FreeSASA.
 
-The complete local result is 201 passed, one skipped, and 83% combined coverage. Ruff check and
-format check passed. Wheel and sdist built successfully. Two consecutive Plugin ZIP builds were
-byte-identical; `MembraneVisualQC-0.3.0.dev0.zip` is 40,071 bytes with SHA-256
-`ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3`, and the project ZIP
+The complete local result is 207 passed, three FreeSASA reference tests skipped because FreeSASA
+is unavailable locally, and 83% combined coverage. Ruff check and format check passed. Wheel and
+sdist built successfully. Two consecutive Plugin ZIP builds were byte-identical;
+`MembraneVisualQC-0.3.0.dev0.zip` is 40,062 bytes with SHA-256
+`c2a3d176e685258ef01610c007f44995696fff3970473709aa818b1580f2e47d`, and the project ZIP
 validator accepted it.

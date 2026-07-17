@@ -48,9 +48,8 @@ jobs:
             dist/*.sha256
 
   freesasa-reference:
-    name: Optional FreeSASA reference (Python 3.11)
+    name: FreeSASA reference (Python 3.11)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

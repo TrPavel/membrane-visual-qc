@@ -24,6 +24,11 @@ Gly-X-Gly scale in Table 1 of Tien et al. 2013, DOI `10.1371/journal.pone.008063
 20-residue table is required in code and tests. Non-standard or unsupported residues retain
 absolute SASA, while reference maximum, RSA, and exposure class are explicitly unavailable.
 
+Tien 2013 maxima were derived with DSSP. Stage 3A deliberately uses them as a declared
+cross-method normalization reference for the built-in Shrake–Rupley/Bondi calculation; this is not
+a method-identical DSSP calibration. Every report serializes backend, radius model, probe radius,
+and reference scale so the mismatch is visible and reproducible.
+
 The display bins are project heuristics, not universal physical boundaries:
 
 - `buried`: `RSA < 0.05`;
@@ -81,6 +86,12 @@ list indexes expanded occluder spheres; target points are tested only against ne
 a full `O(N² × points)` scan. A point is occluded when it lies strictly inside another expanded
 sphere; tangency remains accessible.
 
+When a membrane is supplied, its normal is the primary sampling-frame axis and the first stable
+non-parallel structural vector defines the secondary axis. Structure and membrane therefore rotate
+together. Isolated or axially symmetric geometry uses a deterministic phase whose value cannot
+change occlusion or membrane-region classification. Without a membrane, the frame is derived from
+stable structural vectors for deterministic occlusion sampling.
+
 The per-point area weight is `4*pi*(vdw_radius + probe_radius)^2 / sphere_points`. Backend metadata
 records `builtin_shrake_rupley`, backend version `1`, radius model, probe, point count, warnings,
 and elapsed timing.
@@ -101,6 +112,11 @@ SASA within floating-point tolerance. The result is called membrane-region acces
 potential membrane-facing accessibility, never lipid-accessible area. Geometry alone cannot
 distinguish lipid exposure from a water-filled pore. Joint rigid transformation of coordinates and
 the membrane must preserve the partition.
+
+Known partitions with zero accessible points retain area values of `0.0`; because division by a
+zero total area is undefined, every corresponding fraction is `null`. An unavailable partition
+uses `null` for both areas and fractions. Zero areas are never changed to `null`, and unavailable
+values are never fabricated as zero.
 
 ### Optional FreeSASA reference backend
 
@@ -128,10 +144,12 @@ not hidden by silently changing backend parameters or widening tolerance.
 ### Report semantics and missing data
 
 Draft report schema 1.2 adds `context_analysis.exposure` metadata and an `exposure` object to each
-review item. Status fields distinguish completed, unavailable, skipped, and error states. Missing
-metrics are JSON `null`, never fabricated zero. Exposure never changes existing WARNING/INSPECT
-severity or conservative overall status. CSV columns remain unchanged in Stage 3A; JSON is the
-canonical rich report.
+review item. Analysis status is `completed`, `partial`, or `unavailable`; residue status is
+`completed` or `unavailable`. Missing metrics are JSON `null`, never fabricated zero. Exposure
+never changes existing WARNING/INSPECT severity or conservative overall status. CSV columns remain
+unchanged in Stage 3A; JSON is the canonical rich report. Unexpected programming errors raise;
+materializing backend-error and lifecycle-skipped states in reports is explicitly deferred to
+Stage 3B.
 
 No exposure analysis runs unless explicitly requested. With context disabled, commands and schema
 1.1 output preserve v0.2.0 behaviour.
