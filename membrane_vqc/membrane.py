@@ -27,6 +27,11 @@ class AtomRecord:
     x: float
     y: float
     z: float
+    element: str = ""
+    altloc: str = ""
+    occupancy: float | None = None
+    formal_charge: int | None = None
+    is_hetatm: bool | None = None
 
 
 @dataclass(frozen=True)

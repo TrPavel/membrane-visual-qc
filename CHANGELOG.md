@@ -11,6 +11,13 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Began the separately reviewable Stage 3A exposure foundation with explicit scientific semantics
   for SASA, RSA, membrane-region accessible area, atom/model preprocessing, and optional FreeSASA
   parity.
+- Added a deterministic dependency-free Shrake–Rupley backend with a spatial cell list, immutable
+  configuration/results, per-model isolation, stable altloc handling, side-chain SASA, and
+  membrane-region surface partitions.
+- Added the complete Tien et al. 2013 theoretical maximum-ASA scale and draft report schema 1.2
+  for opt-in exposure evidence.
+- Added a lazy optional FreeSASA reference adapter and a separate optional Python 3.11 CI parity
+  job; core Python 3.10/3.11/3.12 jobs remain FreeSASA-independent.
 
 ### Changed
 

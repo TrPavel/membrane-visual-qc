@@ -92,6 +92,8 @@ Every accessible sample point is classified by the existing immutable `PlanarMem
 - `core_region_accessible_area`: points classified `core`;
 - `interface_region_accessible_area`: both interface bands;
 - `outside_region_accessible_area`: all remaining points;
+- `core_region_accessible_fraction`, `interface_region_accessible_fraction`, and
+  `outside_region_accessible_fraction`: each area divided by total SASA;
 - `membrane_region_accessible_fraction`: `(core + interface) / total residue SASA`.
 
 Equivalent side-chain areas and fractions are accumulated. The three areas must sum to residue

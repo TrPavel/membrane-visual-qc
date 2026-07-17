@@ -386,7 +386,7 @@
       "z": -20.211999893188477
     }
   ],
-  "generated_at": "2026-07-15T11:31:47.113011+00:00",
+  "generated_at": "2026-07-17T10:11:08.077724+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -870,10 +870,10 @@
   },
   "schema_version": "1.1",
   "software": {
-    "commit": "e06f60c478a460819c61785f85ea658055f544e7",
+    "commit": "16cdb3367e6fde163fc6459b115546ed62e48e24",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
-    "version": "0.2.0"
+    "version": "0.3.0.dev0"
   },
   "summary": {
     "charged_core_residues": 11,
@@ -883,8 +883,8 @@
     "polar_core_inspect_residues": 13,
     "total_residues": 76
   },
-  "timestamp": "2026-07-15T11:31:47.113011+00:00",
-  "version": "0.2.0",
+  "timestamp": "2026-07-17T10:11:08.077724+00:00",
+  "version": "0.3.0.dev0",
   "warnings": [
     "No atoms found for ligand selection: organic"
   ]

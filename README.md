@@ -99,6 +99,13 @@ RCSB coordinates are not automatically membrane-oriented, and imported orientati
 not independently verified. Reported depth values are geometric evidence, not proof of biological
 burial.
 
+Unreleased `0.3.0.dev0` work on draft PR #4 adds an explicitly opt-in pure-Python SASA/RSA
+foundation. It reports conventional solvent accessibility and geometric membrane-region
+accessible area; neither metric is called lipid accessibility. The default command and GUI paths
+remain context-disabled and retain v0.2 behaviour. Draft schema 1.2 is used only for opt-in
+exposure reports, while released schemas 1.0 and 1.1 remain immutable. FreeSASA is an optional,
+lazy reference backend and is not needed for normal plugin operation.
+
 ## Validation and development status
 
 The pure-Python suite and headless workflows have been tested with Incentive PyMOL 3.1.8 /

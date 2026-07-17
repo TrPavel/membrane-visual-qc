@@ -1,0 +1,25 @@
+model,chain,resi,resn,classification,severity,reason,z
+1UBQ,A,11,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,12.331000328063965
+1UBQ,A,12,THR,core,INSPECT,polar residue in manually defined membrane core; may be functional,10.652999877929688
+1UBQ,A,14,THR,core,INSPECT,polar residue in manually defined membrane core; may be functional,6.51200008392334
+1UBQ,A,16,GLU,core,WARNING,charged residue in manually defined membrane core; inspect local environment,4.275000095367432
+1UBQ,A,18,GLU,core,WARNING,charged residue in manually defined membrane core; inspect local environment,5.980000019073486
+1UBQ,A,2,GLN,core,INSPECT,polar residue in manually defined membrane core; may be functional,3.8980000019073486
+1UBQ,A,20,SER,core,INSPECT,polar residue in manually defined membrane core; may be functional,9.210000038146973
+1UBQ,A,21,ASP,core,WARNING,charged residue in manually defined membrane core; inspect local environment,10.565999984741211
+1UBQ,A,22,THR,core,INSPECT,polar residue in manually defined membrane core; may be functional,14.28600025177002
+1UBQ,A,25,ASN,core,INSPECT,polar residue in manually defined membrane core; may be functional,13.302000045776367
+1UBQ,A,29,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,10.668000221252441
+1UBQ,A,31,GLN,core,INSPECT,polar residue in manually defined membrane core; may be functional,14.114999771118164
+1UBQ,A,32,ASP,core,WARNING,charged residue in manually defined membrane core; inspect local environment,10.642999649047852
+1UBQ,A,33,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,9.232999801635742
+1UBQ,A,34,GLU,core,WARNING,charged residue in manually defined membrane core; inspect local environment,12.071999549865723
+1UBQ,A,55,THR,core,INSPECT,polar residue in manually defined membrane core; may be functional,14.562999725341797
+1UBQ,A,57,SER,core,INSPECT,polar residue in manually defined membrane core; may be functional,12.024999618530273
+1UBQ,A,6,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,14.142999649047852
+1UBQ,A,60,ASN,core,INSPECT,polar residue in manually defined membrane core; may be functional,12.99899959564209
+1UBQ,A,62,GLN,core,INSPECT,polar residue in manually defined membrane core; may be functional,8.032999992370605
+1UBQ,A,63,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,5.239999771118164
+1UBQ,A,64,GLU,core,WARNING,charged residue in manually defined membrane core; inspect local environment,5.88100004196167
+1UBQ,A,65,SER,core,INSPECT,polar residue in manually defined membrane core; may be functional,9.619999885559082
+1UBQ,A,66,THR,core,INSPECT,polar residue in manually defined membrane core; may be functional,11.890999794006348

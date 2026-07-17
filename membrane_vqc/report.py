@@ -14,10 +14,13 @@ from pathlib import Path
 from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
+from .context_models import ExposureAnalysis
 from .errors import ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
 
 SCHEMA_VERSION = "1.1"
+CONTEXT_SCHEMA_VERSION = "1.2"
+SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION})
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
 
@@ -44,6 +47,7 @@ def build_report(
     capabilities: dict[str, Any] | None = None,
     membrane: PlanarMembrane | None = None,
     orientation_import: Any | None = None,
+    exposure_analysis: ExposureAnalysis | None = None,
 ) -> dict[str, Any]:
     """Build a versioned, machine-readable single-structure review report.
 
@@ -72,6 +76,8 @@ def build_report(
     neighbours = sorted(
         (_with_depth_fields(item, membrane) for item in ligand_neighbours), key=_residue_sort_key
     )
+    if exposure_analysis is not None:
+        review_items = _with_exposure(review_items, exposure_analysis)
     source_path, source_hash = _portable_input_metadata(input_path)
     timestamp = datetime.now(timezone.utc).isoformat()
     orientation_warnings = [
@@ -91,7 +97,9 @@ def build_report(
         orientation["import"] = import_record
 
     report = {
-        "schema_version": SCHEMA_VERSION,
+        "schema_version": CONTEXT_SCHEMA_VERSION
+        if exposure_analysis is not None
+        else SCHEMA_VERSION,
         "report_type": REPORT_TYPE,
         "software": {
             "name": PLUGIN_NAME,
@@ -137,6 +145,8 @@ def build_report(
         "warnings": list(warnings),
         "limitations": _orientation_limitations(membrane),
     }
+    if exposure_analysis is not None:
+        report["context_analysis"] = exposure_analysis.as_report_metadata()
     # Transitional aliases for scripts written against the v0.1 development schema.
     report["input"].update(
         {
@@ -200,7 +210,8 @@ def validate_report(report: dict[str, Any]) -> None:
     """Validate the required v1 report contract without optional dependencies."""
     if not isinstance(report, dict):
         raise ReportError("Report must be a JSON object.")
-    if report.get("schema_version") != SCHEMA_VERSION:
+    schema_version = report.get("schema_version")
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
         raise ReportError(f"Unsupported report schema version: {report.get('schema_version')!r}")
     required = (
         "software",
@@ -219,6 +230,8 @@ def validate_report(report: dict[str, Any]) -> None:
         raise ReportError(f"Invalid biological review status: {status!r}")
     if report.get("orientation", {}).get("source") in (None, ""):
         raise ReportError("Orientation source is required.")
+    if schema_version == CONTEXT_SCHEMA_VERSION and "context_analysis" not in report:
+        raise ReportError("Schema 1.2 reports require context_analysis metadata.")
     required_review_fields = {
         "model",
         "chain",
@@ -242,6 +255,8 @@ def validate_report(report: dict[str, Any]) -> None:
             raise ReportError(
                 f"Review item {index} is missing required fields: " + ", ".join(missing_fields)
             )
+        if schema_version == CONTEXT_SCHEMA_VERSION and "exposure" not in item:
+            raise ReportError(f"Review item {index} is missing required exposure evidence.")
 
 
 def sha256_file(path: str | Path) -> str:
@@ -264,6 +279,53 @@ def _portable_input_metadata(path: str | Path | None) -> tuple[str, str]:
 
 def _residue_sort_key(item: dict[str, Any]) -> tuple[str, str, str, str]:
     return tuple(str(item.get(key, "")) for key in ("model", "chain", "resi", "resn"))
+
+
+def _with_exposure(
+    review_items: list[dict[str, Any]], exposure_analysis: ExposureAnalysis
+) -> list[dict[str, Any]]:
+    by_residue = exposure_analysis.by_residue()
+    enriched: list[dict[str, Any]] = []
+    for item in review_items:
+        result = by_residue.get(
+            (
+                str(item.get("model") or "_"),
+                str(item.get("chain") or "_"),
+                str(item.get("resi", "")),
+                str(item.get("resn", "")).upper(),
+            )
+        )
+        copy = dict(item)
+        copy["exposure"] = (
+            result.as_report_dict()
+            if result is not None
+            else {
+                "status": "unavailable",
+                "residue_sasa": None,
+                "sidechain_sasa": None,
+                "relative_sasa": None,
+                "reference_max_sasa": None,
+                "reference_status": "unavailable",
+                "classification": "unknown",
+                "core_region_accessible_area": None,
+                "interface_region_accessible_area": None,
+                "outside_region_accessible_area": None,
+                "core_region_accessible_fraction": None,
+                "interface_region_accessible_fraction": None,
+                "outside_region_accessible_fraction": None,
+                "membrane_region_accessible_fraction": None,
+                "sidechain_core_region_accessible_area": None,
+                "sidechain_interface_region_accessible_area": None,
+                "sidechain_outside_region_accessible_area": None,
+                "sidechain_core_region_accessible_fraction": None,
+                "sidechain_interface_region_accessible_fraction": None,
+                "sidechain_outside_region_accessible_fraction": None,
+                "sidechain_membrane_region_accessible_fraction": None,
+                "warnings": ["Exposure result was unavailable for this review item."],
+            }
+        )
+        enriched.append(copy)
+    return enriched
 
 
 def _with_depth_fields(item: dict[str, Any], membrane: PlanarMembrane) -> dict[str, Any]:

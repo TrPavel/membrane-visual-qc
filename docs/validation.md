@@ -88,3 +88,32 @@ exposure disabled unless explicitly requested. Required checks include analytica
 fixtures for the built-in backend, optional FreeSASA parity, timing on the synthetic fixture and
 1UBQ/1C3W/2RH1/1PCR, schema 1.2 draft validation, current PyMOL headless validation, and a
 deterministic double ZIP build. Coverage may not fall below 80%.
+
+## Stage 3A local exposure validation
+
+The opt-in built-in backend was exercised in Incentive PyMOL 3.1.8 with 240 sphere points and a
+1.4 Å probe. All five generated exposure reports declare draft schema 1.2 and
+`software.version = 0.3.0.dev0`; the seven context-disabled and historical reports remain schema
+1.1. `python scripts/validate_example_reports.py` validated all 12 by declared version.
+
+| Structure | protein atoms | review targets | exposure seconds |
+|---|---:|---:|---:|
+| synthetic `bad_core_lys` | 51 | 1 | 0.014 |
+| 1UBQ | 602 | 24 | 0.736 |
+| 1C3W | 1,720 | 41 | 1.032 |
+| 2RH1 | 3,601 | 104 | 3.940 |
+| 1PCR | 6,494 | 76 | 2.804 |
+
+An initial 28–30 s 1PCR path was investigated and traced to re-sorting all model atoms for every
+target atom. Reusing stable identity order removed that O(target × N log N) overhead while
+retaining the predeclared invariance tolerances. These timings are observations, not promises.
+
+FreeSASA is absent locally, so normal analysis reports `freesasa_status = unavailable` without a
+traceback and the parity test is skipped. A separate non-blocking Python 3.11 CI job installs the
+`exposure-reference` extra and runs same-radii parity.
+
+The complete local result is 201 passed, one skipped, and 83% combined coverage. Ruff check and
+format check passed. Wheel and sdist built successfully. Two consecutive Plugin ZIP builds were
+byte-identical; `MembraneVisualQC-0.3.0.dev0.zip` is 40,071 bytes with SHA-256
+`ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3`, and the project ZIP
+validator accepted it.

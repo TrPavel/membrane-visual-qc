@@ -91,9 +91,48 @@ def atoms_from_selection(selection: str, cmd_obj: Any | None = None) -> list[Ato
                 x=float(coord[0]),
                 y=float(coord[1]),
                 z=float(coord[2]),
+                element=str(getattr(atom, "symbol", "") or getattr(atom, "elem", "") or ""),
+                altloc=str(getattr(atom, "alt", "") or ""),
+                occupancy=_optional_float(getattr(atom, "q", None)),
+                formal_charge=_optional_int(getattr(atom, "formal_charge", None)),
+                is_hetatm=_optional_bool(getattr(atom, "hetatm", None)),
             )
         )
     return atoms
+
+
+def _optional_float(value: object) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _optional_int(value: object) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _optional_bool(value: object) -> bool | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and value in {0, 1}:
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"0", "false", "no"}:
+            return False
+        if normalized in {"1", "true", "yes"}:
+            return True
+    return None
 
 
 def protein_atoms(selection: str, cmd_obj: Any | None = None) -> list[AtomRecord]:

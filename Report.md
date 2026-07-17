@@ -287,3 +287,23 @@ python -m build
 python scripts\build_plugin_zip.py
 python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.3.0.dev0.zip
 ```
+
+The Stage 3A implementation adds a dependency-free deterministic Shrake–Rupley backend, a spatial
+cell list, immutable configuration/result models, deterministic altloc collapse, per-model
+isolation, the complete Tien et al. 2013 theoretical maximum-ASA table, and a lazy optional
+FreeSASA adapter. No exposure runs unless explicitly requested. Schema 1.2 is draft and is emitted
+only for opt-in exposure reports; context-disabled output remains schema 1.1.
+
+Local Incentive PyMOL 3.1.8 validation retained all five legacy summaries and generated five
+schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.014 s, 1UBQ 0.736 s,
+1C3W 1.032 s, 2RH1 3.940 s, and 1PCR 2.804 s. FreeSASA was unavailable locally and produced an
+explicit typed status without traceback; parity remains covered by the optional CI job.
+
+Final local Stage 3A result: Ruff check and format check passed; 201 tests passed, one optional
+FreeSASA parity test skipped, and combined coverage was 83%. The schema dispatcher validated 12
+reports (seven schema 1.1 and five draft schema 1.2). PyMOL smoke import, all five legacy fixtures,
+rotated 1UBQ, all five exposure timing cases, and the preparation helper passed. Wheel and sdist
+built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
+the 40,071-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
+`ad4db155cd38a07d2321cdb557edb8c7ef04417fc1d5e3034fd1065817f4f0e3` and passed the ZIP
+validator. Draft PR CI remains the required independent Linux result before Stage 3A review.

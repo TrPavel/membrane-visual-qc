@@ -9,6 +9,7 @@ from pathlib import Path
 SCHEMA_BY_VERSION = {
     "1.0": Path("schemas/mvqc-report-1.0.schema.json"),
     "1.1": Path("schemas/mvqc-report-1.1.schema.json"),
+    "1.2": Path("schemas/mvqc-report-1.2.schema.json"),
 }
 
 

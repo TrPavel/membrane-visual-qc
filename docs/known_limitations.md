@@ -26,6 +26,22 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - OPM-aligned files are not required for the MVP and are not downloaded automatically.
 - The synthetic PDB is intentionally artificial and only tests deterministic warning behaviour.
 
+## Unreleased Stage 3A limitations
+
+- Conventional SASA and RSA describe solvent accessibility, not lipid accessibility.
+- Membrane-region accessible area is a geometric partition; it cannot distinguish a lipid-facing
+  surface from a water-filled pore.
+- Finite sphere sampling introduces controlled discretization error; the configured point count,
+  probe radius, radius model, thresholds, and backend are recorded in schema-1.2 reports.
+- Non-standard residues without a Tien reference retain absolute SASA but have no RSA or exposure
+  class.
+- Unknown elements without a safe versioned radius are warned about and excluded, never silently
+  assigned carbon radii.
+- FreeSASA is optional. Its adapter is for reference/parity work and cannot provide membrane-region
+  sample partitions through `calcCoord`.
+- Chemical contacts, hydration support, protonation, energetic stabilization, and GUI context
+  visualization remain deferred to separately reviewed Stage 3B.
+
 ## Scientific Interpretation
 
 Inspect flagged residues in context:
