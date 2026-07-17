@@ -79,3 +79,56 @@ ZIP with SHA-256 `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec160
 Plugin Manager installation/restart, both orientation modes, the rotated helper, arbitrary-plane
 Show Slab, summary `76/40/11/13/0`, schema-1.1/version-0.2.0 export, readable invalid-file handling,
 and preservation of `1UBQ_rotated` by `mvqc_clear` all passed.
+
+## Unreleased Stage 3A validation policy
+
+Stage 3A uses development version `0.3.0.dev0` and
+`dist/MembraneVisualQC-0.3.0.dev0.zip`. It must preserve every v0.2 legacy summary and keep
+exposure disabled unless explicitly requested. Required checks include analytical and invariance
+fixtures for the built-in backend, optional FreeSASA parity, timing on the synthetic fixture and
+1UBQ/1C3W/2RH1/1PCR, schema 1.2 draft validation, current PyMOL headless validation, and a
+deterministic double ZIP build. Coverage may not fall below 80%.
+
+## Stage 3A local exposure validation
+
+The opt-in built-in backend was exercised in Incentive PyMOL 3.1.8 with 240 sphere points and a
+1.4 Å probe. All five generated exposure reports declare draft schema 1.2 and
+`software.version = 0.3.0.dev0`; the seven context-disabled and historical reports remain schema
+1.1. `python scripts/validate_example_reports.py` validated all 12 by declared version.
+
+| Structure | protein atoms | review targets | exposure seconds |
+|---|---:|---:|---:|
+| synthetic `bad_core_lys` | 51 | 1 | 0.018 |
+| 1UBQ | 602 | 24 | 0.653 |
+| 1C3W | 1,720 | 41 | 0.979 |
+| 2RH1 | 3,601 | 104 | 4.098 |
+| 1PCR | 6,494 | 76 | 2.854 |
+
+An initial 28–30 s 1PCR path was investigated and traced to re-sorting all model atoms for every
+target atom. Reusing stable identity order removed that O(target × N log N) overhead while
+retaining the predeclared invariance tolerances. These timings are observations, not promises.
+
+FreeSASA is absent in the Windows environment, so normal analysis reports
+`freesasa_status = unavailable` without a traceback and five local reference tests are skipped. A
+separate Ubuntu run with FreeSASA 2.2.1 passed all seven tests. It confirmed that singleton models
+never enter native `calcCoord`, return explicit unavailable evidence, and that mixed singleton plus
+valid models produce a partial result. Non-protein occluder tests also confirm exact selection
+scope, protein-only targets, truthful serialized configuration, and cross-model isolation.
+
+The complete Windows result is 246 passed, five FreeSASA reference tests skipped, and 83% combined
+coverage. Ruff check and format check passed. Wheel and
+sdist built successfully. Two consecutive Plugin ZIP builds were byte-identical;
+`MembraneVisualQC-0.3.0.dev0.zip` is 41,209 bytes with SHA-256
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722`, and the project ZIP
+validator accepted it.
+
+Element-inference safety tests confirm that missing protein C/N/O/S metadata remains usable,
+unambiguous supported ligand elements remain available, and recognized unsupported two-letter
+HETATM elements cannot fall back to scientifically false one-letter radii.
+
+The previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.
+Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) are the
+validated correction baseline immediately before this final safety pass; all three Python matrix
+jobs and the blocking Python 3.11 FreeSASA reference job passed.

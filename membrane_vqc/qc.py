@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Iterable
 
 from .constants import DEFAULT_INTERFACE_WIDTH, DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
+from .context_models import ExposureConfig
 from .errors import InputValidationError
+from .exposure import calculate_exposure
 from .membrane import classify_residues_for_membrane, flag_core_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
 from .orientation import PlanarMembrane, legacy_global_z
@@ -17,6 +19,7 @@ from .pymol_adapter import (
     protein_atoms,
     show_ligand_shell,
     show_residue_selections,
+    structure_atoms,
 )
 from .report import build_report, export_report
 
@@ -33,6 +36,8 @@ def run_check(
     export_path: str = "",
     cmd_obj: Any | None = None,
     input_path: str = "",
+    exposure_config: ExposureConfig | None = None,
+    exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
 ) -> dict[str, Any]:
     """Run the unchanged legacy global-z workflow through the planar engine."""
     selection, zmin, zmax, ligand, cutoff = validate_analysis_inputs(
@@ -48,6 +53,8 @@ def run_check(
         export_path=export_path,
         cmd_obj=cmd_obj,
         input_path=input_path,
+        exposure_config=exposure_config,
+        exposure_targets=exposure_targets,
     )
 
 
@@ -62,6 +69,8 @@ def run_check_with_membrane(
     cmd_obj: Any | None = None,
     input_path: str = "",
     orientation_import: Any | None = None,
+    exposure_config: ExposureConfig | None = None,
+    exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
 ) -> dict[str, Any]:
     """Run membrane visual QC against an explicit arbitrary planar membrane."""
     global LAST_REPORT
@@ -98,6 +107,31 @@ def run_check_with_membrane(
         # Review highlights are deliberately applied last so base colouring cannot hide them.
         show_residue_selections(residues, flags, cmd_obj)
 
+    exposure_analysis = None
+    if exposure_config is not None:
+        protein_residue_keys = {(atom.model, atom.chain, atom.resi, atom.resn) for atom in atoms}
+        if exposure_config.target_scope == "review_items":
+            targets = {(flag.model, flag.chain, flag.resi, flag.resn) for flag in flags}
+        elif exposure_config.target_scope == "all_residues":
+            targets = protein_residue_keys
+        else:
+            targets = {
+                (str(model or "_"), str(chain or "_"), str(resi), str(resn).upper())
+                for model, chain, resi, resn in (exposure_targets or ())
+            } & protein_residue_keys
+        exposure_atoms = (
+            structure_atoms(selection, cmd_obj)
+            if exposure_config.include_nonprotein_occluders
+            else atoms
+        )
+        exposure_analysis = calculate_exposure(
+            exposure_atoms,
+            config=exposure_config,
+            target_residues=targets,
+            membrane=membrane,
+        )
+        warnings.extend(exposure_analysis.metadata.warnings)
+
     report = build_report(
         selection=selection,
         zmin=membrane.lower_offset,
@@ -114,6 +148,7 @@ def run_check_with_membrane(
         pymol_version=_pymol_version(cmd_obj),
         membrane=membrane,
         orientation_import=orientation_import,
+        exposure_analysis=exposure_analysis,
     )
     LAST_REPORT = report
 

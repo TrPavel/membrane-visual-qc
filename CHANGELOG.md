@@ -6,6 +6,36 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Began the separately reviewable Stage 3A exposure foundation with explicit scientific semantics
+  for SASA, RSA, membrane-region accessible area, atom/model preprocessing, and optional FreeSASA
+  parity.
+- Added a deterministic dependency-free Shrake–Rupley backend with a spatial cell list, immutable
+  configuration/results, per-model isolation, stable altloc handling, side-chain SASA, and
+  membrane-region surface partitions.
+- Added the complete Tien et al. 2013 theoretical maximum-ASA scale and draft report schema 1.2
+  for opt-in exposure evidence.
+- Added a lazy optional FreeSASA reference adapter and a separate blocking Python 3.11 CI parity
+  job on its supported platform; core Python 3.10/3.11/3.12 jobs remain FreeSASA-independent.
+
+### Changed
+
+- Set the unreleased development identity to `0.3.0.dev0`; released v0.2.0 remains immutable.
+- Replaced the unused combined analysis extra with an explicit optional
+  `exposure-reference = ["freesasa>=2.2,<3"]` extra. Core analysis remains dependency-free.
+- Guarded the known native FreeSASA singleton-model crash with explicit unavailable/partial
+  evidence, without substituting the built-in backend.
+- Made `include_nonprotein_occluders` extract all atoms inside the user selection for occlusion
+  while keeping membrane classification and exposure targets protein-only.
+- Made missing HETATM element inference conservative so recognized unsupported two-letter elements
+  are excluded with warnings instead of being remapped to a supported first-letter radius.
+
+### Documentation
+
+- Added ADR-0003 for exposure semantics and ADR-0004 as the deferred Stage 3B chemical-context
+  contract, backed by the required primary-source review.
+
 ## [0.2.0] - 2026-07-15
 
 ### Added

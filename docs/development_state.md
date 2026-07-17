@@ -1,6 +1,6 @@
 # Development state
 
-Snapshot date: 2026-07-15 (Europe/Moscow).
+Snapshot date: 2026-07-17 (Europe/Moscow).
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -84,6 +84,48 @@ and was squash-merged as `7877fed3c83419e6affa1e4353a65f8756e9303a`. The
 [post-merge workflow 29488017586](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29488017586)
 passed on Python 3.10, 3.11, and 3.12. Annotated tag `v0.2.0` points to that release commit, and the
 [v0.2.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0)
-contains the four verified assets. PyPI was not used. Stage 3 has not started.
+contains the four verified assets. PyPI was not used. Stage 3 had not started at publication;
+Stage 3A is now isolated on its own development branch.
 
 v0.2.0 is published as a prerelease for limited public testing.
+
+## Stage 3A — exposure foundation
+
+Unreleased work is isolated on `feat/exposure-foundation` with development version `0.3.0.dev0`.
+Stage 3A passed its research and ADR-0003/ADR-0004 semantics gate. Its built-in deterministic
+Shrake–Rupley backend reports solvent-accessible surface area, relative solvent accessibility,
+and membrane-region accessible area without claiming lipid accessibility. FreeSASA is optional and
+lazy. Report schema 1.2 is an unreleased draft; released schemas 1.0 and 1.1 remain immutable.
+
+The pure-Python backend uses 240 deterministic golden-spiral points by default, a 1.4 Å probe,
+the versioned `element_vdw_v1` Bondi radius table, the complete Tien et al. 2013 theoretical
+20-residue maximum-ASA scale, deterministic alternate-location collapse, per-model isolation, and
+a spatial cell list. Exposure runs only when an `ExposureConfig` is supplied. Context-disabled
+calls still produce schema 1.1 and preserve the released v0.2 behaviour.
+
+Draft PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) remains unmerged. Local PyMOL
+3.1.8 validation produced five schema-1.2 exposure reports and retained every legacy summary.
+Measured 240-point exposure times were 0.018 s synthetic, 0.653 s 1UBQ, 0.979 s 1C3W, 4.098 s
+2RH1, and 2.854 s 1PCR. These are development observations, not runtime guarantees.
+
+Current local validation: Ruff check and format check passed; 246 tests passed, five FreeSASA
+reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
+coverage is 83%. A separate Ubuntu/FreeSASA 2.2.1 run passed all seven reference tests.
+Twelve reports validated (seven schema
+1.1 and five draft schema 1.2). PyMOL smoke, five legacy fixtures, rotated 1UBQ, the exposure
+timing set, and the preparation helper passed. Wheel and sdist built as `0.3.0.dev0`. Two Plugin
+ZIP builds were byte-identical at SHA-256
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722`; the ZIP is 41,209
+bytes. Singleton FreeSASA models are now guarded before native entry, and enabled non-protein
+occlusion uses all atoms inside the exact user selection while retaining protein-only targets.
+Unsupported two-letter HETATM elements with missing metadata are conservatively excluded.
+
+Previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.
+Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) form the
+validated correction baseline immediately before the final safety pass. Python 3.10, 3.11, 3.12,
+and the blocking Python 3.11 FreeSASA job passed. PR #4 remains draft and unmerged.
+
+Stage 3B has not started and cannot begin until Stage 3A is reviewed, accepted, merged, and its
+post-merge workflow is green. No v0.3.0 release is being prepared.

@@ -35,7 +35,7 @@ jobs:
       - name: Build and validate Plugin Manager ZIP
         run: |
           python scripts/build_plugin_zip.py
-          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.2.0.zip
+          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.3.0.dev0.zip
       - name: Upload release-build inputs
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
@@ -46,3 +46,17 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.sha256
+
+  freesasa-reference:
+    name: FreeSASA reference (Python 3.11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install optional reference backend
+        run: python -m pip install -e ".[exposure-reference]" pytest
+      - name: Run FreeSASA availability and parity tests
+        run: pytest tests/test_freesasa_backend.py

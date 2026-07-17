@@ -1,0 +1,2 @@
+model,chain,resi,resn,classification,severity,reason,z
+bad_core_lys,A,6,LYS,core,WARNING,charged residue in manually defined membrane core; inspect local environment,0.0

@@ -264,3 +264,60 @@ is not independently verified. Depth values are geometric evidence, not proof of
 burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
 
 v0.2.0 is published as a prerelease for limited public testing.
+
+## Unreleased Stage 3A
+
+Stage 3A is isolated on `feat/exposure-foundation` with development identity `0.3.0.dev0`. The
+scientific contract is fixed in ADR-0003 before implementation: conventional SASA is solvent
+accessibility, not lipid accessibility; RSA uses the Tien et al. 2013 theoretical scale; and
+membrane-region accessible area is geometric review evidence only. ADR-0004 defines deferred Stage
+3B semantics but no Stage 3B implementation has begun.
+
+The development Plugin ZIP is `dist/MembraneVisualQC-0.3.0.dev0.zip`. Released tags, releases, and
+report schemas 1.0/1.1 remain immutable. Schema 1.2 is an unreleased draft.
+
+Stage 3A validation commands:
+
+```powershell
+ruff check .
+ruff format --check .
+pytest --cov=membrane_vqc --cov=scripts --cov-report=term-missing
+python scripts\validate_example_reports.py
+python -m build
+python scripts\build_plugin_zip.py
+python scripts\build_plugin_zip.py --validate dist\MembraneVisualQC-0.3.0.dev0.zip
+```
+
+The Stage 3A implementation adds a dependency-free deterministic Shrake–Rupley backend, a spatial
+cell list, immutable configuration/result models, deterministic altloc collapse, per-model
+isolation, the complete Tien et al. 2013 theoretical maximum-ASA table, and a lazy optional
+FreeSASA adapter. No exposure runs unless explicitly requested. Schema 1.2 is draft and is emitted
+only for opt-in exposure reports; context-disabled output remains schema 1.1.
+
+Local Incentive PyMOL 3.1.8 validation retained all five legacy summaries and generated five
+schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.018 s, 1UBQ 0.653 s,
+1C3W 0.979 s, 2RH1 4.098 s, and 1PCR 2.854 s. FreeSASA was unavailable locally and produced an
+explicit typed status without traceback; parity remains covered by the blocking reference CI job.
+
+Final local Stage 3A result: Ruff check and format check passed; 246 tests passed, five FreeSASA
+reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
+coverage was 83%. A separate Ubuntu run with FreeSASA 2.2.1 passed all seven reference tests,
+including the singleton native-call guard and mixed-model partial result.
+The schema dispatcher validated 12
+reports (seven schema 1.1 and five draft schema 1.2). PyMOL smoke import, all five legacy fixtures,
+rotated 1UBQ, all five exposure timing cases, and the preparation helper passed. Wheel and sdist
+built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
+the 41,209-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722` and passed the ZIP
+validator. The safety pass prevents native FreeSASA calls for models with fewer than two supported
+atoms and makes `include_nonprotein_occluders` control full-selection extraction while retaining
+protein-only targets and classification.
+Missing HETATM element metadata now uses conservative inference: recognized unsupported
+two-letter elements are excluded instead of being remapped to their first letter.
+
+The previous implementation workflow
+[29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is retained as
+historical evidence. Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
+[29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) are the
+validated correction baseline immediately preceding this final safety pass; that run passed Python
+3.10/3.11/3.12 and the blocking Python 3.11 FreeSASA job.

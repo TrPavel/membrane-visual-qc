@@ -3,6 +3,34 @@
 Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. v0.2.0 analysis uses
 additive schema 1.1; schema 1.0 remains immutable and validation dispatches by declared version.
 
+Unreleased Stage 3A develops `schemas/mvqc-report-1.2.schema.json` as a draft for structured
+exposure evidence. Released schemas 1.0 and 1.1 are immutable. Context-disabled Stage 3A calls
+continue to produce the v0.2-compatible schema 1.1 contract; schema 1.2 is used only when exposure
+analysis is explicitly requested.
+
+Draft schema 1.2 adds top-level `context_analysis` metadata and an `exposure` object on every
+review item. Continuous residue SASA, side-chain SASA, and RSA are primary evidence. The exposure
+bin is a display heuristic using serialized thresholds 0.05 and 0.25. Tien et al. 2013 theoretical
+maximum ASA values provide the RSA reference; unsupported residues retain absolute SASA with
+`relative_sasa: null`, `classification: "unknown"`, and an explicit unavailable reference status.
+Tien 2013 maxima were derived with DSSP; Stage 3A applies them as a declared cross-method
+normalization reference to its Shrake–Rupley/Bondi calculation, not as a method-identical DSSP
+calibration. Backend, radius model, probe radius, and reference scale are serialized. RSA is not
+clipped and may exceed 1; exposure classes remain project review heuristics.
+
+Accessible sample areas and fractions are split into core, interface, outside, and combined
+membrane regions. This geometric partition cannot distinguish lipid-facing surfaces from
+water-filled pores and must not be interpreted as lipid accessibility. Missing calculations use
+explicit `null` values and statuses, never substituted zeroes. The rich JSON is canonical and the
+existing CSV columns remain unchanged in Stage 3A.
+
+For a known partition with total SASA zero, core/interface/outside areas remain numeric `0.0` and
+all derived fractions are `null`. For an unavailable partition, both areas and fractions are
+`null`. Schema 1.2 analysis status is `completed`, `partial`, or `unavailable`; residue status is
+`completed` or `unavailable`. Context-disabled execution emits schema 1.1 with no exposure block.
+Backend-error and lifecycle-skipped report states are deferred to Stage 3B; unexpected programming
+errors continue to raise.
+
 Schema 1.1 records the direct planar orientation fields, optional orientation-file basename and
 SHA-256, and residue depth evidence. For coordinate `r`, centre `c`, and unit normal `n`:
 
