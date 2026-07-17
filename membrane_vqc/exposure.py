@@ -42,6 +42,117 @@ ELEMENT_VDW_RADII = {
     "I": 1.98,
 }
 
+# Complete fixed set of currently recognized two-letter chemical element symbols. This does not
+# expand the supported radius model: it prevents an unsupported HETATM element such as FE or CA
+# from being silently reinterpreted as fluorine or carbon when PyMOL omits element metadata.
+_RECOGNIZED_TWO_LETTER_ELEMENTS = frozenset(
+    {
+        "AC",
+        "AG",
+        "AL",
+        "AM",
+        "AR",
+        "AS",
+        "AT",
+        "AU",
+        "BA",
+        "BE",
+        "BH",
+        "BI",
+        "BK",
+        "BR",
+        "CA",
+        "CD",
+        "CE",
+        "CF",
+        "CL",
+        "CM",
+        "CN",
+        "CO",
+        "CR",
+        "CS",
+        "CU",
+        "DB",
+        "DS",
+        "DY",
+        "ER",
+        "ES",
+        "EU",
+        "FE",
+        "FL",
+        "FM",
+        "FR",
+        "GA",
+        "GD",
+        "GE",
+        "HE",
+        "HF",
+        "HG",
+        "HO",
+        "HS",
+        "IN",
+        "IR",
+        "KR",
+        "LA",
+        "LI",
+        "LR",
+        "LU",
+        "LV",
+        "MC",
+        "MD",
+        "MG",
+        "MN",
+        "MO",
+        "MT",
+        "NA",
+        "NB",
+        "ND",
+        "NE",
+        "NH",
+        "NI",
+        "NO",
+        "NP",
+        "OS",
+        "PA",
+        "PB",
+        "PD",
+        "PM",
+        "PO",
+        "PR",
+        "PT",
+        "PU",
+        "RA",
+        "RB",
+        "RE",
+        "RF",
+        "RG",
+        "RH",
+        "RN",
+        "RU",
+        "SB",
+        "SC",
+        "SE",
+        "SG",
+        "SI",
+        "SM",
+        "SN",
+        "SR",
+        "TA",
+        "TB",
+        "TC",
+        "TE",
+        "TH",
+        "TI",
+        "TL",
+        "TM",
+        "TS",
+        "XE",
+        "YB",
+        "ZN",
+        "ZR",
+    }
+)
+
 # Theoretical ALLOWED-region maxima in Table 1 of Tien et al. 2013,
 # DOI 10.1371/journal.pone.0080635.
 TIEN_2013_THEORETICAL_MAX_ASA = {
@@ -186,7 +297,7 @@ def prepare_atoms(
             continue
         element = normalize_or_infer_element(atom)
         if not element:
-            warnings.append(f"Unknown element for atom {_atom_label(atom)}; excluded from SASA.")
+            warnings.append(_element_exclusion_warning(atom))
             continue
         if element == "H" and not config.include_hydrogens:
             continue
@@ -221,13 +332,42 @@ def normalize_or_infer_element(atom: AtomRecord) -> str:
         return ""
 
     upper = raw_name.upper()
+    resn = str(atom.resn or "").strip().upper()
+    protein_atom = atom.is_hetatm is False or (
+        atom.is_hetatm is None and resn in TIEN_2013_THEORETICAL_MAX_ASA
+    )
+    if protein_atom:
+        one_letter = upper[0]
+        return one_letter if one_letter in {"C", "N", "O", "S"} else ""
+
     two_letter = upper[:2]
-    conventional_two_letter = len(raw_name) >= 2 and raw_name[0].isupper() and raw_name[1].islower()
-    hetero_identity = atom.is_hetatm is True and atom.resn.strip().upper() in {two_letter, upper}
-    if two_letter in {"CL", "BR"} and (conventional_two_letter or hetero_identity):
-        return two_letter
+    if len(two_letter) == 2 and two_letter.isalpha():
+        if two_letter in _RECOGNIZED_TWO_LETTER_ELEMENTS:
+            if two_letter in {"CL", "BR"} and (len(upper) == 2 or upper[2:].isdigit()):
+                return two_letter
+            return ""
+        return ""
+
     one_letter = upper[0]
-    return one_letter if one_letter in ELEMENT_VDW_RADII else ""
+    suffix = upper[1:]
+    if one_letter in ELEMENT_VDW_RADII and (not suffix or suffix.isdigit()):
+        return one_letter
+    return ""
+
+
+def _element_exclusion_warning(atom: AtomRecord) -> str:
+    supplied = str(atom.element or "").strip().upper()
+    if supplied:
+        return (
+            f"Unsupported supplied element {supplied} for atom {_atom_label(atom)}; "
+            "excluded from SASA without atom-name fallback."
+        )
+    if atom.is_hetatm is True:
+        return (
+            f"Could not safely infer HETATM element for atom {_atom_label(atom)}; "
+            "excluded from SASA."
+        )
+    return f"Unknown element for atom {_atom_label(atom)}; excluded from SASA."
 
 
 def fibonacci_sphere_points(count: int) -> tuple[tuple[float, float, float], ...]:

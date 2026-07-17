@@ -299,7 +299,7 @@ schema-1.2 reports. At 240 points, observed exposure times were: synthetic 0.018
 1C3W 0.979 s, 2RH1 4.098 s, and 1PCR 2.854 s. FreeSASA was unavailable locally and produced an
 explicit typed status without traceback; parity remains covered by the blocking reference CI job.
 
-Final local Stage 3A result: Ruff check and format check passed; 211 tests passed, five FreeSASA
+Final local Stage 3A result: Ruff check and format check passed; 246 tests passed, five FreeSASA
 reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
 coverage was 83%. A separate Ubuntu run with FreeSASA 2.2.1 passed all seven reference tests,
 including the singleton native-call guard and mixed-model partial result.
@@ -307,11 +307,13 @@ The schema dispatcher validated 12
 reports (seven schema 1.1 and five draft schema 1.2). PyMOL smoke import, all five legacy fixtures,
 rotated 1UBQ, all five exposure timing cases, and the preparation helper passed. Wheel and sdist
 built with `0.3.0.dev0` names. Two consecutive Plugin ZIP builds were byte-for-byte identical;
-the 40,529-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
-`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51` and passed the ZIP
+the 41,209-byte `MembraneVisualQC-0.3.0.dev0.zip` has SHA-256
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722` and passed the ZIP
 validator. The safety pass prevents native FreeSASA calls for models with fewer than two supported
 atoms and makes `include_nonprotein_occluders` control full-selection extraction while retaining
 protein-only targets and classification.
+Missing HETATM element metadata now uses conservative inference: recognized unsupported
+two-letter elements are excluded instead of being remapped to their first letter.
 
 The previous implementation workflow
 [29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is retained as

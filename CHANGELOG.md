@@ -28,6 +28,8 @@ The format follows Keep a Changelog style, and this project intends to use seman
   evidence, without substituting the built-in backend.
 - Made `include_nonprotein_occluders` extract all atoms inside the user selection for occlusion
   while keeping membrane classification and exposure targets protein-only.
+- Made missing HETATM element inference conservative so recognized unsupported two-letter elements
+  are excluded with warnings instead of being remapped to a supported first-letter radius.
 
 ### Documentation
 

@@ -46,12 +46,14 @@ or incomplete structures and is not clipped.
 and I 1.98 Å. These are method parameters, not atom-typing chemistry. The version and exact table
 are shared by the built-in and optional FreeSASA adapters.
 
-PyMOL's element field is normalized first. If absent, inference is deterministic: remove leading
-digits and whitespace from the atom name; accept an unambiguous two-letter supported element only
-when its conventional capitalization is present or the residue/atom metadata identifies it;
-otherwise use the first supported one-letter symbol. Protein atom `CA` therefore means carbon,
-not calcium. An unresolved or unsupported element emits an explicit warning and the atom is
-excluded; it never silently receives a carbon radius.
+PyMOL's element field is normalized first. Explicit supported metadata is used; explicit
+unsupported metadata is excluded with a warning and never falls back to the atom name. When
+metadata is absent, standard polymer-protein atom names retain safe one-letter C/N/O/S inference,
+so protein `CA` means alpha carbon. HETATM inference is deliberately conservative: exact supported
+one-letter names (optionally followed by digits) and unambiguous `CL`/`BR` are accepted. A fixed
+recognized two-letter chemical-element set blocks unsupported ions such as CA, NA, FE, MG, ZN,
+CU, MN, CO, NI, and SE from falling back to their first letter. Ambiguous non-protein names are
+excluded with an explicit warning. The radius table is not expanded by inference.
 
 Hydrogens are excluded by default. `include_hydrogens` can enable them. Protein heavy atoms are the
 default occluders. Non-protein occluders are excluded unless explicitly requested.

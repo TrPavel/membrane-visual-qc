@@ -115,12 +115,16 @@ never enter native `calcCoord`, return explicit unavailable evidence, and that m
 valid models produce a partial result. Non-protein occluder tests also confirm exact selection
 scope, protein-only targets, truthful serialized configuration, and cross-model isolation.
 
-The complete Windows result is 211 passed, five FreeSASA reference tests skipped, and 83% combined
+The complete Windows result is 246 passed, five FreeSASA reference tests skipped, and 83% combined
 coverage. Ruff check and format check passed. Wheel and
 sdist built successfully. Two consecutive Plugin ZIP builds were byte-identical;
-`MembraneVisualQC-0.3.0.dev0.zip` is 40,529 bytes with SHA-256
-`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51`, and the project ZIP
+`MembraneVisualQC-0.3.0.dev0.zip` is 41,209 bytes with SHA-256
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722`, and the project ZIP
 validator accepted it.
+
+Element-inference safety tests confirm that missing protein C/N/O/S metadata remains usable,
+unambiguous supported ligand elements remain available, and recognized unsupported two-letter
+HETATM elements cannot fall back to scientifically false one-letter radii.
 
 The previous implementation workflow
 [29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.

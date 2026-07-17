@@ -108,16 +108,17 @@ Draft PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) remains unme
 Measured 240-point exposure times were 0.018 s synthetic, 0.653 s 1UBQ, 0.979 s 1C3W, 4.098 s
 2RH1, and 2.854 s 1PCR. These are development observations, not runtime guarantees.
 
-Current local validation: Ruff check and format check passed; 211 tests passed, five FreeSASA
+Current local validation: Ruff check and format check passed; 246 tests passed, five FreeSASA
 reference tests skipped because FreeSASA is unavailable in the Windows environment, and combined
 coverage is 83%. A separate Ubuntu/FreeSASA 2.2.1 run passed all seven reference tests.
 Twelve reports validated (seven schema
 1.1 and five draft schema 1.2). PyMOL smoke, five legacy fixtures, rotated 1UBQ, the exposure
 timing set, and the preparation helper passed. Wheel and sdist built as `0.3.0.dev0`. Two Plugin
 ZIP builds were byte-identical at SHA-256
-`342fbffcf01dcad1f2847b873358c5292be908c0e9676259bedc0f7871988f51`; the ZIP is 40,529
+`3c8fb30e9b3dd259c7759c2cbb736326856492cfbcfe6fd78ead101e40914722`; the ZIP is 41,209
 bytes. Singleton FreeSASA models are now guarded before native entry, and enabled non-protein
 occlusion uses all atoms inside the exact user selection while retaining protein-only targets.
+Unsupported two-letter HETATM elements with missing metadata are conservatively excluded.
 
 Previous implementation workflow
 [29573971744](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29573971744) is historical.

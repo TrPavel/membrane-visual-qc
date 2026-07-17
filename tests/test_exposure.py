@@ -223,11 +223,114 @@ def test_missing_element_is_warned_and_not_given_carbon_radius():
     assert any("Unknown element" in warning for warning in analysis.metadata.warnings)
 
 
-def test_element_inference_does_not_read_protein_ca_as_calcium():
-    alpha_carbon = atom("CA", (0.0, 0.0, 0.0), element="")
-    chloride = atom("CL", (0.0, 0.0, 0.0), resn="CL", element="", is_hetatm=True)
-    assert normalize_or_infer_element(alpha_carbon) == "C"
-    assert normalize_or_infer_element(chloride) == "CL"
+@pytest.mark.parametrize(
+    ("atom_name", "expected"),
+    [
+        ("CA", "C"),
+        ("CB", "C"),
+        ("CG", "C"),
+        ("CD", "C"),
+        ("CE", "C"),
+        ("N", "N"),
+        ("ND", "N"),
+        ("NE", "N"),
+        ("NZ", "N"),
+        ("O", "O"),
+        ("OD", "O"),
+        ("OE", "O"),
+        ("OG", "O"),
+        ("OH", "O"),
+        ("S", "S"),
+        ("SD", "S"),
+        ("SG", "S"),
+    ],
+)
+def test_missing_element_inference_retains_standard_protein_atoms(atom_name, expected):
+    protein_atom = atom(atom_name, (0.0, 0.0, 0.0), element="", is_hetatm=False)
+    assert normalize_or_infer_element(protein_atom) == expected
+
+
+@pytest.mark.parametrize(
+    ("atom_name", "expected"),
+    [("C1", "C"), ("N1", "N"), ("O1", "O"), ("S1", "S"), ("CL", "CL"), ("BR", "BR")],
+)
+def test_missing_element_inference_accepts_unambiguous_supported_hetatm_names(atom_name, expected):
+    heteroatom = atom(
+        atom_name,
+        (0.0, 0.0, 0.0),
+        resn=atom_name,
+        element="",
+        is_hetatm=True,
+    )
+    assert normalize_or_infer_element(heteroatom) == expected
+
+
+@pytest.mark.parametrize("atom_name", ["CA", "NA", "FE", "MG", "ZN", "CU", "MN", "CO", "NI", "SE"])
+def test_missing_element_inference_rejects_unsupported_two_letter_hetatm_elements(atom_name):
+    ion = atom(
+        atom_name,
+        (0.0, 0.0, 0.0),
+        resn=atom_name,
+        element="",
+        is_hetatm=True,
+    )
+    assert normalize_or_infer_element(ion) == ""
+
+
+def test_explicit_unsupported_element_never_falls_back_to_atom_name():
+    explicit_iron = atom("F1", (0.0, 0.0, 0.0), resn="FE", element="Fe", is_hetatm=True)
+    assert normalize_or_infer_element(explicit_iron) == ""
+
+    analysis = calculate_exposure(
+        [explicit_iron],
+        config=ExposureConfig(include_nonprotein_occluders=True),
+        target_residues=[residue_key(explicit_iron)],
+    )
+    assert any(
+        "Unsupported supplied element FE" in warning and "without atom-name fallback" in warning
+        for warning in analysis.metadata.warnings
+    )
+
+
+def test_unsupported_hetatm_is_excluded_with_conservative_warning():
+    calcium = atom("CA", (0.0, 0.0, 0.0), resn="CA", element="", is_hetatm=True)
+    analysis = calculate_exposure(
+        [calcium],
+        config=ExposureConfig(include_nonprotein_occluders=True),
+        target_residues=[residue_key(calcium)],
+    )
+    assert analysis.residues[0].status == "unavailable"
+    assert any(
+        "Could not safely infer HETATM element" in warning for warning in analysis.metadata.warnings
+    )
+
+
+def test_unsupported_hetatm_does_not_occlude_but_supported_hetatm_does():
+    target = atom("CB", (0.0, 0.0, 0.0), resi="1", element="C", is_hetatm=False)
+    unsupported_iron = atom(
+        "FE",
+        (0.0, 0.0, 0.0),
+        resi="900",
+        resn="FE",
+        element="",
+        is_hetatm=True,
+    )
+    supported_iodine = atom(
+        "I",
+        (0.0, 0.0, 0.0),
+        resi="901",
+        resn="IOD",
+        element="",
+        is_hetatm=True,
+    )
+    config = ExposureConfig(include_nonprotein_occluders=True)
+
+    isolated = result_for([target], residue_key(target), config=config)
+    with_iron = result_for([target, unsupported_iron], residue_key(target), config=config)
+    with_iodine = result_for([target, supported_iodine], residue_key(target), config=config)
+
+    assert with_iron.residue_sasa == pytest.approx(isolated.residue_sasa, abs=1e-12)
+    assert with_iodine.residue_sasa < isolated.residue_sasa
 
 
 def test_unsupported_residue_has_sasa_but_no_rsa():
