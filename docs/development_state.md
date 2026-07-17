@@ -85,7 +85,7 @@ and was squash-merged as `7877fed3c83419e6affa1e4353a65f8756e9303a`. The
 passed on Python 3.10, 3.11, and 3.12. Annotated tag `v0.2.0` points to that release commit, and the
 [v0.2.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0)
 contains the four verified assets. PyPI was not used. Stage 3 had not started at publication;
-Stage 3A is now isolated on its own development branch.
+Stage 3A was developed on its own branch and is now merged into `main`.
 
 v0.2.0 is published as a prerelease for limited public testing.
 
@@ -103,7 +103,7 @@ the versioned `element_vdw_v1` Bondi radius table, the complete Tien et al. 2013
 a spatial cell list. Exposure runs only when an `ExposureConfig` is supplied. Context-disabled
 calls still produce schema 1.1 and preserve the released v0.2 behaviour.
 
-Draft PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) remains unmerged. Local PyMOL
+PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged into `main`. Local PyMOL
 3.1.8 validation produced five schema-1.2 exposure reports and retained every legacy summary.
 Measured 240-point exposure times were 0.018 s synthetic, 0.653 s 1UBQ, 0.979 s 1C3W, 4.098 s
 2RH1, and 2.854 s 1PCR. These are development observations, not runtime guarantees.
@@ -125,7 +125,12 @@ Previous implementation workflow
 Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflow
 [29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) form the
 validated correction baseline immediately before the final safety pass. Python 3.10, 3.11, 3.12,
-and the blocking Python 3.11 FreeSASA job passed. PR #4 remains draft and unmerged.
+and the blocking Python 3.11 FreeSASA job passed. The final PR head
+`b7491ab7cf82e473635bf3191abb960b0b7adcde` passed
+[workflow 29584460029](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584460029).
+PR #4 was squash-merged as `294cf52912e0006d413316b89d7a55fed43f1429`; its
+[post-merge workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
+passed the Python 3.10, 3.11, 3.12, and Python 3.11 FreeSASA jobs.
 
-Stage 3B has not started and cannot begin until Stage 3A is reviewed, accepted, merged, and its
-post-merge workflow is green. No v0.3.0 release is being prepared.
+Stage 3A is complete and merged into main. Stage 3B has not started. No v0.3.0 release is being
+prepared.

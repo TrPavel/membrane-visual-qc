@@ -321,3 +321,14 @@ historical evidence. Head `60872c70d570b5821f1b2cc1bfe271798100ec7c` and workflo
 [29576377936](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29576377936) are the
 validated correction baseline immediately preceding this final safety pass; that run passed Python
 3.10/3.11/3.12 and the blocking Python 3.11 FreeSASA job.
+
+### Stage 3A merge closure
+
+Final PR head `b7491ab7cf82e473635bf3191abb960b0b7adcde` passed
+[workflow 29584460029](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584460029).
+PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged into `main` as
+`294cf52912e0006d413316b89d7a55fed43f1429`. The
+[post-merge workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
+passed all four required jobs: Python 3.10, 3.11, 3.12, and the Python 3.11 FreeSASA reference job.
+Stage 3A is complete and merged into main. Stage 3B has not started, and no v0.3.0 release was
+created.
