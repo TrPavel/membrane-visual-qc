@@ -32,7 +32,7 @@ manifest; verify it with the accompanying `.zip.sha256` file.
 primary public installation route. The published v0.1.0 tag and assets remain available and
 unchanged.
 
-Unreleased Stage 3A development uses version `0.3.0.dev0` and the distinct local artifact
+Unreleased Stage 3 development uses version `0.3.0.dev0` and the distinct local artifact
 `dist/MembraneVisualQC-0.3.0.dev0.zip`. It does not replace the published v0.2.0 prerelease.
 
 For source development:
@@ -99,12 +99,12 @@ RCSB coordinates are not automatically membrane-oriented, and imported orientati
 not independently verified. Reported depth values are geometric evidence, not proof of biological
 burial.
 
-Unreleased `0.3.0.dev0` work on draft PR #4 adds an explicitly opt-in pure-Python SASA/RSA
-foundation. It reports conventional solvent accessibility and geometric membrane-region
-accessible area; neither metric is called lipid accessibility. The default command and GUI paths
-remain context-disabled and retain v0.2 behaviour. Draft schema 1.2 is used only for opt-in
-exposure reports, while released schemas 1.0 and 1.1 remain immutable. FreeSASA is an optional,
-lazy reference backend and is not needed for normal plugin operation.
+Unreleased `0.3.0.dev0` work in draft PR #5 builds local chemical-context review on the merged
+SASA/RSA foundation. Opt-in analysis adds conservative distance-only contacts and independent
+burial/contact/context states without changing `WARNING`/`INSPECT` severity. The GUI offers
+Fast/Standard/High sampling and Built-in/Auto/FreeSASA-reference backends, with analysis disabled
+by default pending graphical acceptance. Draft schema 1.2 stores rich evidence; released schemas
+1.0 and 1.1 remain immutable. FreeSASA is optional and lazy.
 
 ## Validation and development status
 

@@ -140,6 +140,12 @@ class MembraneVQCDialog:
         self.ligand = QtWidgets.QLineEdit("organic")
         self.cutoff = QtWidgets.QLineEdit(str(DEFAULT_LIGAND_CUTOFF))
         self.export_path = QtWidgets.QLineEdit("reports/mvqc_report.json")
+        self.analyze_context = QtWidgets.QCheckBox("Analyze exposure and local context")
+        self.exposure_quality = QtWidgets.QComboBox()
+        self.exposure_quality.addItems(["Fast", "Standard", "High"])
+        self.exposure_quality.setCurrentText("Standard")
+        self.exposure_backend = QtWidgets.QComboBox()
+        self.exposure_backend.addItems(["Built-in", "Auto", "FreeSASA reference"])
         self.summary = QtWidgets.QTextEdit()
         self.summary.setReadOnly(True)
 
@@ -162,6 +168,9 @@ class MembraneVQCDialog:
         layout.addRow("Ligand selection", self.ligand)
         layout.addRow("Cutoff", self.cutoff)
         layout.addRow("Export path", self.export_path)
+        layout.addRow(self.analyze_context)
+        layout.addRow("Exposure quality", self.exposure_quality)
+        layout.addRow("Exposure backend", self.exposure_backend)
 
         buttons = QtWidgets.QHBoxLayout()
         self.action_buttons = []
@@ -205,6 +214,7 @@ class MembraneVQCDialog:
                     ligand=values.ligand,
                     cutoff=values.cutoff,
                     quiet=1,
+                    **self._context_options(),
                 ),
                 self._render_planar_report,
             )
@@ -222,6 +232,7 @@ class MembraneVQCDialog:
                 ligand=values.ligand,
                 cutoff=values.cutoff,
                 quiet=1,
+                **self._context_options(),
             ),
             format_summary,
         )
@@ -303,6 +314,17 @@ class MembraneVQCDialog:
             self.ligand.text(),
             self.cutoff.text(),
         )
+
+    def _context_options(self):
+        checkbox = getattr(self, "analyze_context", None)
+        enabled = bool(checkbox.isChecked()) if checkbox is not None else False
+        quality = getattr(self, "exposure_quality", None)
+        backend = getattr(self, "exposure_backend", None)
+        return {
+            "analyze_context": int(enabled),
+            "exposure_quality": quality.currentText() if quality is not None else "Standard",
+            "exposure_backend": backend.currentText() if backend is not None else "Built-in",
+        }
 
     def _render_planar_report(self, report):
         self.orientation_source.setText(_orientation_source(report.get("orientation")))

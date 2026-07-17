@@ -132,5 +132,21 @@ PR #4 was squash-merged as `294cf52912e0006d413316b89d7a55fed43f1429`; its
 [post-merge workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
 passed the Python 3.10, 3.11, 3.12, and Python 3.11 FreeSASA jobs.
 
-Stage 3A is complete and merged into main. Stage 3B has not started. No v0.3.0 release is being
-prepared.
+Stage 3A is complete and merged into main. Stage 3B is in progress on
+`feat/local-chemical-context` in draft PR
+[#5](https://github.com/TrPavel/membrane-visual-qc/pull/5). No v0.3.0 release is being prepared.
+
+## Stage 3B — local chemical context
+
+The development identity remains `0.3.0.dev0`. Pure-Python chemistry and context modules implement
+ADR-0004 without PyMOL or Qt imports. Existing severity is preserved while schema 1.2 adds
+independent burial, contact-support, and prioritization states. Exposure remains usable alone;
+context-disabled execution continues to produce schema 1.1.
+
+Current local validation: 275 tests passed, five optional FreeSASA tests skipped on Windows, and
+combined coverage is 85%. Ruff, 18 report validations, wheel/sdist, full retained headless PyMOL,
+new context fixtures, and timing passed. The deterministic 48,995-byte Plugin ZIP has SHA-256
+`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+
+Graphical Stage 3B acceptance and green draft-PR CI are still required. PR #5 must not be merged
+automatically. Stage 3 is not complete, and no v0.3.0 tag or release exists.

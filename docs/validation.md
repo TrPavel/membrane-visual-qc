@@ -141,4 +141,27 @@ PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged 
 `294cf52912e0006d413316b89d7a55fed43f1429`. The subsequent `main`
 [workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
 passed all four jobs: Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA reference job.
-Stage 3A is complete and merged into main; Stage 3B has not started.
+Stage 3A is complete and merged into main; the section below records the subsequent Stage 3B work.
+
+## Stage 3B local-context validation
+
+Stage 3B is opt-in and retains development version `0.3.0.dev0`. The pure-Python suite covers all
+contact and context-state labels, inclusive and just-outside cutoffs, same-model inter-chain and
+cross-model isolation, histidine ambiguity, altlocs, input-order and rigid-transform invariance,
+missing/unsupported elements, schema 1.2, deterministic exports, GUI forwarding, and PyMOL
+ownership/lifecycle/colour precedence.
+
+The current Windows result is 275 passed, five optional FreeSASA tests skipped, and 85% combined
+coverage. Ruff check and format check passed. Eighteen reports validated: seven schema 1.1 and
+eleven schema 1.2. Wheel and sdist built successfully. Two Plugin ZIP builds were byte-identical;
+`MembraneVisualQC-0.3.0.dev0.zip` is 48,995 bytes with SHA-256
+`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+
+Headless Incentive PyMOL 3.1.8 passed smoke import, all legacy summaries, rotated 1UBQ, Stage 3A
+exposure, the preparation helper, the deterministic context fixture, all four context visual
+objects, and five-structure timing. Observed local-context times at Standard quality were 0.001 s
+synthetic, 0.122 s 1UBQ, 0.887 s 1C3W, 4.597 s 2RH1, and 6.638 s 1PCR. These are observations, not
+promises. The blocking Ubuntu/FreeSASA job remains required in PR CI.
+
+Graphical integration remains unaccepted until the Stage 3B checklist passes. Draft PR #5 must
+remain unmerged.

@@ -19,6 +19,16 @@ CONTEXT_STATES = frozenset(
         "INSUFFICIENT_CONTEXT",
     }
 )
+CONTACT_TYPES = frozenset(
+    {
+        "putative_salt_bridge",
+        "distance_only_potential_hbond",
+        "nearby_water",
+        "nearby_ion",
+        "ligand_proximity",
+        "polar_ligand_proximity",
+    }
+)
 CONTACT_SUPPORT_VALUES = frozenset({"detected", "not_detected", "unavailable"})
 CONTEXT_STATES = frozenset(
     {
@@ -265,6 +275,12 @@ class ContextContact:
     partner_element: str = ""
     notes: tuple[str, ...] = field(default_factory=tuple)
 
+    def __post_init__(self) -> None:
+        if self.contact_type not in CONTACT_TYPES:
+            raise ValueError("Unsupported local-context contact type.")
+        if not math.isfinite(float(self.distance)) or self.distance < 0:
+            raise ValueError("Contact distance must be finite and non-negative.")
+
     @property
     def partner_key(self) -> tuple[str, str, str, str]:
         return self.partner_model, self.partner_chain, self.partner_resi, self.partner_resn
@@ -300,6 +316,16 @@ class ResidueLocalContext:
     context_state: str
     contacts: tuple[ContextContact, ...] = field(default_factory=tuple)
     warnings: tuple[str, ...] = field(default_factory=tuple)
+
+    def __post_init__(self) -> None:
+        if self.status not in {"completed", "unavailable"}:
+            raise ValueError("Local-context status must be completed or unavailable.")
+        if self.burial_state not in EXPOSURE_CLASSES:
+            raise ValueError("Unsupported burial_state.")
+        if self.contact_support not in CONTACT_SUPPORT_VALUES:
+            raise ValueError("Unsupported contact_support.")
+        if self.context_state not in CONTEXT_STATES:
+            raise ValueError("Unsupported context_state.")
 
     @property
     def residue_key(self) -> tuple[str, str, str, str]:
@@ -348,6 +374,7 @@ class LocalContextAnalysis:
     residues: tuple[ResidueLocalContext, ...]
     config: LocalContextConfig
     warnings: tuple[str, ...] = field(default_factory=tuple)
+    category_atom_counts: tuple[tuple[str, int], ...] = field(default_factory=tuple)
     elapsed_seconds: float = 0.0
 
     def by_residue(self) -> dict[tuple[str, str, str, str], ResidueLocalContext]:
@@ -365,6 +392,7 @@ class LocalContextAnalysis:
             "local_context": {
                 **self.config.as_dict(),
                 "warnings": list(self.warnings),
+                "category_atom_counts": dict(self.category_atom_counts),
                 "elapsed_seconds": float(self.elapsed_seconds),
                 "context_state_counts": self.state_counts(),
             },

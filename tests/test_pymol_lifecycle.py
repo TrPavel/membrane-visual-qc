@@ -2,13 +2,21 @@ import pytest
 
 from membrane_vqc.pymol_adapter import (
     MVQC_NAMES,
+    MVQC_CONTEXT_NAMES,
     MVQC_SLAB_NAMES,
     apply_review_style,
     clear_owned,
     clear_slab,
+    show_local_context,
     show_ligand_shell,
 )
 from membrane_vqc import commands, qc
+from membrane_vqc.context_models import (
+    ContextContact,
+    LocalContextAnalysis,
+    LocalContextConfig,
+    ResidueLocalContext,
+)
 
 
 class FakeCmd:
@@ -62,6 +70,44 @@ def test_review_style_is_applied_after_ligand_context_colors():
 
     show_ligand_shell("protein", "organic", [], cmd)
 
+    assert cmd.colored[-2:] == [
+        ("orange", "mvqc_core_charged"),
+        ("yellow", "mvqc_core_polar_inspect"),
+    ]
+
+
+def test_context_visuals_use_owned_names_styles_and_review_precedence():
+    contacts = (
+        ContextContact("putative_salt_bridge", "NZ", "m", "B", "2", "ASP", "OD1", 3.0, "O"),
+        ContextContact("nearby_water", "NZ", "m", "_", "20", "HOH", "O", 3.0, "O"),
+        ContextContact("nearby_ion", "NZ", "m", "_", "21", "NA", "NA", 3.0, "NA"),
+        ContextContact("ligand_proximity", "NZ", "m", "_", "22", "LIG", "C1", 4.0, "C"),
+    )
+    analysis = LocalContextAnalysis(
+        "completed",
+        (
+            ResidueLocalContext(
+                "m",
+                "A",
+                "1",
+                "LYS",
+                "completed",
+                "buried",
+                "detected",
+                "BURIED_WITH_POTENTIAL_SUPPORT",
+                contacts,
+            ),
+        ),
+        LocalContextConfig(),
+    )
+    cmd = FakeCmd({"user_object", "mvqc_core_charged", "mvqc_core_polar_inspect"})
+
+    show_local_context(analysis, cmd)
+
+    assert [name for name, _ in cmd.selected] == list(MVQC_CONTEXT_NAMES)
+    assert ("sticks", "mvqc_context_partners") in cmd.shown
+    assert ("spheres", "mvqc_context_waters") in cmd.shown
+    assert ("violet", "mvqc_context_ions") in cmd.colored
     assert cmd.colored[-2:] == [
         ("orange", "mvqc_core_charged"),
         ("yellow", "mvqc_core_polar_inspect"),
@@ -124,6 +170,34 @@ def test_mvqc_check_forwards_explicit_input_path(monkeypatch):
     commands.mvqc_check(selection="all", input_path=" data/model.cif ")
 
     assert captured["input_path"] == "data/model.cif"
+
+
+@pytest.mark.parametrize(("quality", "points"), [("Fast", 96), ("Standard", 240), ("High", 960)])
+def test_context_quality_presets_are_exact(quality, points):
+    exposure, context = commands._analysis_configs(1, quality)
+    assert exposure.sphere_points == points
+    assert context.atom_role_policy == "standard_residue_roles_v1"
+
+
+def test_context_is_disabled_by_default():
+    assert commands._analysis_configs(0, "High") == (None, None)
+
+
+def test_failed_context_run_clears_owned_state_and_report(monkeypatch):
+    cleared = []
+    monkeypatch.setattr(commands, "clear_owned", lambda: cleared.append("all"))
+    monkeypatch.setattr(
+        qc,
+        "run_check",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("context failed")),
+    )
+    qc.LAST_REPORT = {"context_analysis": {"local_context": {"status": "stale"}}}
+
+    with pytest.raises(RuntimeError, match="context failed"):
+        commands.mvqc_check(analyze_context=1)
+
+    assert cleared == ["all", "all"]
+    assert qc.LAST_REPORT is None
 
 
 def test_failed_orientation_check_clears_previous_visuals_and_report(monkeypatch):

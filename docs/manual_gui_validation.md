@@ -139,3 +139,35 @@ The user-reported smoke passed on 2026-07-16 with the exact 27,459-byte candidat
 is `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. This was a focused
 packaging/version smoke, not a repetition of the full scientific and lifecycle acceptance recorded
 for `0.2.0.dev0`.
+
+## Stage 3B graphical acceptance — REQUIRED
+
+Use development artifact `dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
+`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`. This is not a release.
+
+1. Install the ZIP through Plugin Manager, restart PyMOL, and open the GUI.
+2. Confirm **Analyze exposure and local context** is unchecked by default.
+3. Confirm Fast/Standard/High quality and Built-in/Auto/FreeSASA reference backend choices.
+4. Load `C:/Pymol_script_1/data/synthetic/local_context_review.pdb` as
+   `local_context_review`.
+5. Use legacy global-z `-15/15`, enable context, select Standard/Built-in, and run QC.
+6. Confirm the original charged/polar summary remains visible with a concise context summary.
+7. Confirm orange WARNING and yellow INSPECT styling takes precedence over context colours.
+8. Confirm cyan partner sticks, blue water spheres, violet ion spheres, and magenta ligand sticks
+   exist under the four `mvqc_context_*` names.
+9. Export JSON/CSV. Confirm schema 1.2, `software.version = 0.3.0.dev0`, serialized thresholds,
+   category counts, per-item exposure/local-context evidence, and unchanged CSV columns.
+10. Disable context and rerun; confirm old context objects/evidence disappear and output returns to
+    schema 1.1 behaviour.
+11. Re-enable context, run successfully, then trigger invalid orientation-file Run QC; confirm
+    stale report/review/context objects are cleared and no traceback appears.
+12. Run `mvqc_clear`; confirm every plugin-owned object is removed while
+    `local_context_review` remains.
+13. Repeat on rotated 1UBQ and confirm orientation behaviour and review counts remain unchanged.
+14. Record Standard-quality responsiveness and capture overview, partner, and cleanup screenshots.
+
+All items are currently **PENDING graphical validation**. Suggested evidence paths:
+
+- `docs/screenshots/manual_stage3b_context_overview.png`
+- `docs/screenshots/manual_stage3b_context_partners.png`
+- `docs/screenshots/manual_stage3b_context_cleanup.png`

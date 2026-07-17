@@ -1,7 +1,7 @@
 import pytest
 
 from membrane_vqc import qc
-from membrane_vqc.context_models import ExposureConfig
+from membrane_vqc.context_models import ExposureConfig, LocalContextConfig
 from membrane_vqc.exposure import calculate_exposure as calculate_exposure_core
 from membrane_vqc.membrane import AtomRecord
 from membrane_vqc.orientation import legacy_global_z
@@ -9,7 +9,13 @@ from membrane_vqc.orientation import legacy_global_z
 
 def _disable_rendering(monkeypatch):
     monkeypatch.setattr(qc, "create_membrane_planes", lambda *args: None)
-    for name in ("color_hydropathy", "show_ligand_shell", "show_residue_selections"):
+    for name in (
+        "color_hydropathy",
+        "show_ligand_shell",
+        "show_residue_selections",
+        "show_local_context",
+        "clear_context",
+    ):
         monkeypatch.setattr(qc, name, lambda *args: None)
 
 
@@ -114,3 +120,60 @@ def test_context_disabled_does_not_extract_full_structure(monkeypatch):
 
     assert report["schema_version"] == "1.1"
     assert "context_analysis" not in report
+
+
+def test_context_enabled_extracts_exact_selection_once_and_preserves_severity(monkeypatch):
+    target = _protein_target()
+    partner = AtomRecord("scope", "B", "2", "ASP", "OD1", 3, 0, 0, element="O", is_hetatm=False)
+    calls = []
+    rendered = []
+    monkeypatch.setattr(qc, "protein_atoms", lambda selection, cmd_obj: [target])
+
+    def selected(selection, cmd_obj):
+        calls.append(selection)
+        return [target, partner]
+
+    monkeypatch.setattr(qc, "structure_atoms", selected)
+    _disable_rendering(monkeypatch)
+    monkeypatch.setattr(qc, "show_local_context", lambda analysis, cmd: rendered.append(analysis))
+
+    report = qc.run_check_with_membrane(
+        selection="scope",
+        membrane=legacy_global_z(-15, 15),
+        ligand="",
+        cmd_obj=object(),
+        exposure_config=ExposureConfig(target_scope="review_items"),
+        local_context_config=LocalContextConfig(),
+    )
+
+    assert calls == ["scope"]
+    assert len(rendered) == 1
+    assert report["schema_version"] == "1.2"
+    assert report["review_items"][0]["severity"] == "WARNING"
+    assert report["review_items"][0]["local_context"]["contact_support"] == "detected"
+    assert report["context_analysis"]["local_context"]["atom_role_policy"] == (
+        "standard_residue_roles_v1"
+    )
+
+
+def test_local_context_requires_exposure_configuration():
+    with pytest.raises(ValueError, match="requires exposure_config"):
+        qc.run_check_with_membrane(
+            selection="scope",
+            membrane=legacy_global_z(-15, 15),
+            cmd_obj=object(),
+            local_context_config=LocalContextConfig(),
+        )
+
+
+def test_gui_freesasa_reference_backend_label_is_accepted(monkeypatch):
+    marker = object()
+    monkeypatch.setattr(qc, "calculate_freesasa_exposure", lambda *args, **kwargs: marker)
+    result = qc._calculate_exposure(
+        [],
+        config=ExposureConfig(),
+        target_residues=set(),
+        membrane=legacy_global_z(-15, 15),
+        backend="FreeSASA reference",
+    )
+    assert result is marker

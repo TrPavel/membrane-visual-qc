@@ -61,7 +61,8 @@ def analyze_local_context(
         model: tuple(atom for atom in ordered if atom.model == model)
         for model in sorted({atom.model for atom in ordered})
     }
-    warnings: list[str] = []
+    warnings = _element_warnings(ordered)
+    categories = _category_atom_counts(ordered)
     results: list[ResidueLocalContext] = []
     for target_key in targets:
         target_atoms = grouped.get(target_key, ())
@@ -76,6 +77,20 @@ def analyze_local_context(
                     contact_support="unavailable",
                     context_state="INSUFFICIENT_CONTEXT",
                     warnings=("No usable atoms were available for this review item.",),
+                )
+            )
+            continue
+        if not any(charged_role(atom) or donor_acceptor_roles(atom) for atom in target_atoms):
+            results.append(
+                ResidueLocalContext(
+                    *target_key,
+                    status="unavailable",
+                    burial_state=burial_state,
+                    contact_support="unavailable",
+                    context_state="INSUFFICIENT_CONTEXT",
+                    warnings=(
+                        "No recognized charged, donor, or acceptor target atoms were available.",
+                    ),
                 )
             )
             continue
@@ -97,6 +112,7 @@ def analyze_local_context(
         residues=tuple(results),
         config=config,
         warnings=tuple(warnings),
+        category_atom_counts=tuple(sorted(categories.items())),
         elapsed_seconds=time.perf_counter() - started,
     )
 
@@ -196,6 +212,42 @@ def _entity_sizes(atoms: tuple[AtomRecord, ...]) -> dict[ResidueKey, int]:
     for atom in atoms:
         sizes[_residue_key(atom)] += 1
     return dict(sizes)
+
+
+def _category_atom_counts(atoms: tuple[AtomRecord, ...]) -> dict[str, int]:
+    entity_sizes = _entity_sizes(atoms)
+    counts = {"protein": 0, "water": 0, "ion": 0, "ligand": 0, "other_hetatm": 0}
+    for atom in atoms:
+        if is_protein(atom):
+            category = "protein"
+        elif is_water(atom):
+            category = "water"
+        elif _is_ion(atom, entity_sizes):
+            category = "ion"
+        elif atom.is_hetatm is True and safe_element(atom) not in {"", "H"}:
+            category = "ligand"
+        else:
+            category = "other_hetatm"
+        counts[category] += 1
+    return counts
+
+
+def _element_warnings(atoms: tuple[AtomRecord, ...]) -> list[str]:
+    entity_sizes = _entity_sizes(atoms)
+    warnings = []
+    for atom in atoms:
+        if (
+            atom.is_hetatm is True
+            and not is_water(atom)
+            and not _is_ion(atom, entity_sizes)
+            and safe_element(atom) == ""
+        ):
+            warnings.append(
+                "Unsupported or ambiguous HETATM element at "
+                f"{atom.model}/{atom.chain or '_'}/{atom.resi}/{residue_name(atom)}/{atom_name(atom)}; "
+                "excluded from ligand context."
+            )
+    return list(dict.fromkeys(warnings))
 
 
 def _is_ion(atom: AtomRecord, entity_sizes: dict[ResidueKey, int]) -> bool:

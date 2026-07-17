@@ -1,0 +1,29 @@
+{
+  "fixture": "local_context_review.pdb",
+  "scientific_contract": "distance-only evidence; no energetic or biological verdicts",
+  "expected": {
+    "A/1/LYS": {
+      "severity": "WARNING",
+      "contacts": [
+        "putative_salt_bridge",
+        "nearby_water",
+        "nearby_ion",
+        "polar_ligand_proximity"
+      ]
+    },
+    "A/3/SER": {
+      "severity": "INSPECT",
+      "contacts": ["distance_only_potential_hbond"]
+    }
+  },
+  "boundary_policy": "all configured cutoffs are inclusive",
+  "histidine_policy": "not unconditionally positively charged",
+  "cross_model_policy": "contacts are forbidden",
+  "expected_states": [
+    "BURIED_NO_DETECTED_SUPPORT",
+    "BURIED_WITH_POTENTIAL_SUPPORT",
+    "ACCESSIBLE_NO_DETECTED_SUPPORT",
+    "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+    "INSUFFICIENT_CONTEXT"
+  ]
+}

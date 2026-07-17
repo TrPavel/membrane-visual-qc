@@ -66,7 +66,7 @@ def charged_role(atom: AtomRecord) -> str:
 def donor_acceptor_roles(atom: AtomRecord) -> frozenset[str]:
     resn, name = residue_name(atom), atom_name(atom)
     roles: set[str] = set()
-    if name in BACKBONE_DONORS or name in DONOR_ATOMS.get(resn, ()):
+    if (name in BACKBONE_DONORS and resn != "PRO") or name in DONOR_ATOMS.get(resn, ()):
         roles.add("donor")
     if name in BACKBONE_ACCEPTORS or name in ACCEPTOR_ATOMS.get(resn, ()):
         roles.add("acceptor")

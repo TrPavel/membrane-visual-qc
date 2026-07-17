@@ -56,7 +56,7 @@ def test_generated_example_reports_validate_against_json_schema():
 def test_generated_examples_can_dispatch_by_declared_schema_version():
     pytest.importorskip("jsonschema")
     reports = default_report_paths(ROOT / "reports")
-    assert validate_reports_by_version(reports) == {"1.1": 7, "1.2": 5}
+    assert validate_reports_by_version(reports) == {"1.1": 7, "1.2": 11}
 
 
 def test_exposure_report_validates_against_draft_schema_1_2(tmp_path):

@@ -330,5 +330,30 @@ PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged 
 `294cf52912e0006d413316b89d7a55fed43f1429`. The
 [post-merge workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
 passed all four required jobs: Python 3.10, 3.11, 3.12, and the Python 3.11 FreeSASA reference job.
-Stage 3A is complete and merged into main. Stage 3B has not started, and no v0.3.0 release was
-created.
+Stage 3A is complete and merged into main. No v0.3.0 release was created.
+
+## Unreleased Stage 3B — local chemical context
+
+Stage 3B is implemented for review on `feat/local-chemical-context` in draft PR
+[#5](https://github.com/TrPavel/membrane-visual-qc/pull/5), retaining development identity
+`0.3.0.dev0`. It adds conservative putative salt bridges, distance-only potential hydrogen bonds,
+nearby waters and ions, ligand proximity, independent context states, completed draft schema 1.2
+evidence, compact opt-in GUI controls, and plugin-owned context visuals. It does not alter original
+`WARNING`/`INSPECT` severity or claim energetic or biological conclusions.
+
+Local automated validation passed with 275 tests, five optional FreeSASA skips on Windows, 85%
+coverage, Ruff, 18 schema-valid reports, wheel/sdist, deterministic double ZIP, and the full
+retained headless PyMOL suite. The 48,995-byte development ZIP has SHA-256
+`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+
+The headless synthetic PDB produced four `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` review items. The
+independent state fixtures cover one buried/no-support, one buried/with-support, one
+accessible/no-support, one accessible/with-support, and two insufficient-context cases. Observed
+Standard-quality local-context times were 0.001 s synthetic, 0.122 s 1UBQ, 0.887 s 1C3W, 4.597 s
+2RH1, and 6.638 s 1PCR. Every legacy structure summary remained unchanged.
+
+Contacts are distance-only; histidine ionic interpretation is disabled; arbitrary ligand
+chemistry, water bridges, protonation, coordination energetics, curved/multiple membranes,
+network orientation, model comparison, and batch CLI remain out of scope. Graphical Stage 3B
+acceptance and green PR CI are still required. PR #5 remains draft and unmerged; Stage 3 is not
+complete and no v0.3.0 tag or release may be created.

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .hydropathy import color_name_for_residue
+from .context_models import LocalContextAnalysis
 from .membrane import AtomRecord, ResidueFlag, ResidueRecord
 from .orientation import PlanarMembrane, orthonormal_basis
 
@@ -19,6 +20,10 @@ MVQC_NAMES = frozenset(
         "mvqc_core_polar_inspect",
         "mvqc_ligand",
         "mvqc_ligand_shell",
+        "mvqc_context_partners",
+        "mvqc_context_waters",
+        "mvqc_context_ions",
+        "mvqc_context_ligands",
     }
 )
 
@@ -30,6 +35,12 @@ MVQC_REVIEW_NAMES = (
     "mvqc_core_polar_inspect",
 )
 MVQC_LIGAND_NAMES = ("mvqc_ligand", "mvqc_ligand_shell")
+MVQC_CONTEXT_NAMES = (
+    "mvqc_context_partners",
+    "mvqc_context_waters",
+    "mvqc_context_ions",
+    "mvqc_context_ligands",
+)
 
 
 def clear_owned(cmd_obj: Any | None = None) -> None:
@@ -43,6 +54,15 @@ def clear_slab(cmd_obj: Any | None = None) -> None:
     """Remove only the membrane-boundary objects owned by the plugin."""
     cmd = get_cmd(cmd_obj)
     for name in MVQC_SLAB_NAMES:
+        cmd.delete(name)
+
+
+def clear_context(cmd_obj: Any | None = None) -> None:
+    """Remove only local-context visual evidence owned by the plugin."""
+    cmd = get_cmd(cmd_obj)
+    if not hasattr(cmd, "delete"):
+        return
+    for name in MVQC_CONTEXT_NAMES:
         cmd.delete(name)
 
 
@@ -159,6 +179,40 @@ def residue_selection(residues: list[ResidueRecord] | list[ResidueFlag]) -> str:
             f"(model {residue.model}{chain} and resi {residue.resi} and resn {residue.resn})"
         )
     return " or ".join(parts) if parts else "none"
+
+
+def show_local_context(analysis: LocalContextAnalysis, cmd_obj: Any | None = None) -> None:
+    """Create deterministic plugin-owned selections for local-context partners."""
+    cmd = get_cmd(cmd_obj)
+    clear_context(cmd)
+    categories: dict[str, list[str]] = {name: [] for name in MVQC_CONTEXT_NAMES}
+    for residue in analysis.residues:
+        for contact in residue.contacts:
+            partner = contact.partner_key
+            chain = "" if partner[1] == "_" else f" and chain {partner[1]}"
+            expression = f"(model {partner[0]}{chain} and resi {partner[2]} and resn {partner[3]})"
+            if contact.contact_type == "nearby_water":
+                name = "mvqc_context_waters"
+            elif contact.contact_type == "nearby_ion":
+                name = "mvqc_context_ions"
+            elif contact.contact_type in {"ligand_proximity", "polar_ligand_proximity"}:
+                name = "mvqc_context_ligands"
+            else:
+                name = "mvqc_context_partners"
+            categories[name].append(expression)
+    styles = {
+        "mvqc_context_partners": ("sticks", "cyan"),
+        "mvqc_context_waters": ("spheres", "blue"),
+        "mvqc_context_ions": ("spheres", "violet"),
+        "mvqc_context_ligands": ("sticks", "magenta"),
+    }
+    for name in MVQC_CONTEXT_NAMES:
+        expression = " or ".join(sorted(set(categories[name]))) or "none"
+        cmd.select(name, expression)
+        representation, color = styles[name]
+        cmd.show(representation, name)
+        cmd.color(color, name)
+    apply_review_style(cmd)
 
 
 def _dot(left: tuple[float, float, float], right: tuple[float, float, float]) -> float:
