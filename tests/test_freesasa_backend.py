@@ -115,16 +115,20 @@ def test_freesasa_model_isolation_matches_builtin():
     pytest.importorskip("freesasa")
     fixture = [
         AtomRecord("A", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+        AtomRecord("A", "A", "2", "SER", "OG", 2.4, 0, 0, element="O"),
         AtomRecord("B", "A", "1", "ALA", "CB", 0, 0, 0, element="C"),
+        AtomRecord("B", "A", "2", "SER", "OG", 2.4, 0, 0, element="O"),
     ]
     config = ExposureConfig(sphere_points=240, target_scope="all_residues")
     builtin = calculate_exposure(fixture, config=config)
     reference = calculate_freesasa_exposure(fixture, config=config)
 
-    assert builtin.residues[0].residue_sasa == pytest.approx(
-        builtin.residues[1].residue_sasa, abs=1e-12
-    )
-    assert reference.residues[0].residue_sasa == pytest.approx(
-        reference.residues[1].residue_sasa, abs=1e-12
-    )
+    for result in (builtin, reference):
+        by_residue = result.by_residue()
+        assert by_residue[("A", "A", "1", "ALA")].residue_sasa == pytest.approx(
+            by_residue[("B", "A", "1", "ALA")].residue_sasa, abs=1e-12
+        )
+        assert by_residue[("A", "A", "2", "SER")].residue_sasa == pytest.approx(
+            by_residue[("B", "A", "2", "SER")].residue_sasa, abs=1e-12
+        )
     assert_parity(builtin, reference)
