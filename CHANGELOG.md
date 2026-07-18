@@ -6,7 +6,7 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
-## [0.3.0] - publication date pending
+## [0.3.0] - 2026-07-18
 
 ### Added
 
