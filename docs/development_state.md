@@ -1,6 +1,6 @@
 # Development state
 
-Snapshot date: 2026-07-18 (Europe/Moscow).
+Snapshot date: 2026-07-19 (Europe/Moscow).
 
 Stage 3 is complete and merged into `main`. v0.3.0 is published from the final release commit as a
 GitHub prerelease for limited public testing. PyPI is not used.
@@ -13,19 +13,35 @@ and was squash-merged as `bbaabaefee2274f06f954aab16446e8f7e0def7a`. The
 [post-merge workflow 29652573284](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29652573284)
 passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job.
 
-ADR-0005 is accepted for Stage 4A architecture, with PDBTM-only offline import as the first
+ADR-0005 is accepted for Stage 4A implementation, with PDBTM-only offline import as the first
 implementation scope. The isolated
-[PDBTM source-semantics preflight](pdbtm_semantics_preflight.md) passed on official current
-PDBTM/RCSB pairs `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`). It verified the documented
-`p_transformed = R p_original + t` convention, direct transformed-companion and analytical-inverse
-matching, provider chain mapping, symmetric half-thickness semantics, and precision-derived
-identity/inverse limits without fitting.
+[PDBTM source-semantics preflight](pdbtm_semantics_preflight.md) passed on official PDBTM/RCSB
+pairs `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`). Final PR head
+`76d3b45bb12a09c3e49c324f73896e282f6b4aa2` passed
+[workflow 29661170245](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29661170245).
+[#8](https://github.com/TrPavel/membrane-visual-qc/pull/8) was squash-merged as
+`c6cd9ff676514d20bcc71834449ef225b21c188a`; its
+[post-merge workflow 29661211096](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29661211096)
+passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job.
 
-Stage 4A production implementation has not started. Package version remains `0.3.0`; schema 1.3
-does not exist; released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable.
-No release was created and Stage 4 functionality is not advertised as available. Official
-provider coordinate payloads remain local-only and outside Git because redistribution permission
-is unresolved.
+The tested PDBTM data snapshot was resource version `1017` and the tested provider software was
+`3.2.134`. The preflight verified `p_transformed = R p_original + t`, provider chain mapping,
+direct transformed-companion and analytical-inverse matching without fitting, and symmetric
+half-thicknesses of 12.25 angstrom for `1pcr` and 9.75 angstrom for `1a0s`. Runtime Case A uses
+`runtime_identity_match_limit` of 0.002 angstrom for both RMSD and maximum residual; Runtime Case B
+uses `runtime_inverse_match_limit` of 0.003 angstrom for both. Provider-forward matrix validation
+is a separate per-payload precision-derived limit.
+
+OpenAPI/API v1 required fields, documented matrix semantics, rigid transforms, and the reviewed
+precision envelope define compatibility. Resource and software versions are serialized as
+provenance; a resource-version increment alone is not an automatic rejection. Decimal precision
+and bounds are derived from every exact payload. Changed structure/semantics, non-rigid transforms,
+or precision outside the envelope return `unsupported` without reusing a historical fixed limit.
+Official payloads remain local-only and outside Git because redistribution permission is unresolved.
+
+PDBTM source-semantics preflight is complete and merged into main. Stage 4A production
+implementation is unblocked but has not started. Package version remains `0.3.0`; schema 1.3 does
+not exist; no release was created by this work.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
