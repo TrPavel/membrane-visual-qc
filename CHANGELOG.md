@@ -30,9 +30,6 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Made review styling lifecycle-safe across repeated graphical runs by enumerating real named
   selections, styling each review selection independently, and removing premature hydropathy and
   ligand-shell restyling assumptions.
-- Made review styling lifecycle-safe across repeated graphical runs by enumerating real named
-  selections, styling each review selection independently, and removing premature hydropathy and
-  ligand-shell restyling assumptions.
 - Made FreeSASA orchestration use its real membrane-independent signature, centralized context
   priority ordering, tightened the binary context command flag, and limited schema 1.2 to its six
   explicitly supported conservative contact labels.

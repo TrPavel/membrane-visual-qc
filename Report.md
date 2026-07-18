@@ -372,8 +372,16 @@ mvqc_core_polar_inspect`. Review styling now enumerates actual named selections,
 one at a time, and skips deleted names. Premature hydropathy and ligand-shell review styling was
 removed; orchestration still recreates review selections after base and context rendering. A new
 one-process headless regression passes ON → OFF → ON → ON → invalid orientation while preserving
-the input object and clearing plugin state/`LAST_REPORT`. Focused graphical retest of the corrected
-ZIP remains required.
+the input object and clearing plugin state/`LAST_REPORT`.
+
+The focused graphical retest then passed on Windows 10 build 26200, Incentive PyMOL 3.1.8, bundled
+Python 3.10.20, using the exact corrected 49,414-byte ZIP with SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`. Installation/restart,
+`ON → OFF → ON → ON → invalid orientation`, selection recreation, absence of the invalid-review
+error, invalid-file cleanup, schema 1.2 export with unchanged CSV columns, `mvqc_clear` structure
+preservation, Standard/Built-in responsiveness, and rotated 1UBQ `76/40/11/13/0` all passed.
+Stage 3B graphical acceptance is complete. The earlier blocked SHA remains recorded above as
+partial historical evidence.
 
 The headless synthetic PDB produced four `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` review items. The
 independent state fixtures cover one buried/no-support, one buried/with-support, one
@@ -385,5 +393,5 @@ promises. Every legacy structure summary remained unchanged.
 Contacts are distance-only; histidine ionic interpretation is disabled; arbitrary ligand
 chemistry, water bridges, protonation, coordination energetics, curved/multiple membranes,
 network orientation, model comparison, and batch CLI remain out of scope. Graphical Stage 3B
-acceptance and green PR CI are still required. PR #5 remains draft and unmerged; Stage 3 is not
-complete and no v0.3.0 tag or release may be created.
+acceptance has passed; final green PR CI and merge closure are still required. PR #5 remains draft
+and unmerged at this record point; no v0.3.0 tag or release may be created.

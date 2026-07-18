@@ -155,8 +155,13 @@ FreeSASA orchestration tests are assigned to the Ubuntu reference job.
 
 The first graphical Stage 3B attempt is partial. Initial summary, context objects/colours, review
 precedence, and context-disabled fallback passed, but a sequential rerun failed on a stale
-`mvqc_core_charged` selection. The lifecycle correction is automated and awaits focused graphical
-retest with the corrected exact ZIP.
+`mvqc_core_charged` selection. This historical result remains partial.
 
-Graphical Stage 3B acceptance and green draft-PR CI are still required. PR #5 must not be merged
-automatically. Stage 3 is not complete, and no v0.3.0 tag or release exists.
+Focused graphical acceptance subsequently passed on Windows 10 build 26200 with Incentive PyMOL
+3.1.8, bundled Python 3.10.20, and the exact corrected 49,414-byte ZIP with SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`. The complete
+`ON → OFF → ON → ON → invalid orientation` lifecycle, exports, cleanup, preservation,
+responsiveness, and rotated 1UBQ `76/40/11/13/0` passed. Stage 3B graphical acceptance is complete.
+
+Final green PR CI and merge closure are still required at this record point. No v0.3.0 tag or
+release exists.

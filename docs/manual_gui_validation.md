@@ -140,7 +140,31 @@ is `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. This was 
 packaging/version smoke, not a repetition of the full scientific and lifecycle acceptance recorded
 for `0.2.0.dev0`.
 
-## Stage 3B graphical acceptance — PARTIAL; FOCUSED RETEST REQUIRED
+## Stage 3B graphical acceptance — PASS
+
+Final focused acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8 and bundled
+Python 3.10.20. The exact accepted development artifact was
+`MembraneVisualQC-0.3.0.dev0.zip`, 49,414 bytes, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`.
+
+| Focused corrected-artifact check | Result |
+| --- | --- |
+| Plugin Manager installation and restart | PASS |
+| Sequential `ON → OFF → ON → ON` lifecycle | PASS |
+| No invalid review-selection error | PASS |
+| Review and context selections recreated | PASS |
+| Invalid orientation cleared stale plugin state without traceback | PASS |
+| Schema 1.2 export and unchanged CSV columns | PASS |
+| `mvqc_clear` preserved the input structure | PASS |
+| Rotated 1UBQ regression `76/40/11/13/0` | PASS |
+| Standard/Built-in responsiveness | PASS |
+
+The complete focused sequence was `ON → OFF → ON → ON → invalid orientation`. Stage 3B graphical
+acceptance is complete. No new screenshot from the accepted corrected artifact was available in
+the workspace, so none is claimed or added. Previously exported manual JSON/CSV evidence remains
+untouched.
+
+### Historical partial attempt — retained
 
 The first graphical attempt used `MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
 `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`. Its initial context-enabled
@@ -156,13 +180,12 @@ That attempt is recorded as **PARTIAL**, not accepted. The failure came from con
 broad `all` namespace during selection deletion/recreation and then styling a compound expression
 containing a stale review-selection name.
 
-Focused graphical retest must use the corrected development artifact
+The focused graphical retest subsequently used the corrected development artifact
 `dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
 `53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1` (49,414 bytes). This is not a
-release. Install it through Plugin Manager, restart PyMOL, and repeat the sequential lifecycle:
-context ON, context OFF, context ON, context ON again, then invalid orientation-file Run QC.
-Confirm that review/context selections are recreated, no invalid review-selection error appears,
-invalid-file cleanup clears plugin state and `LAST_REPORT`, and `local_context_review` remains.
+release. That retest passed the sequential lifecycle and cleanup requirements recorded above.
+
+### Acceptance procedure
 
 1. Install the ZIP through Plugin Manager, restart PyMOL, and open the GUI.
 2. Confirm **Analyze exposure and local context** is unchecked by default.
@@ -185,9 +208,10 @@ invalid-file cleanup clears plugin state and `LAST_REPORT`, and `local_context_r
 13. Repeat on rotated 1UBQ and confirm orientation behaviour and review counts remain unchanged.
 14. Record Standard-quality responsiveness and capture overview, partner, and cleanup screenshots.
 
-Initial rendering/summary/colour and context-disabled checks passed with the blocked artifact. All
-lifecycle-dependent acceptance remains **PENDING focused graphical retest** with the corrected
-artifact. Suggested evidence paths:
+Initial rendering/summary/colour and context-disabled checks passed with the historical blocked
+artifact; the lifecycle-dependent checks passed with the corrected artifact. Combined Stage 3B
+graphical acceptance is **PASS**. The following paths remain reserved for genuine accepted-artifact
+screenshots if they are supplied later; no such image is currently claimed:
 
 - `docs/screenshots/manual_stage3b_context_overview.png`
 - `docs/screenshots/manual_stage3b_context_partners.png`

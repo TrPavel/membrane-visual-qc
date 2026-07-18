@@ -174,5 +174,13 @@ context selections, the absence of invalid-review-selection failures, cleared pl
 `LAST_REPORT`, and preservation of the original structure object. This directly covers the
 graphical blocker found after the initially successful rendering checks.
 
-Graphical integration remains unaccepted until the Stage 3B checklist passes. Draft PR #5 must
-remain unmerged.
+Focused graphical acceptance passed on Windows 10 build 26200, Incentive PyMOL 3.1.8, and bundled
+Python 3.10.20 with the exact corrected 49,414-byte ZIP, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`. Installation/restart,
+`ON → OFF → ON → ON → invalid orientation`, selection recreation, invalid-file cleanup without a
+traceback, schema 1.2 export and unchanged CSV columns, `mvqc_clear` input preservation,
+Standard/Built-in responsiveness, and rotated 1UBQ `76/40/11/13/0` passed. The prior SHA
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf` remains partial historical
+evidence. Stage 3B graphical acceptance is complete.
+
+Graphical integration is accepted. PR #5 remains unmerged until its final required workflow passes.

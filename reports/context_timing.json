@@ -7,8 +7,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 16,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 1.0884068000000298,
-    "local_context_seconds": 0.7087467000001197,
+    "exposure_seconds": 1.5614058000001023,
+    "local_context_seconds": 0.9956007999999201,
     "report": "reports/1c3w_context_mvqc.json",
     "review_items": 41
   },
@@ -20,8 +20,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 17,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 2.1729347000000416,
-    "local_context_seconds": 5.692758599999706,
+    "exposure_seconds": 2.988561000000118,
+    "local_context_seconds": 8.752942500000245,
     "report": "reports/1pcr_context_mvqc.json",
     "review_items": 76
   },
@@ -33,8 +33,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 0,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 0.4614240000000791,
-    "local_context_seconds": 0.12312359999987166,
+    "exposure_seconds": 0.5894805999996606,
+    "local_context_seconds": 0.16994729999987612,
     "report": "reports/1ubq_context_mvqc.json",
     "review_items": 24
   },
@@ -46,8 +46,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 15,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 2.986033099999986,
-    "local_context_seconds": 4.009078699999918,
+    "exposure_seconds": 4.676865100000214,
+    "local_context_seconds": 6.061397299999953,
     "report": "reports/2rh1_context_mvqc.json",
     "review_items": 104
   },
@@ -59,8 +59,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 0,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 0.013623400000142283,
-    "local_context_seconds": 0.0007194999998318963,
+    "exposure_seconds": 0.016029500000513508,
+    "local_context_seconds": 0.001058700000612589,
     "report": "reports/bad_core_lys_context_mvqc.json",
     "review_items": 1
   }
