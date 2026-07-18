@@ -183,4 +183,12 @@ Standard/Built-in responsiveness, and rotated 1UBQ `76/40/11/13/0` passed. The p
 `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf` remains partial historical
 evidence. Stage 3B graphical acceptance is complete.
 
-Graphical integration is accepted. PR #5 remains unmerged until its final required workflow passes.
+Graphical integration is accepted. Final PR head `0c08029b15baa2786681a0d73002d89f7d4e36db`
+passed [workflow 29643963613](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29643963613).
+The squash merge commit is `bc29918686206292c00a13cc74d6d20e60292653`, and
+[post-merge workflow 29644011836](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29644011836)
+passed Python 3.10, 3.11, 3.12, and FreeSASA.
+
+Stage 3B is complete and merged into main.
+
+Stage 3 is complete and merged into main.

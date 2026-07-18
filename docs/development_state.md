@@ -132,9 +132,8 @@ PR #4 was squash-merged as `294cf52912e0006d413316b89d7a55fed43f1429`; its
 [post-merge workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
 passed the Python 3.10, 3.11, 3.12, and Python 3.11 FreeSASA jobs.
 
-Stage 3A is complete and merged into main. Stage 3B is in progress on
-`feat/local-chemical-context` in draft PR
-[#5](https://github.com/TrPavel/membrane-visual-qc/pull/5). No v0.3.0 release is being prepared.
+Stage 3A is complete and merged into main. Stage 3B was completed through
+[#5](https://github.com/TrPavel/membrane-visual-qc/pull/5).
 
 ## Stage 3B — local chemical context
 
@@ -163,5 +162,15 @@ Focused graphical acceptance subsequently passed on Windows 10 build 26200 with 
 `ON → OFF → ON → ON → invalid orientation` lifecycle, exports, cleanup, preservation,
 responsiveness, and rotated 1UBQ `76/40/11/13/0` passed. Stage 3B graphical acceptance is complete.
 
-Final green PR CI and merge closure are still required at this record point. No v0.3.0 tag or
-release exists.
+Final PR head `0c08029b15baa2786681a0d73002d89f7d4e36db` passed
+[workflow 29643963613](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29643963613).
+PR #5 was squash-merged into `main` as `bc29918686206292c00a13cc74d6d20e60292653`.
+The [post-merge workflow 29644011836](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29644011836)
+passed Python 3.10, 3.11, 3.12, and the Python 3.11 FreeSASA job.
+
+Stage 3B is complete and merged into main.
+
+Stage 3 is complete and merged into main.
+
+Development identity remains `0.3.0.dev0`. No v0.3.0 tag, GitHub release, or PyPI publication was
+created. Promotion to `0.3.0` belongs to a separate release-candidate branch and release PR.

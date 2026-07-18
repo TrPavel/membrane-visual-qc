@@ -392,6 +392,16 @@ promises. Every legacy structure summary remained unchanged.
 
 Contacts are distance-only; histidine ionic interpretation is disabled; arbitrary ligand
 chemistry, water bridges, protonation, coordination energetics, curved/multiple membranes,
-network orientation, model comparison, and batch CLI remain out of scope. Graphical Stage 3B
-acceptance has passed; final green PR CI and merge closure are still required. PR #5 remains draft
-and unmerged at this record point; no v0.3.0 tag or release may be created.
+network orientation, model comparison, and batch CLI remain out of scope.
+
+Final PR head `0c08029b15baa2786681a0d73002d89f7d4e36db` passed
+[workflow 29643963613](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29643963613).
+PR #5 was squash-merged into `main` as `bc29918686206292c00a13cc74d6d20e60292653`; all four jobs
+passed again in [post-merge workflow 29644011836](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29644011836).
+
+Stage 3B is complete and merged into main.
+
+Stage 3 is complete and merged into main.
+
+The development identity remains `0.3.0.dev0`. No v0.3.0 tag, GitHub release, or PyPI publication
+was created; release promotion is reserved for a separate release-candidate branch and PR.
