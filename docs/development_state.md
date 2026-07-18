@@ -257,7 +257,7 @@ The final contract correction adds mandatory post-schema scientific validation o
 PDBTM source symmetry/+Z semantics, and resolved geometry identity. It also rejects every payload
 role set except JSON-only partial provenance or exactly one `pdbtm_json` plus one
 `transformed_pdb` for a resolved import.
-Local validation passed 383 tests with eight optional FreeSASA skips
+Local validation passed 384 tests with eight optional FreeSASA skips
 and 87% combined coverage; 19 example reports validate (schema 1.1: 7, schema 1.2: 11, schema
 1.3: 1).
 

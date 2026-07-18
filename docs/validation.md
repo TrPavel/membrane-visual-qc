@@ -238,7 +238,7 @@ endpoint returns 404 for this distribution. Stage 4 has not started.
 
 The Stage 4A1 core validation uses only synthetic PDBTM-compatible JSON and legacy-PDB payloads.
 No official provider payload is committed or used by CI. The local Windows gate passed Ruff check
-and format check, 383 tests with eight optional FreeSASA skips, 87% combined coverage, and 19
+and format check, 384 tests with eight optional FreeSASA skips, 87% combined coverage, and 19
 schema-valid reports (1.1: 7, 1.2: 11, 1.3: 1). Wheel and sdist build as version `0.4.0.dev0`.
 
 Schema-1.3 examples pass two distinct gates: JSON Schema validates the structural contract, then

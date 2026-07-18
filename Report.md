@@ -481,7 +481,7 @@ current evidence and resolved report geometry at tolerance `1e-9`. The adapter a
 exact `pdbtm_json` primary and zero or one `transformed_pdb` companion; unknown roles and duplicate
 companions are rejected before scientific parsing.
 
-Final local validation passed Ruff check and format check, 383 tests with eight optional FreeSASA
+Final local validation passed Ruff check and format check, 384 tests with eight optional FreeSASA
 skips, 87% coverage, and 19 example reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel/sdist build
 as `0.4.0.dev0`. Two Plugin ZIP builds were identical; the validated
 `MembraneVisualQC-0.4.0.dev0.zip` is 65,209 bytes with SHA-256

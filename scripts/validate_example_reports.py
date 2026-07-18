@@ -5,8 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 
-from membrane_vqc.report import validate_stage4_report_semantics
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+
+from membrane_vqc.report import validate_stage4_report_semantics  # noqa: E402
 
 SCHEMA_BY_VERSION = {
     "1.0": Path("schemas/mvqc-report-1.0.schema.json"),

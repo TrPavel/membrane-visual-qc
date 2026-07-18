@@ -1,6 +1,9 @@
 import json
 import hashlib
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -21,6 +24,23 @@ SCHEMA = ROOT / "schemas" / "mvqc-report-1.0.schema.json"
 SCHEMA_1_1 = ROOT / "schemas" / "mvqc-report-1.1.schema.json"
 SCHEMA_1_2 = ROOT / "schemas" / "mvqc-report-1.2.schema.json"
 SCHEMA_1_3 = ROOT / "schemas" / "mvqc-report-1.3.schema.json"
+
+
+def test_example_report_validator_supports_required_direct_script_command():
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = ""
+
+    completed = subprocess.run(
+        [sys.executable, "scripts/validate_example_reports.py"],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "Validated 19 report(s)" in completed.stdout
 
 
 def test_schema_has_stable_non_placeholder_identifier():
