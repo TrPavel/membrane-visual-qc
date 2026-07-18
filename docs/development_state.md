@@ -14,10 +14,18 @@ and was squash-merged as `bbaabaefee2274f06f954aab16446e8f7e0def7a`. The
 passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job.
 
 ADR-0005 is accepted for Stage 4A architecture, with PDBTM-only offline import as the first
-implementation scope. The required PDBTM source-semantics preflight has not started, and Stage 4A
-production implementation has not started. Package version remains `0.3.0`; schema 1.3 does not
-exist; released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable. No release
-was created and Stage 4 functionality is not advertised as available.
+implementation scope. The isolated
+[PDBTM source-semantics preflight](pdbtm_semantics_preflight.md) passed on official current
+PDBTM/RCSB pairs `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`). It verified the documented
+`p_transformed = R p_original + t` convention, direct transformed-companion and analytical-inverse
+matching, provider chain mapping, symmetric half-thickness semantics, and precision-derived
+identity/inverse limits without fitting.
+
+Stage 4A production implementation has not started. Package version remains `0.3.0`; schema 1.3
+does not exist; released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable.
+No release was created and Stage 4 functionality is not advertised as available. Official
+provider coordinate payloads remain local-only and outside Git because redistribution permission
+is unresolved.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow

@@ -5,7 +5,27 @@
 - Depends on: ADR-0002 planar orientation convention
 
 Architecture acceptance does not mean that Stage 4 functionality is implemented. Production
-implementation cannot start until the PDBTM source-semantics preflight described here is reviewed.
+implementation required the PDBTM source-semantics preflight described here.
+
+## PDBTM source-semantics preflight result
+
+**PASS (2026-07-18).** The documentation-only
+[preflight](../pdbtm_semantics_preflight.md) used current official PDBTM JSON/transformed-PDB pairs
+and corresponding RCSB coordinates for `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`). It confirmed:
+
+- the documented row-major `p_transformed = R p_original + t` convention;
+- direct companion matching and analytical inverse matching without fitting;
+- explicit legacy-PDB-to-JSON chain mapping;
+- transformed centre at the origin, +Z normal, and normal-vector magnitude as symmetric
+  half-thickness;
+- resource-1017 precision-derived limits of 0.002 angstrom for identity matching and 0.003
+  angstrom for inverse matching, applied to both RMSD and maximum residual.
+
+The machine-readable result is
+[`pdbtm_semantics_preflight_results.json`](../pdbtm_semantics_preflight_results.json). Raw official
+payloads were not committed. Stage 4A production implementation is unblocked but has not started;
+this ADR still does not authorize OPM, retrieval, comparison, automatic alignment, schema 1.3, or
+runtime changes outside a separately reviewed implementation PR.
 
 ## Context
 
