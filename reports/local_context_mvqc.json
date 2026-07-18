@@ -8,7 +8,7 @@
       "backend": "builtin_shrake_rupley",
       "backend_version": "1",
       "buried_rsa_threshold": 0.05,
-      "elapsed_seconds": 0.015558699989924207,
+      "elapsed_seconds": 0.016377799999872877,
       "exposed_rsa_threshold": 0.25,
       "freesasa_status": "unavailable",
       "include_hydrogens": false,
@@ -39,7 +39,7 @@
         "BURIED_WITH_POTENTIAL_SUPPORT": 0,
         "INSUFFICIENT_CONTEXT": 0
       },
-      "elapsed_seconds": 0.00037370000791270286,
+      "elapsed_seconds": 0.000365399999964211,
       "ion_cutoff_angstrom": 4.0,
       "ligand_cutoff_angstrom": 5.0,
       "polar_ligand_cutoff_angstrom": 3.8,
@@ -184,6 +184,78 @@
       "reason": "charged residue in manually defined membrane core; inspect local environment",
       "resi": "1",
       "resn": "LYS",
+      "severity": "WARNING",
+      "signed_distance": 0.0,
+      "z": 0.0
+    },
+    {
+      "absolute_center_distance": 0.0,
+      "chain": "B",
+      "classification": "core",
+      "exposure": {
+        "classification": "exposed",
+        "core_region_accessible_area": 116.72702696143506,
+        "core_region_accessible_fraction": 1.0,
+        "interface_region_accessible_area": 0.0,
+        "interface_region_accessible_fraction": 0.0,
+        "membrane_region_accessible_fraction": 1.0,
+        "outside_region_accessible_area": 0.0,
+        "outside_region_accessible_fraction": 0.0,
+        "reference_max_sasa": 193.0,
+        "reference_status": "available",
+        "relative_sasa": 0.6048032485048449,
+        "residue_sasa": 116.72702696143506,
+        "sidechain_core_region_accessible_area": 35.71530080209068,
+        "sidechain_core_region_accessible_fraction": 1.0,
+        "sidechain_interface_region_accessible_area": 0.0,
+        "sidechain_interface_region_accessible_fraction": 0.0,
+        "sidechain_membrane_region_accessible_fraction": 1.0,
+        "sidechain_outside_region_accessible_area": 0.0,
+        "sidechain_outside_region_accessible_fraction": 0.0,
+        "sidechain_sasa": 35.71530080209068,
+        "status": "completed",
+        "warnings": []
+      },
+      "id": "mvqc_context_fixture/B/2/ASP",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "detected",
+        "contacts": [
+          {
+            "distance_angstrom": 4.0,
+            "notes": [
+              "Opposite canonical charged groups within the distance cutoff."
+            ],
+            "partner": {
+              "atom": "NZ",
+              "chain": "A",
+              "element": "N",
+              "model": "mvqc_context_fixture",
+              "resi": "1",
+              "resn": "LYS"
+            },
+            "target_atom": "OD1",
+            "type": "putative_salt_bridge"
+          }
+        ],
+        "context_state": "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 1,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
+      "model": "mvqc_context_fixture",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "2",
+      "resn": "ASP",
       "severity": "WARNING",
       "signed_distance": 0.0,
       "z": 0.0
@@ -347,81 +419,9 @@
       "severity": "INSPECT",
       "signed_distance": 0.0,
       "z": 0.0
-    },
-    {
-      "absolute_center_distance": 0.0,
-      "chain": "B",
-      "classification": "core",
-      "exposure": {
-        "classification": "exposed",
-        "core_region_accessible_area": 116.72702696143506,
-        "core_region_accessible_fraction": 1.0,
-        "interface_region_accessible_area": 0.0,
-        "interface_region_accessible_fraction": 0.0,
-        "membrane_region_accessible_fraction": 1.0,
-        "outside_region_accessible_area": 0.0,
-        "outside_region_accessible_fraction": 0.0,
-        "reference_max_sasa": 193.0,
-        "reference_status": "available",
-        "relative_sasa": 0.6048032485048449,
-        "residue_sasa": 116.72702696143506,
-        "sidechain_core_region_accessible_area": 35.71530080209068,
-        "sidechain_core_region_accessible_fraction": 1.0,
-        "sidechain_interface_region_accessible_area": 0.0,
-        "sidechain_interface_region_accessible_fraction": 0.0,
-        "sidechain_membrane_region_accessible_fraction": 1.0,
-        "sidechain_outside_region_accessible_area": 0.0,
-        "sidechain_outside_region_accessible_fraction": 0.0,
-        "sidechain_sasa": 35.71530080209068,
-        "status": "completed",
-        "warnings": []
-      },
-      "id": "mvqc_context_fixture/B/2/ASP",
-      "local_context": {
-        "burial_state": "exposed",
-        "contact_support": "detected",
-        "contacts": [
-          {
-            "distance_angstrom": 4.0,
-            "notes": [
-              "Opposite canonical charged groups within the distance cutoff."
-            ],
-            "partner": {
-              "atom": "NZ",
-              "chain": "A",
-              "element": "N",
-              "model": "mvqc_context_fixture",
-              "resi": "1",
-              "resn": "LYS"
-            },
-            "target_atom": "OD1",
-            "type": "putative_salt_bridge"
-          }
-        ],
-        "context_state": "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
-        "counts": {
-          "ions": 0,
-          "ligand_contacts": 0,
-          "potential_hbonds": 0,
-          "putative_salt_bridges": 1,
-          "waters": 0
-        },
-        "status": "completed",
-        "warnings": []
-      },
-      "model": "mvqc_context_fixture",
-      "nearest_boundary_distance": 15.0,
-      "normalized_depth": 1.0,
-      "outside_distance": 0.0,
-      "reason": "charged residue in manually defined membrane core; inspect local environment",
-      "resi": "2",
-      "resn": "ASP",
-      "severity": "WARNING",
-      "signed_distance": 0.0,
-      "z": 0.0
     }
   ],
-  "generated_at": "2026-07-17T14:22:02.147778+00:00",
+  "generated_at": "2026-07-18T11:16:08.137690+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -640,6 +640,78 @@
     },
     {
       "absolute_center_distance": 0.0,
+      "chain": "B",
+      "classification": "core",
+      "exposure": {
+        "classification": "exposed",
+        "core_region_accessible_area": 116.72702696143506,
+        "core_region_accessible_fraction": 1.0,
+        "interface_region_accessible_area": 0.0,
+        "interface_region_accessible_fraction": 0.0,
+        "membrane_region_accessible_fraction": 1.0,
+        "outside_region_accessible_area": 0.0,
+        "outside_region_accessible_fraction": 0.0,
+        "reference_max_sasa": 193.0,
+        "reference_status": "available",
+        "relative_sasa": 0.6048032485048449,
+        "residue_sasa": 116.72702696143506,
+        "sidechain_core_region_accessible_area": 35.71530080209068,
+        "sidechain_core_region_accessible_fraction": 1.0,
+        "sidechain_interface_region_accessible_area": 0.0,
+        "sidechain_interface_region_accessible_fraction": 0.0,
+        "sidechain_membrane_region_accessible_fraction": 1.0,
+        "sidechain_outside_region_accessible_area": 0.0,
+        "sidechain_outside_region_accessible_fraction": 0.0,
+        "sidechain_sasa": 35.71530080209068,
+        "status": "completed",
+        "warnings": []
+      },
+      "id": "mvqc_context_fixture/B/2/ASP",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "detected",
+        "contacts": [
+          {
+            "distance_angstrom": 4.0,
+            "notes": [
+              "Opposite canonical charged groups within the distance cutoff."
+            ],
+            "partner": {
+              "atom": "NZ",
+              "chain": "A",
+              "element": "N",
+              "model": "mvqc_context_fixture",
+              "resi": "1",
+              "resn": "LYS"
+            },
+            "target_atom": "OD1",
+            "type": "putative_salt_bridge"
+          }
+        ],
+        "context_state": "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 1,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
+      "model": "mvqc_context_fixture",
+      "nearest_boundary_distance": 15.0,
+      "normalized_depth": 1.0,
+      "outside_distance": 0.0,
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "2",
+      "resn": "ASP",
+      "severity": "WARNING",
+      "signed_distance": 0.0,
+      "z": 0.0
+    },
+    {
+      "absolute_center_distance": 0.0,
       "chain": "A",
       "classification": "core",
       "exposure": {
@@ -797,78 +869,6 @@
       "severity": "INSPECT",
       "signed_distance": 0.0,
       "z": 0.0
-    },
-    {
-      "absolute_center_distance": 0.0,
-      "chain": "B",
-      "classification": "core",
-      "exposure": {
-        "classification": "exposed",
-        "core_region_accessible_area": 116.72702696143506,
-        "core_region_accessible_fraction": 1.0,
-        "interface_region_accessible_area": 0.0,
-        "interface_region_accessible_fraction": 0.0,
-        "membrane_region_accessible_fraction": 1.0,
-        "outside_region_accessible_area": 0.0,
-        "outside_region_accessible_fraction": 0.0,
-        "reference_max_sasa": 193.0,
-        "reference_status": "available",
-        "relative_sasa": 0.6048032485048449,
-        "residue_sasa": 116.72702696143506,
-        "sidechain_core_region_accessible_area": 35.71530080209068,
-        "sidechain_core_region_accessible_fraction": 1.0,
-        "sidechain_interface_region_accessible_area": 0.0,
-        "sidechain_interface_region_accessible_fraction": 0.0,
-        "sidechain_membrane_region_accessible_fraction": 1.0,
-        "sidechain_outside_region_accessible_area": 0.0,
-        "sidechain_outside_region_accessible_fraction": 0.0,
-        "sidechain_sasa": 35.71530080209068,
-        "status": "completed",
-        "warnings": []
-      },
-      "id": "mvqc_context_fixture/B/2/ASP",
-      "local_context": {
-        "burial_state": "exposed",
-        "contact_support": "detected",
-        "contacts": [
-          {
-            "distance_angstrom": 4.0,
-            "notes": [
-              "Opposite canonical charged groups within the distance cutoff."
-            ],
-            "partner": {
-              "atom": "NZ",
-              "chain": "A",
-              "element": "N",
-              "model": "mvqc_context_fixture",
-              "resi": "1",
-              "resn": "LYS"
-            },
-            "target_atom": "OD1",
-            "type": "putative_salt_bridge"
-          }
-        ],
-        "context_state": "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
-        "counts": {
-          "ions": 0,
-          "ligand_contacts": 0,
-          "potential_hbonds": 0,
-          "putative_salt_bridges": 1,
-          "waters": 0
-        },
-        "status": "completed",
-        "warnings": []
-      },
-      "model": "mvqc_context_fixture",
-      "nearest_boundary_distance": 15.0,
-      "normalized_depth": 1.0,
-      "outside_distance": 0.0,
-      "reason": "charged residue in manually defined membrane core; inspect local environment",
-      "resi": "2",
-      "resn": "ASP",
-      "severity": "WARNING",
-      "signed_distance": 0.0,
-      "z": 0.0
     }
   ],
   "runtime": {
@@ -879,7 +879,7 @@
   },
   "schema_version": "1.2",
   "software": {
-    "commit": "c3ae8539089d090734c7248b36320d1b879b6ca4",
+    "commit": "c871f905c5037da3437d4e1656b0f6cdcd00afae",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
     "version": "0.3.0.dev0"
@@ -899,7 +899,7 @@
     "polar_core_inspect_residues": 2,
     "total_residues": 4
   },
-  "timestamp": "2026-07-17T14:22:02.147778+00:00",
+  "timestamp": "2026-07-18T11:16:08.137690+00:00",
   "version": "0.3.0.dev0",
   "warnings": [
     "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."

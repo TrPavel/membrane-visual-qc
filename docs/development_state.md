@@ -143,10 +143,15 @@ ADR-0004 without PyMOL or Qt imports. Existing severity is preserved while schem
 independent burial, contact-support, and prioritization states. Exposure remains usable alone;
 context-disabled execution continues to produce schema 1.1.
 
-Current local validation: 275 tests passed, five optional FreeSASA tests skipped on Windows, and
-combined coverage is 85%. Ruff, 18 report validations, wheel/sdist, full retained headless PyMOL,
-new context fixtures, and timing passed. The deterministic 48,995-byte Plugin ZIP has SHA-256
-`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+Current corrected local validation: 297 tests passed, eight optional FreeSASA tests skipped on
+Windows, and combined coverage is 85%. Ruff, 18 report validations, wheel/sdist, full retained
+headless PyMOL, context fixtures, and timing passed. The 49,328-byte Plugin ZIP has SHA-256
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
+
+The pre-graphical pass corrected FreeSASA orchestration, centralized five-state priority ordering,
+kept CSV residue ordering stable, enforced binary command flags, removed duplicate state/support
+constants, and fixed the contact contract at six conservative types. The blocking installed
+FreeSASA orchestration tests are assigned to the Ubuntu reference job.
 
 Graphical Stage 3B acceptance and green draft-PR CI are still required. PR #5 must not be merged
 automatically. Stage 3 is not complete, and no v0.3.0 tag or release exists.

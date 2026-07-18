@@ -151,17 +151,22 @@ cross-model isolation, histidine ambiguity, altlocs, input-order and rigid-trans
 missing/unsupported elements, schema 1.2, deterministic exports, GUI forwarding, and PyMOL
 ownership/lifecycle/colour precedence.
 
-The current Windows result is 275 passed, five optional FreeSASA tests skipped, and 85% combined
+The corrected Windows result is 297 passed, eight optional FreeSASA tests skipped, and 85% combined
 coverage. Ruff check and format check passed. Eighteen reports validated: seven schema 1.1 and
-eleven schema 1.2. Wheel and sdist built successfully. Two Plugin ZIP builds were byte-identical;
-`MembraneVisualQC-0.3.0.dev0.zip` is 48,995 bytes with SHA-256
-`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+eleven schema 1.2. Wheel and sdist built successfully. The corrected development artifact
+`MembraneVisualQC-0.3.0.dev0.zip` is 49,328 bytes with SHA-256
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
 
 Headless Incentive PyMOL 3.1.8 passed smoke import, all legacy summaries, rotated 1UBQ, Stage 3A
 exposure, the preparation helper, the deterministic context fixture, all four context visual
 objects, and five-structure timing. Observed local-context times at Standard quality were 0.001 s
-synthetic, 0.126 s 1UBQ, 0.682 s 1C3W, 4.245 s 2RH1, and 7.966 s 1PCR. These are observations, not
+synthetic, 0.116 s 1UBQ, 1.068 s 1C3W, 6.063 s 2RH1, and 10.362 s 1PCR. These are observations, not
 promises. The blocking Ubuntu/FreeSASA job remains required in PR CI.
+
+The correction suite also verifies the real FreeSASA orchestration signature (including explicit
+and Auto selection), schema 1.2 command output, the shared five-state review priority, WARNING
+before INSPECT, unchanged CSV residue order, strict 0/1 command parsing, the exact six-type contact
+vocabulary, unsupported HETATM warnings, and zero optional-category count semantics.
 
 Graphical integration remains unaccepted until the Stage 3B checklist passes. Draft PR #5 must
 remain unmerged.

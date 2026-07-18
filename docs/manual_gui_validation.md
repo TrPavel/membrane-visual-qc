@@ -143,7 +143,9 @@ for `0.2.0.dev0`.
 ## Stage 3B graphical acceptance — REQUIRED
 
 Use development artifact `dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
-`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`. This is not a release.
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf` (49,328 bytes). This is not a
+release. It includes the pre-graphical FreeSASA orchestration, context-priority, strict flag, and
+six-contact-contract corrections.
 
 1. Install the ZIP through Plugin Manager, restart PyMOL, and open the GUI.
 2. Confirm **Analyze exposure and local context** is unchecked by default.

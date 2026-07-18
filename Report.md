@@ -341,16 +341,33 @@ nearby waters and ions, ligand proximity, independent context states, completed 
 evidence, compact opt-in GUI controls, and plugin-owned context visuals. It does not alter original
 `WARNING`/`INSPECT` severity or claim energetic or biological conclusions.
 
-Local automated validation passed with 275 tests, five optional FreeSASA skips on Windows, 85%
-coverage, Ruff, 18 schema-valid reports, wheel/sdist, deterministic double ZIP, and the full
-retained headless PyMOL suite. The 48,995-byte development ZIP has SHA-256
-`7f556c48a079f760ade35f5116b065767eb85227277339292f6d0a79f3423fdf`.
+The pre-graphical correction pass fixed the FreeSASA orchestration boundary: the built-in backend
+alone receives the membrane model, while the reference backend uses its real membrane-independent
+signature and records membrane surface partitions as unavailable. Auto selects FreeSASA only when
+it is importable and otherwise selects the built-in backend. Tests now exercise the explicit GUI
+label, Auto selection, unavailable evidence, installed reference execution, and a command-level
+schema 1.2 run; the installed paths remain blocking in the Ubuntu FreeSASA job.
+
+One shared context priority now orders JSON review items and the GUI/report summary:
+`BURIED_NO_DETECTED_SUPPORT`, `BURIED_WITH_POTENTIAL_SUPPORT`, `INSUFFICIENT_CONTEXT`,
+`ACCESSIBLE_NO_DETECTED_SUPPORT`, `ACCESSIBLE_WITH_POTENTIAL_SUPPORT`. WARNING precedes INSPECT
+within a state, then stable residue identity; CSV retains stable residue order. The public command
+flag accepts only boolean/0/1 values. Schema 1.2 and ADR-0004 contain exactly six supported contact
+types. Unsupported ambiguous HETATM chemistry is excluded with warnings and cannot create contact
+support. Overall `contact_support` spans those six types; zero extracted water, ion, or ligand
+counts are availability observations, not biological-absence claims.
+
+Corrected local automated validation passed with 297 tests, eight optional FreeSASA tests skipped
+on Windows, 85% coverage, Ruff, 18 schema-valid reports, wheel/sdist, and the full retained headless
+PyMOL suite. The 49,328-byte development ZIP has SHA-256
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
 
 The headless synthetic PDB produced four `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` review items. The
 independent state fixtures cover one buried/no-support, one buried/with-support, one
-accessible/no-support, one accessible/with-support, and two insufficient-context cases. Observed
-Standard-quality local-context times were 0.001 s synthetic, 0.126 s 1UBQ, 0.682 s 1C3W, 4.245 s
-2RH1, and 7.966 s 1PCR. Every legacy structure summary remained unchanged.
+accessible/no-support, one accessible/with-support, and two insufficient-context cases. The final
+correction-run Standard-quality local-context times were 0.001 s synthetic, 0.116 s
+1UBQ, 1.068 s 1C3W, 6.063 s 2RH1, and 10.362 s 1PCR. These are observations, not performance
+promises. Every legacy structure summary remained unchanged.
 
 Contacts are distance-only; histidine ionic interpretation is disabled; arbitrary ligand
 chemistry, water bridges, protonation, coordination energetics, curved/multiple membranes,
