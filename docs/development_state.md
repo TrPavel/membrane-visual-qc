@@ -1,6 +1,12 @@
 # Development state
 
-Snapshot date: 2026-07-17 (Europe/Moscow).
+Snapshot date: 2026-07-18 (Europe/Moscow).
+
+Stage 3 is complete and merged into `main`. Release preparation is isolated on
+`release/v0.3.0`, where the active package identity is `0.3.0`. The exact final Plugin ZIP and
+automated release-candidate evidence have passed, including the required exact-ZIP graphical
+packaging smoke. No v0.3.0 tag, GitHub release, or PyPI publication exists yet. Stage 4 has not
+started.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -89,13 +95,15 @@ Stage 3A was developed on its own branch and is now merged into `main`.
 
 v0.2.0 is published as a prerelease for limited public testing.
 
-## Stage 3A — exposure foundation
+## Historical Stage 3A development — exposure foundation
 
-Unreleased work is isolated on `feat/exposure-foundation` with development version `0.3.0.dev0`.
+This historical work was isolated on `feat/exposure-foundation` with development version
+`0.3.0.dev0`.
 Stage 3A passed its research and ADR-0003/ADR-0004 semantics gate. Its built-in deterministic
 Shrake–Rupley backend reports solvent-accessible surface area, relative solvent accessibility,
 and membrane-region accessible area without claiming lipid accessibility. FreeSASA is optional and
-lazy. Report schema 1.2 is an unreleased draft; released schemas 1.0 and 1.1 remain immutable.
+lazy. At that time report schema 1.2 was an unreleased draft; released schemas 1.0 and 1.1 remain
+immutable.
 
 The pure-Python backend uses 240 deterministic golden-spiral points by default, a 1.4 Å probe,
 the versioned `element_vdw_v1` Bondi radius table, the complete Tien et al. 2013 theoretical
@@ -135,9 +143,9 @@ passed the Python 3.10, 3.11, 3.12, and Python 3.11 FreeSASA jobs.
 Stage 3A is complete and merged into main. Stage 3B was completed through
 [#5](https://github.com/TrPavel/membrane-visual-qc/pull/5).
 
-## Stage 3B — local chemical context
+## Historical Stage 3B development — local chemical context
 
-The development identity remains `0.3.0.dev0`. Pure-Python chemistry and context modules implement
+The accepted development artifact used identity `0.3.0.dev0`. Pure-Python chemistry and context modules implement
 ADR-0004 without PyMOL or Qt imports. Existing severity is preserved while schema 1.2 adds
 independent burial, contact-support, and prioritization states. Exposure remains usable alone;
 context-disabled execution continues to produce schema 1.1.
@@ -172,5 +180,20 @@ Stage 3B is complete and merged into main.
 
 Stage 3 is complete and merged into main.
 
-Development identity remains `0.3.0.dev0`. No v0.3.0 tag, GitHub release, or PyPI publication was
-created. Promotion to `0.3.0` belongs to a separate release-candidate branch and release PR.
+That development phase did not create a v0.3.0 tag, GitHub release, or PyPI publication. The
+separate release-candidate branch now carries the active `0.3.0` identity.
+
+## v0.3.0 release candidate
+
+The active version, package metadata, current generated reports, CI artifact path, and local
+artifacts now use `0.3.0`. Local validation passed with 299 tests, 85% coverage, 18 schema-valid
+reports, the complete retained headless PyMOL suite, wheel/sdist inspection, and deterministic
+double ZIP construction. The exact 49,415-byte `dist/MembraneVisualQC-0.3.0.zip` has SHA-256
+`ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`.
+
+The final graphical packaging/version smoke passed on 2026-07-18 with that exact ZIP. All twelve
+focused checks passed, including schema-1.2/version-0.3.0 export, schema-1.1 fallback, repeated
+lifecycle, invalid-orientation cleanup, input preservation, and rotated 1UBQ `76/40/11/13/0`.
+The historical partial and accepted `0.3.0.dev0` artifacts remain unchanged. The Ubuntu FreeSASA
+reference job and Python 3.10/3.11/3.12 matrix will run as required PR checks. No release tag or
+publication has occurred, PyPI is not used, and Stage 4 has not started.

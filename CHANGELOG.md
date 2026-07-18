@@ -6,21 +6,23 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-18
+
 ### Added
 
-- Began Stage 3B local chemical-context review with conservative contacts, independent context
-  states, completed schema-1.2 evidence, and plugin-owned PyMOL context visuals.
+- Added Stage 3B local chemical-context review with conservative contacts, independent context
+  states, schema-1.2 evidence, and plugin-owned PyMOL context visuals.
 - Added compact opt-in GUI controls for Fast/Standard/High exposure sampling and Built-in/Auto/
-  FreeSASA-reference backends; context remains disabled by default pending graphical acceptance.
+  FreeSASA-reference backends; context remains disabled by default.
 - Added deterministic pure-Python and headless PyMOL chemical-context fixtures and lifecycle,
   schema, invariance, cutoff, and deterministic-export coverage.
-- Began the separately reviewable Stage 3A exposure foundation with explicit scientific semantics
+- Added the separately reviewed Stage 3A exposure foundation with explicit scientific semantics
   for SASA, RSA, membrane-region accessible area, atom/model preprocessing, and optional FreeSASA
   parity.
 - Added a deterministic dependency-free Shrake–Rupley backend with a spatial cell list, immutable
   configuration/results, per-model isolation, stable altloc handling, side-chain SASA, and
   membrane-region surface partitions.
-- Added the complete Tien et al. 2013 theoretical maximum-ASA scale and draft report schema 1.2
+- Added the complete Tien et al. 2013 theoretical maximum-ASA scale and report schema 1.2
   for opt-in exposure evidence.
 - Added a lazy optional FreeSASA reference adapter and a separate blocking Python 3.11 CI parity
   job on its supported platform; core Python 3.10/3.11/3.12 jobs remain FreeSASA-independent.
@@ -33,10 +35,10 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Made FreeSASA orchestration use its real membrane-independent signature, centralized context
   priority ordering, tightened the binary context command flag, and limited schema 1.2 to its six
   explicitly supported conservative contact labels.
-- Completed draft schema 1.2 with serialized context thresholds, category availability,
+- Completed schema 1.2 with serialized context thresholds, category availability,
   per-review-item contacts/counts/states, and top-level context-state counts while retaining the
   existing CSV columns.
-- Set the unreleased development identity to `0.3.0.dev0`; released v0.2.0 remains immutable.
+- Promoted the active release-candidate identity to `0.3.0`; released v0.2.0 remains immutable.
 - Replaced the unused combined analysis extra with an explicit optional
   `exposure-reference = ["freesasa>=2.2,<3"]` extra. Core analysis remains dependency-free.
 - Guarded the known native FreeSASA singleton-model crash with explicit unavailable/partial

@@ -15,25 +15,23 @@ An open-source PyMOL plugin for explainable, membrane-aware visual review of pro
 - exports versioned JSON and deterministic CSV reports;
 - records manual-orientation warnings and conservative review statuses.
 
-The v0.2.0 workflow supports both the original global-z slab and an arbitrary planar membrane
-defined by a local orientation JSON file. It reports geometric depth and renders matching planar
-boundaries in PyMOL.
+The v0.3.0 workflow supports the original global-z slab and an arbitrary planar membrane defined
+by a local orientation JSON file. Opt-in analysis adds deterministic SASA/RSA, membrane-region
+surface partitioning, and conservative local chemical-context evidence while preserving the
+original review severities.
 
 ## Installation
 
-v0.2.0 is a prerelease for limited public testing. Public users should download
-`MembraneVisualQC-0.2.0.zip` and its checksum from the
-[v0.2.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0),
-install the ZIP through PyMOL Plugin Manager, restart PyMOL, and open
-**Plugin > Membrane Visual QC**. The archive contains only runtime package files and an integrity
-manifest; verify it with the accompanying `.zip.sha256` file.
+v0.3.0 is being prepared as a prerelease for limited public testing. The exact local release
+candidate is `dist/MembraneVisualQC-0.3.0.zip`; its final graphical packaging smoke passed. After
+publication, GitHub Releases will be the primary public
+installation route. Until then, public users should use the immutable
+[v0.2.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0).
 
-`dist/MembraneVisualQC-0.2.0.zip` is the local-development/build path. GitHub Releases is the
-primary public installation route. The published v0.1.0 tag and assets remain available and
-unchanged.
-
-Unreleased Stage 3 development uses version `0.3.0.dev0` and the distinct local artifact
-`dist/MembraneVisualQC-0.3.0.dev0.zip`. It does not replace the published v0.2.0 prerelease.
+Install the release ZIP through PyMOL Plugin Manager, restart PyMOL, and open
+**Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The
+published [v0.1.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0) and v0.2.0
+tags, releases, and assets remain unchanged.
 
 For source development:
 
@@ -81,7 +79,9 @@ slab boundaries, and the GUI reports the orientation source as `unavailable`.
 
 ## Reports and interpretation
 
-v0.1 reports use immutable schema 1.0; v0.2.0 produces additive schema 1.1. Both are
+v0.1.0 reports use immutable schema 1.0; v0.2.0 reports use immutable schema 1.1. In v0.3.0,
+opt-in exposure or context analysis uses schema 1.2, while context-disabled runs continue to emit
+schema 1.1. Schema 1.2 is the v0.3.0 release schema and becomes immutable on publication. All are
 documented in [docs/report_schema.md](docs/report_schema.md). Biological review
 states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
 `NO_FLAGS` means only that configured heuristics emitted no items.
@@ -99,12 +99,11 @@ RCSB coordinates are not automatically membrane-oriented, and imported orientati
 not independently verified. Reported depth values are geometric evidence, not proof of biological
 burial.
 
-Unreleased `0.3.0.dev0` work in draft PR #5 builds local chemical-context review on the merged
-SASA/RSA foundation. Opt-in analysis adds conservative distance-only contacts and independent
-burial/contact/context states without changing `WARNING`/`INSPECT` severity. The GUI offers
-Fast/Standard/High sampling and Built-in/Auto/FreeSASA-reference backends, with analysis disabled
-by default pending graphical acceptance. Draft schema 1.2 stores rich evidence; released schemas
-1.0 and 1.1 remain immutable. FreeSASA is optional and lazy.
+v0.3.0 builds local chemical-context review on the deterministic SASA/RSA foundation. Opt-in
+analysis adds conservative distance-only contacts and independent burial/contact/context states
+without changing `WARNING`/`INSPECT` severity. The GUI offers Fast/Standard/High sampling and
+Built-in/Auto/FreeSASA-reference backends; context remains disabled by default. Graphical Stage 3
+acceptance passed on Windows with Incentive PyMOL 3.1.8. FreeSASA is optional and lazy.
 
 The schema 1.2 contact vocabulary is deliberately limited to `putative_salt_bridge`,
 `distance_only_potential_hbond`, `nearby_water`, `nearby_ion`, `ligand_proximity`, and
@@ -126,11 +125,11 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 
 ## Current limitations
 
-No automatic OPM/PPM/PDBTM/TmDet adapter, exposure engine, FreeSASA integration,
-interaction-context engine, comparison workflow, batch CLI, or curved/multiple-membrane model is
-included in v0.2.0. See [docs/known_limitations.md](docs/known_limitations.md).
+No automatic OPM/PPM/PDBTM/TmDet adapter, definitive chemical-interaction inference, lipid-facing
+surface classification, comparison workflow, batch CLI, or curved/multiple-membrane model is
+included in v0.3.0. See [docs/known_limitations.md](docs/known_limitations.md).
 
 ## Licence and citation
 
-MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.2.0` and the exact
+MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.3.0` and the exact
 version used. The implementation is clean-room and does not copy GPL PyMOL plugin code.

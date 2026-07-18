@@ -8,7 +8,7 @@
       "backend": "builtin_shrake_rupley",
       "backend_version": "1",
       "buried_rsa_threshold": 0.05,
-      "elapsed_seconds": 4.676865100000214,
+      "elapsed_seconds": 5.262758400000166,
       "exposed_rsa_threshold": 0.25,
       "freesasa_status": "unavailable",
       "include_hydrogens": false,
@@ -39,7 +39,7 @@
         "BURIED_WITH_POTENTIAL_SUPPORT": 15,
         "INSUFFICIENT_CONTEXT": 0
       },
-      "elapsed_seconds": 6.061397299999953,
+      "elapsed_seconds": 5.877114099999744,
       "ion_cutoff_angstrom": 4.0,
       "ligand_cutoff_angstrom": 5.0,
       "polar_ligand_cutoff_angstrom": 3.8,
@@ -13557,7 +13557,7 @@
       "z": 8.079999923706055
     }
   ],
-  "generated_at": "2026-07-18T12:13:22.285986+00:00",
+  "generated_at": "2026-07-18T14:50:12.057450+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -28671,10 +28671,10 @@
   },
   "schema_version": "1.2",
   "software": {
-    "commit": "6a88259c41fa2fad228ae35877177c7753258293",
+    "commit": "768fc1e084a329223204373cd43ed4cd6ccb1343",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
-    "version": "0.3.0.dev0"
+    "version": "0.3.0"
   },
   "summary": {
     "charged_core_residues": 38,
@@ -28691,8 +28691,8 @@
     "polar_core_inspect_residues": 66,
     "total_residues": 442
   },
-  "timestamp": "2026-07-18T12:13:22.285986+00:00",
-  "version": "0.3.0.dev0",
+  "timestamp": "2026-07-18T14:50:12.057450+00:00",
+  "version": "0.3.0",
   "warnings": [
     "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
   ]

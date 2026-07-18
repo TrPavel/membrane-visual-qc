@@ -2,7 +2,7 @@
   "1C3W": {
     "atoms": 1720,
     "backend": "builtin_shrake_rupley",
-    "elapsed_seconds": 1.3639086999992287,
+    "elapsed_seconds": 1.297402599999259,
     "report": "reports\\1c3w_exposure_mvqc.json",
     "review_items": 41,
     "warnings": []
@@ -10,7 +10,7 @@
   "1PCR": {
     "atoms": 6494,
     "backend": "builtin_shrake_rupley",
-    "elapsed_seconds": 3.724083399999472,
+    "elapsed_seconds": 2.713771500000803,
     "report": "reports\\1pcr_exposure_mvqc.json",
     "review_items": 76,
     "warnings": []
@@ -18,7 +18,7 @@
   "1UBQ": {
     "atoms": 602,
     "backend": "builtin_shrake_rupley",
-    "elapsed_seconds": 0.6510357999995904,
+    "elapsed_seconds": 0.4851193999984389,
     "report": "reports\\1ubq_exposure_mvqc.json",
     "review_items": 24,
     "warnings": []
@@ -26,7 +26,7 @@
   "2RH1": {
     "atoms": 3601,
     "backend": "builtin_shrake_rupley",
-    "elapsed_seconds": 4.918258800000331,
+    "elapsed_seconds": 3.766065499999968,
     "report": "reports\\2rh1_exposure_mvqc.json",
     "review_items": 104,
     "warnings": []
@@ -34,7 +34,7 @@
   "bad_core_lys": {
     "atoms": 51,
     "backend": "builtin_shrake_rupley",
-    "elapsed_seconds": 0.03851529999974446,
+    "elapsed_seconds": 0.013782500000161235,
     "report": "reports\\bad_core_lys_exposure_mvqc.json",
     "review_items": 1,
     "warnings": []

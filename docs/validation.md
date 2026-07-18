@@ -80,7 +80,7 @@ Plugin Manager installation/restart, both orientation modes, the rotated helper,
 Show Slab, summary `76/40/11/13/0`, schema-1.1/version-0.2.0 export, readable invalid-file handling,
 and preservation of `1UBQ_rotated` by `mvqc_clear` all passed.
 
-## Unreleased Stage 3A validation policy
+## Historical Stage 3A development validation policy
 
 Stage 3A uses development version `0.3.0.dev0` and
 `dist/MembraneVisualQC-0.3.0.dev0.zip`. It must preserve every v0.2 legacy summary and keep
@@ -92,7 +92,7 @@ deterministic double ZIP build. Coverage may not fall below 80%.
 ## Stage 3A local exposure validation
 
 The opt-in built-in backend was exercised in Incentive PyMOL 3.1.8 with 240 sphere points and a
-1.4 Å probe. All five generated exposure reports declare draft schema 1.2 and
+1.4 Å probe. All five historical development exposure reports declare draft schema 1.2 and
 `software.version = 0.3.0.dev0`; the seven context-disabled and historical reports remain schema
 1.1. `python scripts/validate_example_reports.py` validated all 12 by declared version.
 
@@ -143,7 +143,7 @@ PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged 
 passed all four jobs: Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA reference job.
 Stage 3A is complete and merged into main; the section below records the subsequent Stage 3B work.
 
-## Stage 3B local-context validation
+## Historical Stage 3B development local-context validation
 
 Stage 3B is opt-in and retains development version `0.3.0.dev0`. The pure-Python suite covers all
 contact and context-state labels, inclusive and just-outside cutoffs, same-model inter-chain and
@@ -192,3 +192,27 @@ passed Python 3.10, 3.11, 3.12, and FreeSASA.
 Stage 3B is complete and merged into main.
 
 Stage 3 is complete and merged into main.
+
+## v0.3.0 release-candidate validation
+
+The active release-candidate identity is `0.3.0`; its Plugin Manager artifact is
+`dist/MembraneVisualQC-0.3.0.zip`. Schemas 1.0 and 1.1 remain immutable. Schema 1.2 is the
+scientifically frozen v0.3.0 release contract for opt-in exposure/context reports and becomes
+immutable on publication; context-disabled runs continue to emit schema 1.1. The exact final ZIP
+has passed the separate graphical packaging/version prerequisite for opening the release PR.
+
+Local results: Ruff check and format check passed; 299 tests passed, eight optional FreeSASA tests
+were skipped on Windows, and combined coverage is 85%. Eighteen reports validated (seven schema
+1.1 and eleven schema 1.2). The retained headless PyMOL suite, distribution inspection, ZIP
+validator, and byte-for-byte deterministic double ZIP build passed. The 49,415-byte candidate
+SHA-256 is `ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`.
+
+The blocking Ubuntu Python 3.11 FreeSASA job cannot run locally because this Windows workspace has
+neither FreeSASA, WSL, nor a running Docker engine. It remains a required release-PR job alongside
+the Python 3.10, 3.11, and 3.12 matrix.
+
+The exact 49,415-byte ZIP graphical smoke passed on 2026-07-18 with SHA-256
+`ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`. All focused packaging,
+version, context-default, synthetic summary, context-selection, export/fallback, lifecycle,
+invalid-orientation cleanup, structure-preservation, and rotated-1UBQ checks passed. This evidence
+is recorded separately from the unchanged historical `0.3.0.dev0` acceptance.
