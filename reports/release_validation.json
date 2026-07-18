@@ -1,122 +1,121 @@
 {
-  "timestamp": "2026-07-16T12:46:37+03:00",
-  "package_version": "0.2.0",
-  "release_status": "published_prerelease_limited_public_testing",
-  "readiness_statement": "v0.2.0 is published as a prerelease for limited public testing.",
-  "release_blockers": [],
+  "timestamp": "2026-07-18T17:53:37+03:00",
+  "package_version": "0.3.0",
+  "release_status": "release_candidate_graphically_accepted_pending_pr_ci",
+  "readiness_statement": "v0.3.0 release candidate passed local and exact-artifact graphical validation; PR CI is pending.",
+  "release_blockers": [
+    "Release PR and post-merge GitHub Actions",
+    "Annotated tag and GitHub prerelease publication"
+  ],
   "checks": {
     "ruff_check": {"status": "passed", "version": "0.15.21"},
-    "ruff_format_check": {"status": "passed", "files_checked": 42},
-    "tests": {"status": "passed", "count": 153, "coverage_percent": 80, "python": "3.12.13"},
-    "python_distribution_build": {
+    "ruff_format_check": {"status": "passed", "files_checked": 57},
+    "tests": {
       "status": "passed",
-      "wheel": "dist/membrane_vqc_pymol-0.2.0-py3-none-any.whl",
-      "sdist": "dist/membrane_vqc_pymol-0.2.0.tar.gz"
-    },
-    "pymol_smoke_import": {
-      "status": "passed",
-      "pymol": "Incentive PyMOL 3.1.8",
-      "python": "3.10.20"
-    },
-    "pymol_structure_validation": {
-      "status": "passed",
-      "legacy_cases": ["1C3W", "2RH1", "1PCR", "1UBQ", "bad_core_lys"],
-      "rotated_case": "1UBQ_rotated",
-      "rotated_summary": "76/40/11/13/0"
-    },
-    "preparation_helper": {
-      "status": "passed",
-      "working_directory_independent": true,
-      "orientation_path": "C:\\Pymol_script_1\\demo\\rotated_1ubq_orientation.json"
+      "count": 299,
+      "coverage_percent": 85,
+      "optional_freesasa_skipped_windows": 8,
+      "python": "3.12.13"
     },
     "example_report_schema_validation": {
       "status": "passed",
-      "count": 7,
-      "schema": "schemas/mvqc-report-1.1.schema.json",
-      "generated_release_reports": 6,
-      "historical_manual_reports": 1
+      "count": 18,
+      "schema_counts": {"1.1": 7, "1.2": 11}
+    },
+    "headless_pymol": {
+      "status": "passed",
+      "pymol": "Incentive PyMOL 3.1.8",
+      "python": "3.10.20",
+      "checks": [
+        "smoke import",
+        "five legacy fixtures",
+        "rotated 1UBQ",
+        "Stage 3A exposure",
+        "Stage 3B context",
+        "ON-OFF-ON-ON-invalid orientation lifecycle",
+        "rotated preparation helper"
+      ]
+    },
+    "python_distribution_build": {
+      "status": "passed",
+      "wheel": "dist/membrane_vqc_pymol-0.3.0-py3-none-any.whl",
+      "wheel_size_bytes": 52967,
+      "sdist": "dist/membrane_vqc_pymol-0.3.0.tar.gz",
+      "sdist_size_bytes": 74001,
+      "metadata_and_layout_inspection": "passed"
     },
     "plugin_zip": {
       "status": "passed",
-      "path": "dist/MembraneVisualQC-0.2.0.zip",
-      "checksum_path": "dist/MembraneVisualQC-0.2.0.zip.sha256",
-      "sha256": "084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054",
-      "size_bytes": 27459,
-      "single_top_level": "membrane_vqc",
+      "path": "dist/MembraneVisualQC-0.3.0.zip",
+      "checksum_path": "dist/MembraneVisualQC-0.3.0.zip.sha256",
+      "sha256": "ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb",
+      "size_bytes": 49415,
       "byte_for_byte_deterministic": true,
       "independent_builds": 2
     },
-    "historical_graphical_acceptance": {
-      "status": "passed",
-      "development_version": "0.2.0.dev0",
-      "date": "2026-07-15",
-      "os": "Windows 10 build 26200",
-      "pymol": "Incentive PyMOL 3.1.8",
-      "python": "3.10.20",
-      "tested_zip": "MembraneVisualQC-0.2.0.dev0.zip",
-      "tested_zip_sha256": "841abe95cad44b99108cb4834ad593ef0bb4e99f64b8572cad87f088a5ac8307",
-      "manual_reports": ["reports/manual_stage2_check.json", "reports/manual_stage2_check.csv"],
-      "screenshots": [
-        "docs/screenshots/manual_stage2_planar_qc.png",
-        "docs/screenshots/manual_stage2_planar_edge_view.png",
-        "docs/screenshots/manual_stage2_invalid_orientation.png"
-      ]
+    "blocking_freesasa_reference": {
+      "status": "pending_release_pr_ci",
+      "reason": "FreeSASA is unavailable on Windows; WSL and Docker are unavailable in this workspace",
+      "required_job": "FreeSASA reference (Python 3.11, Ubuntu)"
+    },
+    "schema_files": {
+      "status": "scientific_contract_frozen_for_release",
+      "sha256": {
+        "schemas/mvqc-report-1.0.schema.json": "5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710",
+        "schemas/mvqc-report-1.1.schema.json": "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf",
+        "schemas/mvqc-report-1.2.schema.json": "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430"
+      },
+      "contracts": {
+        "v0.1.0": "1.0_immutable",
+        "v0.2.0": "1.1_immutable",
+        "v0.3.0_opt_in_exposure_or_context": "1.2_release_schema",
+        "v0.3.0_context_disabled": "1.1"
+      }
+    },
+    "historical_stage3_graphical_evidence": {
+      "partial_zip_sha256": "411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf",
+      "accepted_development_version": "0.3.0.dev0",
+      "accepted_zip_sha256": "53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1",
+      "status": "preserved_in_manual_validation_records"
     },
     "final_artifact_graphical_smoke": {
       "status": "passed",
-      "date": "2026-07-16",
-      "tested_zip": "dist/MembraneVisualQC-0.2.0.zip",
-      "tested_sha256": "084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054",
-      "scope": "focused packaging and version smoke; not a repetition of full Stage 2 acceptance",
+      "date": "2026-07-18",
+      "scope": "focused packaging and version smoke; not a repetition of full Stage 3 scientific acceptance",
+      "tested_zip": "dist/MembraneVisualQC-0.3.0.zip",
+      "size_bytes": 49415,
+      "sha256": "ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb",
       "checks": {
         "plugin_manager_installation_and_restart": "passed",
-        "both_orientation_modes": "passed",
-        "prepare_rotated_1ubq": "passed",
-        "arbitrary_plane_show_slab": "passed",
-        "run_qc_summary_76_40_11_13_0": "passed",
-        "export_schema_1_1_and_version_0_2_0": "passed",
-        "invalid_orientation_without_traceback": "passed",
-        "mvqc_clear_preserved_1ubq_rotated": "passed"
+        "context_disabled_by_default": "passed",
+        "synthetic_standard_builtin_analysis": "passed",
+        "summary_4_core_2_charged_2_polar_1_ligand_neighbour": "passed",
+        "four_accessible_with_potential_support": "passed",
+        "four_context_selections_and_graphical_evidence": "passed",
+        "schema_1_2_export_and_version_0_3_0": "passed",
+        "context_off_schema_1_1_fallback_and_cleanup": "passed",
+        "repeated_context_on_lifecycle": "passed",
+        "invalid_orientation_cleanup_without_traceback": "passed",
+        "mvqc_clear_preserved_input_structure": "passed",
+        "rotated_1ubq_76_40_11_13_0": "passed"
       }
     },
     "github_actions": {
-      "release_pr": {
-        "status": "passed",
-        "pull_request": "https://github.com/TrPavel/membrane-visual-qc/pull/3",
-        "run_id": 29487841498,
-        "commit": "98c67039a9bbf09e3236e49d7da4b8a801541fef",
-        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29487841498",
-        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"}
-      },
-      "post_merge": {
-        "status": "passed",
-        "run_id": 29488017586,
-        "commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
-        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29488017586",
-        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"}
-      },
-      "historical_stage2_main": {
-        "status": "passed",
-        "run_id": 29410446044,
-        "commit": "e06f60c478a460819c61785f85ea658055f544e7",
-        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29410446044"
-      }
+      "release_pr": {"status": "pending"},
+      "post_merge": {"status": "pending"},
+      "post_release_status": {"status": "pending"}
     },
     "release_publication": {
-      "status": "published_prerelease",
-      "tag": "v0.2.0",
-      "tag_object": "96b6ef4d8e68b85d230268eb3baaf7ad2b0d02b9",
-      "tag_commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
-      "release_commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
-      "release_url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0",
-      "assets_uploaded": 4,
-      "assets_verified_against_local": true,
+      "status": "not_published",
+      "tag": "v0.3.0",
       "pypi": "not_published"
     },
-    "v0_1_immutability": {
-      "status": "confirmed",
-      "tag": "v0.1.0",
-      "commit": "a8c7959fb1d53dd99771a184443aa16afd287aa6"
+    "historical_release_metadata": {
+      "v0.2.0": "reports/release_validation_v0.2.0.json"
+    },
+    "published_release_immutability": {
+      "v0.1.0": "must_remain_unchanged",
+      "v0.2.0": "must_remain_unchanged"
     }
   }
 }

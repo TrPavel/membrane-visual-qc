@@ -2,8 +2,10 @@
 
 ## Current status
 
-The Stage 1 correction and portability pass is complete. Graphical Plugin Manager installation,
-interactive GUI validation, and the public GitHub Actions workflow all passed.
+Stage 3 is complete and merged into `main`. The separate `release/v0.3.0` branch promotes the
+active identity to `0.3.0` and prepares the exact final artifacts. The exact final ZIP passed its
+focused graphical packaging/version smoke and the release PR is ready to open.
+Stage 4 has not started, v0.1.0 and v0.2.0 remain immutable, and PyPI is not used.
 
 ## Environment
 
@@ -265,7 +267,7 @@ burial. Report schema 1.0 remains immutable; v0.2.0 produces report schema 1.1.
 
 v0.2.0 is published as a prerelease for limited public testing.
 
-## Unreleased Stage 3A
+## Historical Stage 3A development
 
 Stage 3A is isolated on `feat/exposure-foundation` with development identity `0.3.0.dev0`. The
 scientific contract is fixed in ADR-0003 before implementation: conventional SASA is solvent
@@ -332,7 +334,7 @@ PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged 
 passed all four required jobs: Python 3.10, 3.11, 3.12, and the Python 3.11 FreeSASA reference job.
 Stage 3A is complete and merged into main. No v0.3.0 release was created.
 
-## Unreleased Stage 3B — local chemical context
+## Historical Stage 3B development — local chemical context
 
 Stage 3B is implemented for review on `feat/local-chemical-context` in draft PR
 [#5](https://github.com/TrPavel/membrane-visual-qc/pull/5), retaining development identity
@@ -403,5 +405,39 @@ Stage 3B is complete and merged into main.
 
 Stage 3 is complete and merged into main.
 
-The development identity remains `0.3.0.dev0`. No v0.3.0 tag, GitHub release, or PyPI publication
-was created; release promotion is reserved for a separate release-candidate branch and PR.
+That development phase used `0.3.0.dev0` and created no v0.3.0 tag, GitHub release, or PyPI
+publication. The separate release-candidate branch now carries active identity `0.3.0`.
+
+## v0.3.0 release candidate
+
+The scientific meaning of schema 1.2 is frozen for release. Schemas 1.0 and 1.1 remain immutable;
+v0.3.0 opt-in exposure/context reports use schema 1.2, while context-disabled reports continue to
+use schema 1.1.
+
+Local release-candidate validation passed Ruff check and format check, 299 tests with eight
+optional FreeSASA skips on Windows, and 85% combined coverage. All 18 reports validated by declared
+schema (seven schema 1.1 and eleven schema 1.2). Incentive PyMOL 3.1.8 passed smoke import, five
+legacy structures, rotated 1UBQ `76/40/11/13/0`, Stage 3A exposure, Stage 3B context, the rotated
+preparation helper, and `ON → OFF → ON → ON → invalid orientation` lifecycle regression.
+
+Wheel and sdist metadata/layout inspection passed. The expected artifacts are
+`MembraneVisualQC-0.3.0.zip`, `MembraneVisualQC-0.3.0.zip.sha256`,
+`membrane_vqc_pymol-0.3.0-py3-none-any.whl`, and `membrane_vqc_pymol-0.3.0.tar.gz`. Two Plugin ZIP
+builds were byte-for-byte identical. The exact 49,415-byte candidate has SHA-256
+`ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`.
+
+Schema SHA-256 values are: 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, and 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`.
+
+The exact-artifact graphical smoke passed on 2026-07-18 using the same 49,415-byte ZIP and SHA-256.
+Installation/restart, context-disabled default, Standard/Built-in synthetic summary
+`4 core / 2 charged / 2 polar / 1 ligand-neighbour`, four supported-context items and four context
+selections, schema-1.2/version-0.3.0 export, schema-1.1 fallback and cleanup, repeated lifecycle,
+invalid-orientation cleanup, input preservation, and rotated 1UBQ `76/40/11/13/0` all passed.
+This is separate packaging/version evidence; the detailed `0.3.0.dev0` scientific acceptance and
+both historical development SHAs remain unchanged.
+
+FreeSASA is not installed on Windows, and neither WSL nor Docker is available; the blocking Ubuntu
+Python 3.11 FreeSASA job and the Python 3.10/3.11/3.12 matrix remain required PR checks.

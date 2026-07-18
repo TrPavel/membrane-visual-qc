@@ -26,7 +26,7 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - OPM-aligned files are not required for the MVP and are not downloaded automatically.
 - The synthetic PDB is intentionally artificial and only tests deterministic warning behaviour.
 
-## Unreleased Stage 3A limitations
+## v0.3.0 exposure limitations
 
 - Conventional SASA and RSA describe solvent accessibility, not lipid accessibility.
 - Membrane-region accessible area is a geometric partition; it cannot distinguish a lipid-facing
@@ -40,7 +40,7 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - FreeSASA is optional. Its adapter is for reference/parity work and cannot provide membrane-region
   sample partitions through `calcCoord`.
 
-## Unreleased Stage 3B limitations
+## v0.3.0 local-context limitations
 
 - Contacts are distance-only review evidence, not energetic stabilization, coordination,
   protonation, bond-order, or biological validation claims.

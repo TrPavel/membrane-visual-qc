@@ -216,3 +216,41 @@ screenshots if they are supplied later; no such image is currently claimed:
 - `docs/screenshots/manual_stage3b_context_overview.png`
 - `docs/screenshots/manual_stage3b_context_partners.png`
 - `docs/screenshots/manual_stage3b_context_cleanup.png`
+
+## v0.3.0 exact final-artifact graphical smoke — PASS
+
+This focused packaging/version smoke passed on 2026-07-18. It is separate from, and not a
+repetition of, the accepted Stage 3 scientific validation above. The user tested exactly
+`dist/MembraneVisualQC-0.3.0.zip` (49,415 bytes), SHA-256
+`ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`.
+
+1. Remove the previous development plugin, restart PyMOL, install the exact final ZIP through
+   Plugin Manager, restart again, and confirm context is disabled by default.
+2. Load `C:/Pymol_script_1/data/synthetic/local_context_review.pdb` as
+   `local_context_review`.
+3. Enable context, choose Standard/Built-in, and run QC with global-z bounds `-15/15`.
+4. Confirm `4 total / 4 core / 2 charged / 2 polar / 1 ligand-neighbour`, four
+   `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` items, all four `mvqc_context_*` selections, and
+   orange/yellow review-colour precedence.
+5. Export new `reports/manual_v030_release_smoke.json` and
+   `reports/manual_v030_release_smoke.csv`. Confirm schema 1.2, `software.version = 0.3.0`,
+   serialized exposure/context thresholds, and unchanged CSV columns.
+6. Disable context and rerun. Confirm schema 1.1 fallback and removal of context selections.
+7. Re-enable context and rerun. Confirm repeated lifecycle remains safe.
+8. Trigger an invalid orientation-file run. Confirm readable cleanup without traceback.
+9. Run `mvqc_clear`; confirm `local_context_review` remains.
+10. Prepare rotated 1UBQ with `run C:/Pymol_script_1/demo/prepare_rotated_1ubq.py`, run with
+    context disabled, and confirm `76/40/11/13/0`.
+
+Every listed check passed: installation/restart, context-disabled default, Standard/Built-in
+synthetic analysis, summary `4 core / 2 charged / 2 polar / 1 ligand-neighbour`, four
+`ACCESSIBLE_WITH_POTENTIAL_SUPPORT` items, all four context selections and expected graphical
+evidence, schema-1.2/version-0.3.0 export, schema-1.1 context-disabled fallback and cleanup,
+repeated context lifecycle, readable invalid-orientation cleanup, input preservation by
+`mvqc_clear`, and rotated 1UBQ `76/40/11/13/0`.
+
+The historical partial SHA `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`
+and accepted development SHA
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1` remain separately and
+truthfully recorded above. No screenshot is added or claimed for this final smoke because no new
+local screenshot file was supplied.

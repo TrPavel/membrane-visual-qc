@@ -1,14 +1,14 @@
 # Report schemas
 
-Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. v0.2.0 analysis uses
-additive schema 1.1; schema 1.0 remains immutable and validation dispatches by declared version.
+Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`; released v0.2.0 analysis uses
+additive schema 1.1. Both schemas are immutable, and validation dispatches by the declared version.
 
-Unreleased Stage 3 develops `schemas/mvqc-report-1.2.schema.json` as a draft for structured
-exposure and local-context evidence. Released schemas 1.0 and 1.1 are immutable. Context-disabled calls
-continue to produce the v0.2-compatible schema 1.1 contract; schema 1.2 is used only when exposure
-analysis is explicitly requested.
+v0.3.0 opt-in exposure or local-context analysis uses `schemas/mvqc-report-1.2.schema.json`.
+Context-disabled calls continue to produce the v0.2-compatible schema 1.1 contract. Schema 1.2 is
+the v0.3.0 release schema and becomes immutable when v0.3.0 is published; its scientific meaning
+is frozen during release preparation.
 
-Draft schema 1.2 adds top-level `context_analysis` metadata and an `exposure` object on every
+Schema 1.2 adds top-level `context_analysis` metadata and an `exposure` object on every
 review item. Continuous residue SASA, side-chain SASA, and RSA are primary evidence. The exposure
 bin is a display heuristic using serialized thresholds 0.05 and 0.25. Tien et al. 2013 theoretical
 maximum ASA values provide the RSA reference; unsupported residues retain absolute SASA with
@@ -24,7 +24,7 @@ water-filled pores and must not be interpreted as lipid accessibility. Missing c
 explicit `null` values and statuses, never substituted zeroes. The rich JSON is canonical and the
 existing CSV columns remain unchanged in Stage 3A.
 
-Stage 3B completes the draft local-context portion. Each analyzed review item receives independent
+The local-context portion gives each analyzed review item independent
 `burial_state`, `contact_support`, and `context_state` fields, conservative contact records, and
 counts for putative salt bridges, distance-only potential hydrogen bonds, waters, ions, and ligand
 contacts. Top-level metadata serializes every cutoff, `standard_residue_roles_v1`, category atom
