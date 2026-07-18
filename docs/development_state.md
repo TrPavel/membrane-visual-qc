@@ -3,7 +3,14 @@
 Snapshot date: 2026-07-18 (Europe/Moscow).
 
 Stage 3 is complete and merged into `main`. v0.3.0 is published from the final release commit as a
-GitHub prerelease for limited public testing. PyPI is not used, and Stage 4 has not started.
+GitHub prerelease for limited public testing. PyPI is not used.
+
+Stage 4 research began on 2026-07-18 in the isolated branch
+`research/stage4-orientation-sources`. This is a documentation-only design gate for orientation
+source interoperability, provenance, optional retrieval, and comparison semantics. No production
+Stage 4 code has started; Stage 4A requires explicit design acceptance. Package version remains
+`0.3.0`, released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable, and
+Stage 4 functionality is not advertised as available.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -200,6 +207,6 @@ Final PR head `4fb65d69aa6ddc98cadd074b995bbf77b1fc503a` was squash-merged as
 jobs. Annotated tag object `e1b635f53a8c7765729d9a1d54fffb2238389fb7` targets that merge commit.
 The [v0.3.0 prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0) contains
 four verified uploaded assets. Schema 1.2 is released and immutable. v0.1.0/v0.2.0 remain
-unchanged, no PyPI project exists, and Stage 4 has not started.
+unchanged, no PyPI project exists, and Stage 4 had not started at publication.
 
 v0.3.0 is published as a prerelease for limited public testing.
