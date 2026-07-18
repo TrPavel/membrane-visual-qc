@@ -4,10 +4,14 @@ Status: design-only. Expected results are defined independently of implementatio
 
 ## Fixture policy
 
-Provider fixtures must be minimal, redistributable, immutable and accompanied by source URL,
-retrieval date, citation, licence assessment and SHA-256. If redistribution permission is unclear,
-store a hand-authored synthetic record derived from the public format specification and document
-that it is not an official provider record. Tests never fetch the network.
+Raw official PDBTM JSON/PDB payloads are not committed while redistribution terms remain unclear.
+Committed tests use small, hand-authored synthetic fixtures based on the documented format and mark
+them explicitly as synthetic. Tests never fetch the network.
+
+Official JSON/transformed-PDB pairs are downloaded locally only for the source-semantics preflight
+and never placed in Git history. A metadata-only preflight record stores source URLs, retrieval
+timestamps, SHA-256 values, format/resource/software versions, decimal coordinate and matrix
+precision, and verification results. It contains no provider coordinate payload.
 
 All JSON serialization comparisons use UTF-8 bytes and intentionally vary field order where the
 format permits it. Expected warning codes are stable; human messages may add detail.
@@ -16,7 +20,8 @@ format permits it. Expected warning codes are stable; human messages may add det
 
 | Fixture | Input condition | Independent expected result |
 |---|---|---|
-| Valid planar record | finite centre `(0,0,0)`, normal `(0,0,2)`, offsets `-12,+12`, exact scope/mapping | `imported`; normal `(0,0,1)`; offsets unchanged; raw SHA of exact bytes; no warning; source and current geometry retained |
+| Valid planar bundle | finite centre `(0,0,0)`, normal `(0,0,2)`, offsets `-12,+12`, JSON plus matching transformed PDB and exact current coordinate match | `imported`; normal `(0,0,1)`; offsets unchanged; separate raw hashes; direct-match evidence; source/current geometry retained |
+| JSON without companion | valid official-format JSON only | `partial`; provenance retained; no current geometry, `PlanarMembrane`, or QC report |
 | Inverted normal | normal `(0,0,-2)` with correspondingly mapped side evidence | `imported`; normalized `(0,0,-1)`; no silent sign flip; topology direction retained |
 | Reversed unlabeled boundaries | two recoverable planes supplied as `+12,-12` | ordered `-12,+12`; `BOUNDARIES_REORDERED`; raw values retained |
 | Reversed labelled boundaries | biological side labels contradict numeric/matrix semantics | `rejected`; no `PlanarMembrane`; no guessed relabelling |
@@ -39,8 +44,13 @@ format permits it. Expected warning codes are stable; human messages may add det
 | Coordinate-frame mismatch | source transform absent and current fingerprint differs | `rejected` with `COORDINATE_FRAME_MISMATCH` |
 | Model mismatch | source model 1, current model 2 | `rejected` unless source explicitly supports both and user selected model 2 |
 | Chain namespace mismatch | source `label_asym_id`, context only `auth_asym_id` with no map | `partial`/scope mismatch; no string-only match |
+| Current matches transformed companion | direct atom identities/coordinates match transformed PDB | identity `source_to_current`; match count, RMSD, maximum residual and fingerprints serialized |
+| Current matches inverse-transformed companion | direct coordinates match analytical inverse of provider transform | `source_to_current = inverse(provider_original_to_transformed)`; no fitted transform |
 | Rotated structure | source geometry normal `(0,0,1)`, centre `(0,0,0)`; exact mapping `R=[[0,0,1],[0,1,0],[-1,0,0]], t=[10,-5,3]` | current centre `(10,-5,3)`, normal `(1,0,0)`, offsets unchanged; matrix serialized exactly |
 | Non-rigid transform | scale, shear, reflection, or singular matrix | `rejected` in Stage 4A; determinant/orthogonality reason reported |
+| Neither coordinate reference matches | metadata agrees but direct residuals fail for transformed and inverse-transformed references | `COORDINATE_FRAME_MISMATCH`; no membrane/QC report |
+| Metadata-only apparent match | same PDB ID, chains and assembly but different coordinates | rejected as coordinate mismatch; metadata never substitutes for atom evidence |
+| Too few/narrow atoms | fewer than 12 atoms, fewer than 3 residues, span under 10 angstrom, or no point 2 angstrom off farthest-pair line | `partial`/insufficient coordinate evidence; no membrane |
 
 The rotated fixture uses the same rigid transform already validated by the project:
 
@@ -52,20 +62,26 @@ z' = -x + 3
 
 ## PDBTM target fixtures
 
-Before production work, obtain or derive a small paired record set that proves:
+Before production work, locally obtain official pairs for at least one alpha-helical entry and one
+beta-barrel entry. At least one pair must have nontrivial rotation and translation. Across the
+preflight, use multiple non-collinear atoms and prove:
 
 1. documented original-to-transformed matrix direction by transforming at least three non-collinear
    atoms and comparing with the official transformed coordinates;
 2. membrane normal/half-width semantics by comparing JSON/XML geometry with the transformed record;
 3. PDB ID, resource/software version, chain namespace and assembly mapping;
 4. inversion into current coordinates using an analytically computed fixture;
-5. partial/missing membrane and non-planar/double/curved cases are rejected or deferred explicitly.
+5. half-thickness semantics against the transformed companion;
+6. explicit model and provider chain namespace matching;
+7. direct matching against transformed and analytically inverse-transformed coordinates;
+8. partial/missing membrane and non-planar/double/curved cases are rejected or deferred explicitly.
 
-Expected matrix residual for provider-rounded coordinates must be derived from the fixture precision,
-not chosen after seeing implementation output. The proposed ceiling is recorded only after that
-derivation.
+Expected residual tolerance for provider-rounded coordinates must be derived from documented
+coordinate and matrix precision before implementation, not chosen after seeing implementation
+output. The metadata-only preflight record documents the derivation and results without retaining
+the raw official payloads.
 
-## Experimental OPM fixtures
+## Deferred experimental OPM fixtures
 
 - valid oriented PDB with half-thickness REMARK and two DUM planes;
 - missing REMARK but consistent DUM planes: partial unless the adapter contract explicitly permits
@@ -75,6 +91,9 @@ derivation.
 - same oriented coordinates loaded: identity mapping accepted;
 - ordinary wwPDB coordinates loaded: coordinate-frame mismatch, no automatic alignment;
 - curved/multiple PPM/OPM-style boundary pseudo-atoms: unsupported.
+
+These fixtures belong to a separate follow-up and are not part of the first Stage 4A implementation
+PR.
 
 ## Size and parser safety fixtures
 

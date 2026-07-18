@@ -15,11 +15,13 @@ write files, expand archives, call templates/macros, or launch external binaries
 
 ## Baseline parsing limits
 
-Stage 4A accepts only uncompressed regular files supplied as bytes:
+Stage 4A accepts only an uncompressed JSON/transformed-PDB pair supplied as bytes. Each payload is
+limited separately and the bundle is limited to 10 MiB total:
 
 | Limit | Proposed value | Failure |
 |---|---:|---|
 | Raw local payload | 5 MiB | `PAYLOAD_TOO_LARGE` before parsing |
+| Total import bundle | 10 MiB | `BUNDLE_TOO_LARGE` before parsing |
 | JSON/XML nesting | 32 levels | `NESTING_LIMIT_EXCEEDED` |
 | Text line length | 4,096 bytes | `LINE_TOO_LONG` |
 | PDB/mmCIF-like records | 250,000 | `RECORD_LIMIT_EXCEEDED` |
@@ -56,8 +58,9 @@ after allocation.
 | Cache poisoning / partial writes | replay wrong record | key includes provider, record ID, endpoint version and raw SHA; write temp file, fsync where supported, atomic replace; verify manifest/hash on read |
 | Stale data | irreproducible reanalysis | immutable content-addressed entries; retrieval timestamp; explicit refresh; never silently replace old bytes; report cache status/hash |
 | Identifier confusion | fetch wrong PDB/model | source-specific anchored regex; uppercase canonical PDB ID only after preserving supplied ID; returned record ID must match request |
-| Chain/assembly mismatch | precise slab applied to wrong object | explicit namespace, assembly, model and exact chain-set checks; mismatch blocks membrane creation |
-| Coordinate-frame mismatch | stale or unrelated slab | exact documented transform or fingerprint; no silent alignment; serialize source/current frames and matrix |
+| Chain/assembly mismatch | precise slab applied to wrong object | explicit namespace, assembly, model and exact chain-set checks; mismatch blocks membrane creation but a match alone never proves applicability |
+| Coordinate-frame mismatch | stale or unrelated slab | require matching official transformed companion; compare selected model directly against transformed and analytically inverse-transformed atoms; no fitting/alignment; serialize count, RMSD, maximum residual, fingerprints and matrix |
+| Swapped/forged companion | valid JSON paired with unrelated coordinates | verify returned IDs/scope, companion hash and canonical atom intersection; direct coordinate mismatch blocks membrane creation |
 | Source service compromise | plausible malicious data | same strict parser/limits as local input; retain raw hash; warnings; never elevate source name to correctness |
 | Untrusted HTML | script content or unstable scraping | never parse provider HTML as an orientation record; no scraping in core plugin |
 | Provenance spoofing | local file claims to be official | distinguish `declared_source` from `retrieval_verified`; store final URL only for plugin retrieval; raw hash always authoritative |
@@ -88,6 +91,10 @@ A failed Run QC with imported orientation clears plugin-owned report and review/
 the existing command lifecycle. A failed Show Slab clears only slab-owned state as currently
 defined. Input molecular objects are preserved. Defensive exception handling is restricted to
 known file/network/parser/PyMOL lifecycle boundaries; programming errors are not swallowed.
+
+For Stage 4A, partial provenance from JSON without a companion is inspection-only. Rejected,
+unsupported, partial and coordinate-mismatched imports cannot run QC and cannot silently reuse or
+fall back to manual geometry.
 
 ## Security acceptance tests
 

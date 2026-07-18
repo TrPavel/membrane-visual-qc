@@ -1,9 +1,11 @@
 # ADR-0005: Orientation source adapters and coordinate provenance
-geometry ADR rather than coercion into a plane.
-geometry ADR rather than coercion into a plane.
-- Status: Proposed for Stage 4 design review
+
+- Status: Accepted for Stage 4A architecture; PDBTM source-semantics preflight required before production implementation
 - Date: 2026-07-18
 - Depends on: ADR-0002 planar orientation convention
+
+Architecture acceptance does not mean that Stage 4 functionality is implemented. Production
+implementation cannot start until the PDBTM source-semantics preflight described here is reviewed.
 
 ## Context
 
@@ -33,7 +35,7 @@ class SourceIdentity:
     source_url: str | None
     retrieved_at: str | None
     citation: str | None
-    raw_record_sha256: str
+    raw_payloads: tuple[PayloadDigest, ...]
 
 @dataclass(frozen=True)
 class StructureScope:
@@ -60,7 +62,12 @@ class CoordinateMapping:
     source_to_current: tuple[tuple[float, float, float, float], ...]
     method: str
     residual_rmsd: float | None
+    maximum_residual: float | None
     matched_atom_count: int | None
+    fingerprint_algorithm: str | None
+    fingerprint_version: str | None
+    reference_fingerprint: str | None
+    current_fingerprint: str | None
     warnings: tuple[str, ...]
 
 @dataclass(frozen=True)
@@ -83,6 +90,10 @@ class OrientationImportResult:
     warnings: tuple[str, ...]
 ```
 
+For PDBTM, `raw_payloads` contains separate named SHA-256 values for the official JSON and official
+transformed-PDB companion. JSON provenance without its companion may be retained as `partial`, but
+it cannot populate `current_geometry` or create a `PlanarMembrane`.
+
 `source_geometry` is exactly what the provider supplies or what its documented representation
 deterministically encodes. `mapping` records the exact transform applied by the adapter.
 `current_geometry` is the only geometry converted to `PlanarMembrane`. Reports retain all three.
@@ -96,6 +107,18 @@ non-rigid transforms are rejected for Stage 4A.
 ### Adapter contract
 
 ```python
+@dataclass(frozen=True)
+class OrientationPayload:
+    role: str
+    content: bytes
+    media_type: str | None
+    source_url: str | None
+
+@dataclass(frozen=True)
+class OrientationPayloadSet:
+    primary: OrientationPayload
+    companions: tuple[OrientationPayload, ...]
+
 class OrientationAdapter(Protocol):
     source_name: str
     adapter_name: str
@@ -103,11 +126,13 @@ class OrientationAdapter(Protocol):
     supported_media_types: tuple[str, ...]
     supported_source_versions: tuple[str, ...]
 
-    def can_parse(self, payload: bytes, metadata: Mapping[str, object]) -> bool: ...
+    def can_parse(
+        self, payloads: OrientationPayloadSet, metadata: Mapping[str, object]
+    ) -> bool: ...
 
     def parse(
         self,
-        payload: bytes,
+        payloads: OrientationPayloadSet,
         *,
         structure_context: StructureContext,
         metadata: Mapping[str, object],
@@ -121,7 +146,7 @@ a readable rejection.
 
 Every parse:
 
-- hashes the exact input bytes before decoding;
+- hashes every exact input payload before decoding;
 - uses declared UTF-8/ASCII only, rejects undecodable bytes, duplicate security-sensitive keys,
   NaN and infinity;
 - accepts only documented source versions; unknown versions return `unsupported`;
@@ -137,16 +162,69 @@ Every parse:
 Missing centre, thickness, mapping, or scope can yield `partial` evidence for inspection, but never
 a fabricated `PlanarMembrane`. Adapter failures do not fall back to manual geometry automatically.
 
+### PDBTM Stage 4A runtime contract
+
+A fully imported PDBTM orientation requires all three inputs:
+
+1. official PDBTM JSON;
+2. its matching official PDBTM transformed-PDB companion;
+3. a current `StructureContext` with one model explicitly selected.
+
+The JSON supplies provider metadata, membrane geometry and
+`provider_original_to_transformed`. The companion supplies the atom-coordinate evidence needed to
+establish applicability. PDB ID, assembly and chain metadata are necessary scope checks but are
+never sufficient coordinate evidence.
+
+The adapter constructs exactly two reference coordinate sets without fitting:
+
+- the transformed companion coordinates as published;
+- the coordinates obtained by analytically applying
+  `inverse(provider_original_to_transformed)` to every companion atom.
+
+It directly compares the current coordinates with both references using identical atom identities.
+There are only three outcomes:
+
+- current matches the transformed companion: `source_to_current = identity`;
+- current matches the inverse-transformed companion:
+  `source_to_current = inverse(provider_original_to_transformed)`;
+- neither matches: `COORDINATE_FRAME_MISMATCH`, no `PlanarMembrane`, and no QC report.
+
+If both appear to match within the preflight-derived tolerance, the result is ambiguous and
+rejected rather than choosing one. No Kabsch fit, translation fit, atom-derived transform, or other
+optimization is permitted.
+
 ### Coordinate and scope matching
 
 Chain labels are matched in the provider-declared namespace (`auth_asym_id`, `label_asym_id`, or
 legacy PDB chain) and the namespace is serialized. Assembly identity is exact, not inferred from
 chain equality. A provider record for a different assembly or chain set returns a scope mismatch.
 
-No Stage 4A adapter performs automatic best-fit alignment. A documented provider transform may be
-inverted/composed deterministically. An already oriented provider coordinate file may use identity
-mapping only after a coordinate fingerprint check. Any later atom-derived alignment requires a new
-ADR, atom mapping provenance, residual thresholds, and explicit user action.
+The model is explicitly selected before matching. Canonical atom identity is:
+
+```text
+(provider chain namespace, residue number, insertion code, residue name, atom name, resolved altloc)
+```
+
+Altloc resolution uses one documented, versioned policy on both sides. The matched intersection is
+sorted by canonical atom identity. Matching requires at least 12 atoms across at least three
+residues, a maximum pairwise separation of at least 10 angstrom, and at least one matched point at
+least 2 angstrom from the line through the farthest pair. These are minimum applicability checks,
+not biological-quality thresholds.
+
+Coordinates are compared directly. RMSD and maximum per-atom Euclidean residual are calculated for
+each candidate reference without fitting. The acceptance tolerance must be derived before
+implementation from the decimal coordinate precision and matrix precision observed in at least two
+official provider pairs; it cannot be chosen after examining implementation output.
+
+The evidence serializes the selected model, chain namespace, altloc policy, matched atom count,
+RMSD, maximum residual, spatial-distribution measurements, selected reference, and both canonical
+coordinate fingerprints. The fingerprint contract is
+`mvqc_atom_identity_coordinates_sha256`, version `1`: canonical UTF-8 atom-identity records plus
+coordinates rounded only to the provider precision established by preflight. The unrounded
+residuals remain the matching evidence.
+
+Any later atom-derived alignment requires a new ADR, atom mapping provenance, residual thresholds,
+and explicit user action.
 
 ### Boundary and normal semantics
 
@@ -167,13 +245,22 @@ No network import exists below layer 1. Offline payloads enter directly at layer
 
 ### Report and schema
 
-Stage 4 adapter use requires schema 1.3. The orientation record adds normalized source identity,
-raw SHA-256, adapter name/version, source/current scopes, source geometry, exact coordinate mapping,
-current geometry, confidence, and warnings. Optional `orientation_comparison` records thresholds,
-metrics, mismatch states and both evidence IDs.
+Successfully resolved Stage 4 adapter use requires schema 1.3. The orientation record adds
+normalized source identity, raw SHA-256, adapter name/version, source/current scopes, source
+geometry, exact coordinate mapping, current geometry, confidence, and warnings. Optional
+`orientation_comparison` records thresholds, metrics, mismatch states and both evidence IDs.
 
-Schemas 1.0, 1.1 and 1.2 are immutable. Manual/local-file workflows retain current schema dispatch;
-CSV columns remain unchanged.
+Schema dispatch is fixed:
+
+- manual/global-Z or local orientation JSON with context disabled: schema 1.1;
+- existing Stage 3 exposure/context workflows: schema 1.2;
+- successfully resolved Stage 4 adapter orientation, with context disabled or enabled: schema 1.3;
+- schema 1.3 with context enabled contains both orientation provenance and Stage 3 exposure/context
+  evidence.
+
+Partial, rejected, unsupported or coordinate-mismatched imports produce no QC report and never
+fall back silently to manual geometry. Schemas 1.0, 1.1 and 1.2 are immutable; CSV columns remain
+unchanged. Schema 1.3 is not created in the research PR.
 
 ## Consequences
 
@@ -181,9 +268,9 @@ The model is more verbose, but makes silent coordinate transformation and proven
 structurally difficult. Some apparently usable provider files will be rejected until their
 assembly/frame can be established. This is preferable to displaying a precise but unrelated slab.
 
-PDBTM JSON becomes the first implementation target; OPM oriented PDB is experimental. Network
-retrieval and comparison are separate substages. Curved and multiple membranes require a future
-geometry ADR rather than coercion into a plane.
+The first implementation target is offline PDBTM JSON plus its transformed-PDB companion. OPM is a
+separate experimental follow-up. Network retrieval and comparison are separate substages. Curved
+and multiple membranes require a future geometry ADR rather than coercion into a plane.
 
 ## Alternatives rejected
 

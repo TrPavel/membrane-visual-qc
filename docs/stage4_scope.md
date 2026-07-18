@@ -17,28 +17,32 @@ biologically correct merely because its source is external.
 
 ### Supported target
 
-Implement one fully tested **PDBTM JSON** adapter for user-downloaded official entry records. This
-recommendation is conditional on a pre-code fixture check that establishes the documented matrix
-direction and half-thickness convention against paired official transformed coordinates. If those
-semantics cannot be demonstrated independently, Stage 4A pauses rather than guessing.
+Implement one fully tested **offline PDBTM adapter**. A successful import requires the
+user-downloaded official JSON, its matching official transformed-PDB companion, and the current
+`StructureContext`. JSON alone produces at most `partial` provenance evidence and cannot create a
+`PlanarMembrane`. This recommendation is conditional on a pre-code fixture check that establishes
+the documented matrix direction, half-thickness convention and numeric coordinate tolerance
+against paired official data. If those semantics cannot be demonstrated independently, Stage 4A
+pauses rather than guessing.
 
 The workflow is:
 
-1. user selects a local official record and source (or requests deterministic auto-detection);
-2. a pure-Python adapter hashes and parses the bytes under fixed limits;
-3. the adapter verifies PDB ID, biological assembly/chain scope, source version and coordinate
-   mapping against a `StructureContext`;
+1. user selects a local official PDBTM JSON and its transformed-PDB companion;
+2. a pure-Python adapter hashes and parses both payloads under fixed limits;
+3. the adapter verifies source version, explicitly selected model, provider chain namespace,
+   biological assembly/chain scope and direct coordinate evidence against a `StructureContext`;
 4. it emits source-frame evidence, the exact mapping, current-frame planar geometry, warnings, and
    confidence—not a biological verdict;
 5. the existing command layer converts the resolved current-frame geometry to `PlanarMembrane`;
 6. reports serialize provenance and the slab renderer uses exactly that membrane.
 
-### Experimental target
+PDB ID, chains and assembly metadata never establish applicability by themselves. The current atom
+coordinates are compared directly with both the transformed companion and an analytically
+inverse-transformed copy. Identity or inverse-provider mapping is accepted only after the
+preflight-defined direct residual check. There is no structural alignment or fitted transform.
 
-An **OPM oriented-PDB** adapter may be included as experimental if it accepts only a current object
-whose coordinates correspond to that OPM-oriented file, or a separately supplied exact mapping.
-It reads the half-thickness REMARK and validates both DUM planes. It must reject an ordinary wwPDB
-object instead of silently aligning it.
+OPM is not included in the first implementation PR. It is a separate experimental follow-up after
+the PDBTM path is accepted.
 
 ### Explicit non-goals
 
@@ -46,12 +50,13 @@ object instead of silently aligning it.
 - no provider ranking or “best orientation”;
 - no HTML scraping or job submission;
 - no automatic structural alignment;
+- no OPM adapter in the first implementation PR;
 - no curved, multiple, intersecting, or double membranes;
 - no execution of PPM/TmDet or other external binaries;
 - no changes to existing manual orientation behaviour;
 - no changes to existing CSV columns.
 
-PPM 3.0, direct TmDet output, MemProtMD, TmAlphaFold, and ANVIL are deferred as explained in the
+OPM, PPM 3.0, direct TmDet output, MemProtMD, TmAlphaFold, and ANVIL are deferred as explained in the
 [source matrix](stage4_source_matrix.md).
 
 ## Stage 4A acceptance gate
@@ -59,11 +64,12 @@ PPM 3.0, direct TmDet output, MemProtMD, TmAlphaFold, and ANVIL are deferred as 
 Stage 4A is not complete until:
 
 - the normalized model and ADR are accepted;
-- source semantics are backed by provider-derived fixtures with recorded hashes and allowed
-  redistribution, or by small hand-authored fixtures independently derived from published specs;
+- source semantics are verified locally with at least one alpha-helical and one beta-barrel
+  official JSON/transformed-PDB pair, while committed tests use only small hand-authored fixtures;
 - adapters have no PyMOL, Qt, HTTP, archive, template, or subprocess imports;
 - invalid input clears only plugin-owned state and gives a readable error without traceback;
-- source, adapter, raw hash, assembly, chains, coordinate frames, and exact transform are reported;
+- source, adapter, both raw hashes, assembly, chains, coordinate frames, direct-match metrics,
+  fingerprints and exact transform are reported;
 - the rendered planes match the resolved `PlanarMembrane` in headless and graphical PyMOL;
 - all released schemas and historical evidence remain byte-unchanged;
 - manual/global-Z and local orientation JSON workflows retain their current schema behaviour.
@@ -120,13 +126,18 @@ or biologically wrong.
 
 ## Schema strategy
 
-Stage 4 import requires **report schema 1.3** because orientation provenance, adapter identity,
-coordinate mapping and optional comparison have new defined semantics. Released 1.0, 1.1 and 1.2
-remain immutable.
+Successfully resolved Stage 4 import requires **report schema 1.3** because orientation
+provenance, adapter identity, coordinate mapping and optional comparison have new defined
+semantics. Released 1.0, 1.1 and 1.2 remain immutable.
 
 - legacy/manual orientation with context disabled remains schema 1.1;
 - v0.3 context analysis remains schema 1.2;
-- using a Stage 4 adapter produces schema 1.3 whether context is enabled or not;
+- successfully resolved Stage 4 adapter orientation produces schema 1.3 whether context is enabled
+  or not;
+- schema 1.3 with context enabled contains both Stage 4 orientation provenance and Stage 3
+  exposure/context evidence;
+- partial, rejected, unsupported or coordinate-mismatched imports produce no QC report and do not
+  silently fall back to manual geometry;
 - comparison is optional in 1.3 and absent when not requested;
 - existing CSV columns remain unchanged; rich provenance remains JSON-only.
 
@@ -134,19 +145,17 @@ Schema 1.3 is not created on this research branch.
 
 ## Estimate
 
-After design acceptance, the minimal PDBTM-only Stage 4A is estimated at **18–25 engineer-days**:
-4–5 for source-semantic fixtures/model, 4–6 for adapter and mapping, 3–4 for report/schema work,
-3–4 for command/GUI/render lifecycle, and 4–6 for unit, headless, graphical, security and release
-validation. The experimental OPM adapter adds approximately 5–8 engineer-days. Review latency and
-provider clarification are not included.
+After design acceptance and semantics preflight, the minimal PDBTM-only Stage 4A is estimated at
+**18–25 engineer-days**: 4–5 for source-semantic fixtures/model, 4–6 for adapter and mapping, 3–4
+for report/schema work, 3–4 for command/GUI/render lifecycle, and 4–6 for unit, headless,
+graphical, security and release validation. The experimental OPM adapter adds approximately 5–8
+engineer-days. Review latency and provider clarification are not included.
 
 ## Unresolved decisions requiring acceptance
 
 1. Confirm PDBTM half-thickness and matrix direction with paired official fixtures.
 2. Decide whether a redistributable minimal provider fixture is permitted; otherwise use derived
    synthetic fixtures plus runtime user files.
-3. Define the exact coordinate-identity test and acceptable numeric residual for source/current
-   mapping.
-4. Decide whether experimental OPM support belongs in the first Stage 4A PR or a follow-up.
-5. Confirm schema-1.3 opt-in dispatch when Stage 4 orientation and Stage 3 context are both enabled.
-6. Ask PDBTM maintainers for explicit API rate-limit and redistribution guidance before Stage 4B.
+3. Derive and record the final numeric residual tolerance from official coordinate and matrix
+   precision before implementation review.
+4. Ask PDBTM maintainers for explicit API rate-limit and redistribution guidance before Stage 4B.

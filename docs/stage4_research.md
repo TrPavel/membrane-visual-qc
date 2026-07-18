@@ -36,9 +36,16 @@ be freely downloaded, but the site does not present a precise data-redistributio
 the API. Stage 4 should therefore cite PDBTM/UniTmp, retain source URLs and hashes, and not bundle or
 redistribute a database snapshot without clarification.
 
-PDBTM JSON is the strongest Stage 4A candidate because it has a machine-readable official endpoint
-and an explicit coordinate mapping. Before coding, paired JSON/transformed-coordinate fixtures
-must settle the exact half-thickness convention and matrix direction as executable invariants.
+PDBTM is the strongest Stage 4A candidate because it has a machine-readable official endpoint, an
+explicit coordinate mapping, and an official transformed-PDB companion. The JSON is not sufficient
+to prove that its geometry applies to the current PyMOL object. A fully resolved import therefore
+requires the official JSON, its matching transformed PDB, and a current `StructureContext` with an
+explicit model. JSON alone yields at most partial provenance evidence and no `PlanarMembrane`.
+
+Before coding, locally downloaded official pairs must settle the half-thickness convention, matrix
+direction and numeric coordinate tolerance as executable invariants. The adapter compares current
+coordinates directly with the transformed companion and with an analytically inverse-transformed
+copy. It accepts only identity or the inverse provider transform; it performs no structural fit.
 
 Sources: [PDBTM manual](https://pdbtm.unitmp.org/documents),
 [PDBTM usage and API link](https://pdbtm.unitmp.org/usage),
@@ -58,9 +65,10 @@ versioned mapping back to an independently loaded wwPDB coordinate set. The webs
 endpoints internally, but no official REST contract, authentication policy, rate limit, or service
 stability promise was found. Core retrieval must not depend on reverse-engineering those endpoints.
 
-OPM is suitable as an **experimental offline Stage 4A adapter** only when the current object is the
-same OPM-oriented coordinate record, or when an explicit, independently verified mapping is
-provided. A coordinate mismatch must be rejected, not aligned silently.
+OPM may be suitable as an experimental offline follow-up only when the current object is the same
+OPM-oriented coordinate record, or when an explicit, independently verified mapping is provided.
+It is not part of the first Stage 4A implementation PR. A coordinate mismatch must be rejected, not
+aligned silently.
 
 Sources: [OPM home](https://opm.phar.umich.edu/),
 [OPM downloads](https://opm.phar.umich.edu/download), and the
@@ -157,8 +165,8 @@ Sources: [Mol* repository](https://github.com/molstar/molstar) and the
 
 ## Research conclusion
 
-Stage 4A should implement one conservative PDBTM JSON adapter, plus an explicitly experimental OPM
-oriented-PDB adapter if coordinate identity can be proved. PPM, direct TmDet jobs, RCSB geometry,
-MemProtMD reduction, and TmAlphaFold support are deferred for distinct technical or scientific
-reasons. Stage 4B should add optional retrieval only after offline adapters are accepted. Stage 4C
-should compare evidence without choosing a biologically correct winner.
+The accepted first Stage 4A scope is PDBTM only, offline only, and requires JSON plus its official
+transformed-PDB companion. PPM, direct TmDet jobs, RCSB geometry, MemProtMD reduction, TmAlphaFold,
+OPM and source comparison are deferred for distinct technical or scientific reasons. Network
+retrieval is also deferred. Stage 4C, if later accepted, compares evidence without choosing a
+biologically correct winner.
