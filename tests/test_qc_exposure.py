@@ -168,12 +168,61 @@ def test_local_context_requires_exposure_configuration():
 
 def test_gui_freesasa_reference_backend_label_is_accepted(monkeypatch):
     marker = object()
-    monkeypatch.setattr(qc, "calculate_freesasa_exposure", lambda *args, **kwargs: marker)
+
+    def reference_backend(atoms, *, config, target_residues):
+        assert atoms == []
+        assert isinstance(config, ExposureConfig)
+        assert target_residues == set()
+        return marker
+
+    monkeypatch.setattr(qc, "calculate_freesasa_exposure", reference_backend)
     result = qc._calculate_exposure(
         [],
         config=ExposureConfig(),
         target_residues=set(),
         membrane=legacy_global_z(-15, 15),
         backend="FreeSASA reference",
+    )
+    assert result is marker
+
+
+def test_builtin_backend_receives_membrane_partition_input(monkeypatch):
+    marker = object()
+    membrane = legacy_global_z(-15, 15)
+
+    def builtin_backend(atoms, *, config, target_residues, membrane):
+        assert atoms == []
+        assert isinstance(config, ExposureConfig)
+        assert target_residues == set()
+        assert membrane is legacy_membrane
+        return marker
+
+    legacy_membrane = membrane
+    monkeypatch.setattr(qc, "calculate_exposure", builtin_backend)
+    result = qc._calculate_exposure(
+        [],
+        config=ExposureConfig(),
+        target_residues=set(),
+        membrane=membrane,
+        backend="Built-in",
+    )
+    assert result is marker
+
+
+def test_auto_falls_back_to_builtin_when_freesasa_is_absent(monkeypatch):
+    marker = object()
+    membrane = legacy_global_z(-15, 15)
+    monkeypatch.setattr(qc.importlib.util, "find_spec", lambda name: None)
+
+    def builtin_backend(atoms, *, config, target_residues, membrane):
+        return marker
+
+    monkeypatch.setattr(qc, "calculate_exposure", builtin_backend)
+    result = qc._calculate_exposure(
+        [],
+        config=ExposureConfig(),
+        target_residues=set(),
+        membrane=membrane,
+        backend="Auto",
     )
     assert result is marker

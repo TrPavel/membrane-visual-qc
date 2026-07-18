@@ -2,10 +2,12 @@ import sys
 
 import pytest
 
+from membrane_vqc import commands, qc
 from membrane_vqc.context_models import ExposureConfig
 from membrane_vqc.exposure import calculate_exposure
 from membrane_vqc.freesasa_backend import calculate_freesasa_exposure
 from membrane_vqc.membrane import AtomRecord
+from membrane_vqc.orientation import legacy_global_z
 
 
 def atoms():
@@ -71,6 +73,30 @@ def test_missing_freesasa_returns_explicit_unavailable_result(monkeypatch):
     assert "unavailable" in result.metadata.warnings[-1].lower()
 
 
+def test_qc_orchestration_preserves_explicit_unavailable_backend_result(monkeypatch):
+    import membrane_vqc.freesasa_backend as backend
+
+    real_import = backend.importlib.import_module
+
+    def unavailable(name):
+        if name == "freesasa":
+            raise ImportError("not installed")
+        return real_import(name)
+
+    monkeypatch.setattr(backend.importlib, "import_module", unavailable)
+    result = qc._calculate_exposure(
+        atoms(),
+        config=ExposureConfig(target_scope="all_residues"),
+        target_residues=None,
+        membrane=legacy_global_z(-15, 15),
+        backend="FreeSASA reference",
+    )
+
+    assert result.status == "unavailable"
+    assert result.metadata.backend == "freesasa_reference"
+    assert result.metadata.freesasa_status == "unavailable"
+
+
 def test_freesasa_standard_240_point_parity_and_atom_mapping():
     pytest.importorskip("freesasa")
     config = ExposureConfig(sphere_points=240, target_scope="all_residues")
@@ -85,6 +111,56 @@ def test_freesasa_standard_240_point_parity_and_atom_mapping():
         "S",
     }
     assert_parity(builtin, reference)
+
+
+@pytest.mark.parametrize("backend", ["FreeSASA reference", "Auto"])
+def test_qc_orchestration_uses_installed_freesasa_without_membrane_argument(backend):
+    pytest.importorskip("freesasa")
+    result = qc._calculate_exposure(
+        multi_element_atoms(),
+        config=ExposureConfig(sphere_points=240, target_scope="all_residues"),
+        target_residues=None,
+        membrane=legacy_global_z(-15, 15),
+        backend=backend,
+    )
+
+    assert result.status == "completed"
+    assert result.metadata.backend == "freesasa_reference"
+    assert result.metadata.freesasa_status == "used"
+    assert all(residue.partition.core_area is None for residue in result.residues)
+
+
+def test_command_level_context_run_with_freesasa_emits_schema_12(monkeypatch):
+    pytest.importorskip("freesasa")
+    target = AtomRecord("m", "A", "1", "LYS", "NZ", 0, 0, 0, element="N")
+    target_carbon = AtomRecord("m", "A", "1", "LYS", "CE", 1.3, 0, 0, element="C")
+    partner = AtomRecord("m", "B", "2", "ASP", "OD1", 3.5, 0, 0, element="O")
+    selected = [target, target_carbon, partner]
+    monkeypatch.setattr(commands, "clear_owned", lambda: None)
+    monkeypatch.setattr(qc, "protein_atoms", lambda selection, cmd_obj: [target, target_carbon])
+    monkeypatch.setattr(qc, "structure_atoms", lambda selection, cmd_obj: selected)
+    monkeypatch.setattr(qc, "create_membrane_planes", lambda *args: None)
+    for name in (
+        "color_hydropathy",
+        "show_ligand_shell",
+        "show_residue_selections",
+        "show_local_context",
+        "clear_context",
+    ):
+        monkeypatch.setattr(qc, name, lambda *args: None)
+
+    report = commands.mvqc_check(
+        selection="m",
+        ligand="",
+        analyze_context=1,
+        exposure_backend="FreeSASA reference",
+    )
+
+    assert report["schema_version"] == "1.2"
+    metadata = report["context_analysis"]["exposure"]
+    assert metadata["backend"] == "freesasa_reference"
+    assert metadata["freesasa_status"] == "used"
+    assert report["review_items"][0]["exposure"]["core_region_accessible_area"] is None
 
 
 def test_freesasa_singleton_model_is_guarded_without_native_call(monkeypatch):

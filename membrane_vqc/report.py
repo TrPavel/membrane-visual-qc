@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
-from .context_models import ExposureAnalysis, LocalContextAnalysis
+from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
 from .errors import ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
 
@@ -81,6 +81,7 @@ def build_report(
         review_items = _with_exposure(review_items, exposure_analysis)
     if local_context_analysis is not None:
         review_items = _with_local_context(review_items, local_context_analysis)
+        review_items = sorted(review_items, key=_context_review_sort_key)
     source_path, source_hash = _portable_input_metadata(input_path)
     timestamp = datetime.now(timezone.utc).isoformat()
     orientation_warnings = [
@@ -292,6 +293,16 @@ def _portable_input_metadata(path: str | Path | None) -> tuple[str, str]:
 
 def _residue_sort_key(item: dict[str, Any]) -> tuple[str, str, str, str]:
     return tuple(str(item.get(key, "")) for key in ("model", "chain", "resi", "resn"))
+
+
+def _context_review_sort_key(item: dict[str, Any]) -> tuple[int, int, str, str, str, str]:
+    context_state = item.get("local_context", {}).get("context_state", "INSUFFICIENT_CONTEXT")
+    severity_priority = {"WARNING": 0, "INSPECT": 1}
+    return (
+        CONTEXT_STATE_PRIORITY.get(context_state, len(CONTEXT_STATE_PRIORITY)),
+        severity_priority.get(str(item.get("severity", "")), len(severity_priority)),
+        *_residue_sort_key(item),
+    )
 
 
 def _with_exposure(

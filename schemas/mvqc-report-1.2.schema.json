@@ -151,9 +151,9 @@
           "enum": [
             "BURIED_NO_DETECTED_SUPPORT",
             "BURIED_WITH_POTENTIAL_SUPPORT",
+            "INSUFFICIENT_CONTEXT",
             "ACCESSIBLE_NO_DETECTED_SUPPORT",
-            "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
-            "INSUFFICIENT_CONTEXT"
+            "ACCESSIBLE_WITH_POTENTIAL_SUPPORT"
           ]
         },
         "counts": {

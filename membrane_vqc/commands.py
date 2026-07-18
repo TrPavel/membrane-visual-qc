@@ -198,10 +198,15 @@ def _slab(zmin, zmax) -> tuple[float, float]:
 
 
 def _analysis_configs(enabled, quality) -> tuple[ExposureConfig | None, LocalContextConfig | None]:
-    try:
-        enabled = bool(int(enabled))
-    except (TypeError, ValueError) as exc:
-        raise ValueError("analyze_context must be 0 or 1.") from exc
+    if isinstance(enabled, bool):
+        normalized = int(enabled)
+    elif isinstance(enabled, int) and enabled in {0, 1}:
+        normalized = enabled
+    elif isinstance(enabled, str) and enabled.strip() in {"0", "1"}:
+        normalized = int(enabled.strip())
+    else:
+        raise ValueError("analyze_context must be 0 or 1.")
+    enabled = bool(normalized)
     if not enabled:
         return None, None
     points = {"fast": 96, "standard": 240, "high": 960}.get(str(quality).strip().lower())

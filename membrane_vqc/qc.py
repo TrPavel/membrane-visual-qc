@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import math
 import importlib.util
+import math
 from typing import Any, Iterable
 
 from .constants import DEFAULT_INTERFACE_WIDTH, DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
 from .context import analyze_local_context
-from .context_models import ExposureConfig, LocalContextConfig
+from .context_models import CONTEXT_STATE_PRIORITY, ExposureConfig, LocalContextConfig
 from .errors import InputValidationError
 from .exposure import calculate_exposure
 from .freesasa_backend import calculate_freesasa_exposure
@@ -203,9 +203,9 @@ def _calculate_exposure(atoms, *, config, target_residues, membrane, backend):
             atoms, config=config, target_residues=target_residues, membrane=membrane
         )
     if normalized in {"freesasa", "freesasa-reference"}:
-        return calculate_freesasa_exposure(
-            atoms, config=config, target_residues=target_residues, membrane=membrane
-        )
+        # FreeSASA is a whole-surface reference and intentionally has no membrane
+        # partitioning input. Its result records those partitions as unavailable.
+        return calculate_freesasa_exposure(atoms, config=config, target_residues=target_residues)
     raise InputValidationError("Exposure backend must be built-in, auto, or freesasa-reference.")
 
 
@@ -281,7 +281,9 @@ def format_summary(report: dict[str, Any]) -> str:
         context = (
             " Context: "
             + ", ".join(
-                f"{count} {state}" for state, count in sorted(context_counts.items()) if count
+                f"{context_counts[state]} {state}"
+                for state in CONTEXT_STATE_PRIORITY
+                if context_counts.get(state)
             )
             + "."
         )

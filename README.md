@@ -106,6 +106,13 @@ Fast/Standard/High sampling and Built-in/Auto/FreeSASA-reference backends, with 
 by default pending graphical acceptance. Draft schema 1.2 stores rich evidence; released schemas
 1.0 and 1.1 remain immutable. FreeSASA is optional and lazy.
 
+The schema 1.2 contact vocabulary is deliberately limited to `putative_salt_bridge`,
+`distance_only_potential_hbond`, `nearby_water`, `nearby_ion`, `ligand_proximity`, and
+`polar_ligand_proximity`. Unsupported or ambiguous HETATM elements are excluded with warnings;
+arbitrary ligand chemistry is not inferred. Overall `contact_support` reports whether any of these
+six evidence types was detected. Zero extracted water, ion, or ligand atoms do not prove that the
+category is biologically absent.
+
 ## Validation and development status
 
 The pure-Python suite and headless workflows have been tested with Incentive PyMOL 3.1.8 /

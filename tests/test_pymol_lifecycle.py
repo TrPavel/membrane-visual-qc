@@ -183,6 +183,22 @@ def test_context_is_disabled_by_default():
     assert commands._analysis_configs(0, "High") == (None, None)
 
 
+@pytest.mark.parametrize("enabled", [False, True, 0, 1, "0", "1", " 0 ", " 1 "])
+def test_context_flag_accepts_only_explicit_boolean_values(enabled):
+    exposure, context = commands._analysis_configs(enabled, "Fast")
+    if enabled in {False, 0, "0", " 0 "}:
+        assert (exposure, context) == (None, None)
+    else:
+        assert exposure.sphere_points == 96
+        assert context is not None
+
+
+@pytest.mark.parametrize("enabled", [2, -1, "2", "-1", 0.0, 1.0, "true", None])
+def test_context_flag_rejects_non_binary_values(enabled):
+    with pytest.raises(ValueError, match="must be 0 or 1"):
+        commands._analysis_configs(enabled, "Fast")
+
+
 def test_failed_context_run_clears_owned_state_and_report(monkeypatch):
     cleared = []
     monkeypatch.setattr(commands, "clear_owned", lambda: cleared.append("all"))

@@ -10,15 +10,14 @@ from typing import Any
 EXPOSURE_CLASSES = frozenset({"buried", "intermediate", "exposed", "unknown"})
 TARGET_SCOPES = frozenset({"review_items", "all_residues", "explicit"})
 CONTACT_SUPPORT_VALUES = frozenset({"detected", "not_detected", "unavailable"})
-CONTEXT_STATES = frozenset(
-    {
-        "BURIED_NO_DETECTED_SUPPORT",
-        "BURIED_WITH_POTENTIAL_SUPPORT",
-        "ACCESSIBLE_NO_DETECTED_SUPPORT",
-        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
-        "INSUFFICIENT_CONTEXT",
-    }
-)
+CONTEXT_STATE_PRIORITY = {
+    "BURIED_NO_DETECTED_SUPPORT": 0,
+    "BURIED_WITH_POTENTIAL_SUPPORT": 1,
+    "INSUFFICIENT_CONTEXT": 2,
+    "ACCESSIBLE_NO_DETECTED_SUPPORT": 3,
+    "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 4,
+}
+CONTEXT_STATES = frozenset(CONTEXT_STATE_PRIORITY)
 CONTACT_TYPES = frozenset(
     {
         "putative_salt_bridge",
@@ -27,16 +26,6 @@ CONTACT_TYPES = frozenset(
         "nearby_ion",
         "ligand_proximity",
         "polar_ligand_proximity",
-    }
-)
-CONTACT_SUPPORT_VALUES = frozenset({"detected", "not_detected", "unavailable"})
-CONTEXT_STATES = frozenset(
-    {
-        "BURIED_NO_DETECTED_SUPPORT",
-        "BURIED_WITH_POTENTIAL_SUPPORT",
-        "ACCESSIBLE_NO_DETECTED_SUPPORT",
-        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
-        "INSUFFICIENT_CONTEXT",
     }
 )
 
@@ -383,7 +372,7 @@ class LocalContextAnalysis:
     def state_counts(self) -> dict[str, int]:
         return {
             state: sum(item.context_state == state for item in self.residues)
-            for state in sorted(CONTEXT_STATES)
+            for state in CONTEXT_STATE_PRIORITY
         }
 
     def as_report_metadata(self) -> dict[str, Any]:

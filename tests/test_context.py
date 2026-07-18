@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -10,10 +11,13 @@ from jsonschema import validate
 from membrane_vqc.chemistry import charged_role
 from membrane_vqc.context import analyze_local_context, derive_context_state
 from membrane_vqc.context_models import (
+    CONTACT_TYPES,
     ExposureAnalysis,
     ExposureBackendMetadata,
     ExposureConfig,
+    LocalContextAnalysis,
     LocalContextConfig,
+    ResidueLocalContext,
     ResidueExposure,
     SurfacePartition,
 )
@@ -75,6 +79,17 @@ def run(atoms, *, key=("m", "A", "1", "LYS"), classification="buried", config=No
         exposure_analysis=exposure(key, classification),
         config=config,
     ).residues[0]
+
+
+def test_stage3b_contact_vocabulary_is_exactly_six_types():
+    assert CONTACT_TYPES == {
+        "putative_salt_bridge",
+        "distance_only_potential_hbond",
+        "nearby_water",
+        "nearby_ion",
+        "ligand_proximity",
+        "polar_ligand_proximity",
+    }
 
 
 @pytest.mark.parametrize(
@@ -174,6 +189,25 @@ def test_unsupported_hetero_element_is_not_contact_evidence():
     assert "excluded from ligand context" in analysis.warnings[0]
 
 
+def test_missing_optional_categories_are_counts_not_biological_absence_claims():
+    analysis = analyze_local_context(
+        [atom("LYS", "NZ", 0, element="N"), atom("ALA", "CA", 8, resi="2", element="C")],
+        target_residues=[("m", "A", "1", "LYS")],
+        exposure_analysis=exposure(),
+    )
+
+    assert dict(analysis.category_atom_counts) == {
+        "ion": 0,
+        "ligand": 0,
+        "other_hetatm": 0,
+        "protein": 2,
+        "water": 0,
+    }
+    assert analysis.residues[0].contact_support == "not_detected"
+    assert analysis.residues[0].contacts == ()
+    assert not any("absent" in warning.lower() for warning in analysis.warnings)
+
+
 def test_nonstandard_residue_with_unknown_exposure_is_insufficient():
     key = ("m", "A", "1", "MSE")
     result = run([atom("MSE", "SE", 0, element="SE")], key=key, classification="unknown")
@@ -238,3 +272,119 @@ def test_schema_12_rich_context_and_deterministic_exports(tmp_path):
     export_report(report, second)
     assert first.read_bytes() == second.read_bytes()
     assert first.with_suffix(".csv").read_bytes() == second.with_suffix(".csv").read_bytes()
+
+
+def test_review_json_uses_shared_context_priority_but_csv_keeps_residue_order(tmp_path):
+    states = [
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+        "INSUFFICIENT_CONTEXT",
+        "BURIED_WITH_POTENTIAL_SUPPORT",
+        "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_NO_DETECTED_SUPPORT",
+    ]
+    residue_ids = ["50", "30", "20", "40", "10", "11"]
+    exposure_results = []
+    context_results = []
+    flags = []
+    empty = SurfacePartition(*(None for _ in range(7)))
+    for index, (state, resi) in enumerate(zip(states, residue_ids, strict=True)):
+        key = ("m", "A", resi, "LYS")
+        classification = (
+            "unknown"
+            if state == "INSUFFICIENT_CONTEXT"
+            else ("buried" if state.startswith("BURIED") else "exposed")
+        )
+        support = (
+            "unavailable"
+            if state == "INSUFFICIENT_CONTEXT"
+            else "detected"
+            if state.endswith("WITH_POTENTIAL_SUPPORT")
+            else "not_detected"
+        )
+        exposure_results.append(
+            ResidueExposure(
+                *key,
+                status="completed",
+                residue_sasa=0.0,
+                sidechain_sasa=0.0,
+                relative_sasa=None if classification == "unknown" else 0.0,
+                reference_max_sasa=None,
+                reference_status="unavailable",
+                classification=classification,
+                partition=empty,
+                sidechain_partition=empty,
+            )
+        )
+        context_results.append(
+            ResidueLocalContext(
+                *key,
+                status="unavailable" if support == "unavailable" else "completed",
+                burial_state=classification,
+                contact_support=support,
+                context_state=state,
+            )
+        )
+        flags.append(
+            {
+                "model": "m",
+                "chain": "A",
+                "resi": resi,
+                "resn": "LYS",
+                "classification": "core",
+                "severity": "WARNING" if resi == "11" or index % 2 else "INSPECT",
+                "reason": "scrambled priority fixture",
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+            }
+        )
+    metadata = ExposureBackendMetadata(
+        backend="builtin_shrake_rupley",
+        backend_version="1",
+        config=ExposureConfig(),
+        alternate_atoms_seen=0,
+        alternate_atoms_discarded=0,
+        alternate_location_policy="test",
+        models=("m",),
+        freesasa_status="unavailable",
+        warnings=(),
+        elapsed_seconds=0.0,
+    )
+    exposure_analysis = ExposureAnalysis("completed", tuple(exposure_results), metadata)
+    context_analysis = LocalContextAnalysis("partial", tuple(context_results), LocalContextConfig())
+    report = build_report(
+        selection="m",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=6,
+        core_residues=6,
+        flagged_residues=flags,
+        ligand_neighbours=[],
+        warnings=[],
+        exposure_analysis=exposure_analysis,
+        local_context_analysis=context_analysis,
+    )
+
+    assert [item["local_context"]["context_state"] for item in report["review_items"]] == [
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_WITH_POTENTIAL_SUPPORT",
+        "INSUFFICIENT_CONTEXT",
+        "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+    ]
+    assert [item["resi"] for item in report["review_items"][:2]] == ["11", "10"]
+    assert list(report["summary"]["context_state_counts"]) == [
+        "BURIED_NO_DETECTED_SUPPORT",
+        "BURIED_WITH_POTENTIAL_SUPPORT",
+        "INSUFFICIENT_CONTEXT",
+        "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT",
+    ]
+    output = tmp_path / "ordered.json"
+    export_report(report, output)
+    with output.with_suffix(".csv").open(newline="", encoding="utf-8") as handle:
+        assert [row["resi"] for row in csv.DictReader(handle)] == sorted(residue_ids)

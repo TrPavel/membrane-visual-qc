@@ -27,6 +27,9 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
+- Made FreeSASA orchestration use its real membrane-independent signature, centralized context
+  priority ordering, tightened the binary context command flag, and limited schema 1.2 to its six
+  explicitly supported conservative contact labels.
 - Completed draft schema 1.2 with serialized context thresholds, category availability,
   per-review-item contacts/counts/states, and top-level context-state counts while retaining the
   existing CSV columns.
