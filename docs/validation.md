@@ -216,3 +216,20 @@ The exact 49,415-byte ZIP graphical smoke passed on 2026-07-18 with SHA-256
 version, context-default, synthetic summary, context-selection, export/fallback, lifecycle,
 invalid-orientation cleanup, structure-preservation, and rotated-1UBQ checks passed. This evidence
 is recorded separately from the unchanged historical `0.3.0.dev0` acceptance.
+
+## v0.3.0 publication verification
+
+Final PR workflow [29649788155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649788155)
+and post-merge `main` workflow
+[29649853994](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649853994) passed Python
+3.10, 3.11, 3.12, and the blocking Ubuntu FreeSASA job. The final release commit is
+`5caf9ee0d89721ccfa560de9136b82cc87436c3b`.
+
+All four uploaded release assets were downloaded again. Each matched its local source
+byte-for-byte; the ZIP remained 49,415 bytes with SHA-256
+`ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`, the checksum file contained
+the same digest, and wheel/sdist metadata reported `0.3.0`. Schema 1.2 is released and immutable
+with SHA-256 `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`.
+
+The v0.1.0/v0.2.0 tag objects, targets, prereleases, and asset sets remain unchanged. The PyPI JSON
+endpoint returns 404 for this distribution. Stage 4 has not started.

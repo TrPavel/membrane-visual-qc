@@ -22,16 +22,17 @@ original review severities.
 
 ## Installation
 
-v0.3.0 is being prepared as a prerelease for limited public testing. The exact local release
-candidate is `dist/MembraneVisualQC-0.3.0.zip`; its final graphical packaging smoke passed. After
-publication, GitHub Releases will be the primary public
-installation route. Until then, public users should use the immutable
-[v0.2.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0).
+v0.3.0 is published as a prerelease for limited public testing. Public users should download
+`MembraneVisualQC-0.3.0.zip` and its checksum from the
+[v0.3.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0).
+GitHub Releases is the primary public installation route; `dist/MembraneVisualQC-0.3.0.zip` is the
+local-development/build path.
 
 Install the release ZIP through PyMOL Plugin Manager, restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The
-published [v0.1.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0) and v0.2.0
-tags, releases, and assets remain unchanged.
+published [v0.1.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0) and
+[v0.2.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0) tags, releases, and
+assets remain unchanged.
 
 For source development:
 

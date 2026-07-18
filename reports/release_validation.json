@@ -1,12 +1,9 @@
 {
-  "timestamp": "2026-07-18T17:53:37+03:00",
+  "timestamp": "2026-07-18T18:38:23+03:00",
   "package_version": "0.3.0",
-  "release_status": "release_candidate_graphically_accepted_pending_pr_ci",
-  "readiness_statement": "v0.3.0 release candidate passed local and exact-artifact graphical validation; PR CI is pending.",
-  "release_blockers": [
-    "Release PR and post-merge GitHub Actions",
-    "Annotated tag and GitHub prerelease publication"
-  ],
+  "release_status": "published_prerelease_limited_public_testing",
+  "readiness_statement": "v0.3.0 is published as a prerelease for limited public testing.",
+  "release_blockers": [],
   "checks": {
     "ruff_check": {"status": "passed", "version": "0.15.21"},
     "ruff_format_check": {"status": "passed", "files_checked": 57},
@@ -54,12 +51,12 @@
       "independent_builds": 2
     },
     "blocking_freesasa_reference": {
-      "status": "pending_release_pr_ci",
-      "reason": "FreeSASA is unavailable on Windows; WSL and Docker are unavailable in this workspace",
-      "required_job": "FreeSASA reference (Python 3.11, Ubuntu)"
+      "status": "passed",
+      "workflow_run_id": 29649853994,
+      "job": "FreeSASA reference (Python 3.11, Ubuntu)"
     },
     "schema_files": {
-      "status": "scientific_contract_frozen_for_release",
+      "status": "released_immutable",
       "sha256": {
         "schemas/mvqc-report-1.0.schema.json": "5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710",
         "schemas/mvqc-report-1.1.schema.json": "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf",
@@ -101,21 +98,63 @@
       }
     },
     "github_actions": {
-      "release_pr": {"status": "pending"},
-      "post_merge": {"status": "pending"},
+      "release_pr": {
+        "status": "passed",
+        "pull_request": "https://github.com/TrPavel/membrane-visual-qc/pull/6",
+        "run_id": 29649788155,
+        "commit": "4fb65d69aa6ddc98cadd074b995bbf77b1fc503a",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649788155",
+        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"},
+        "freesasa_reference": "passed"
+      },
+      "post_merge": {
+        "status": "passed",
+        "run_id": 29649853994,
+        "commit": "5caf9ee0d89721ccfa560de9136b82cc87436c3b",
+        "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649853994",
+        "python_matrix": {"3.10": "passed", "3.11": "passed", "3.12": "passed"},
+        "freesasa_reference": "passed"
+      },
       "post_release_status": {"status": "pending"}
     },
     "release_publication": {
-      "status": "not_published",
+      "status": "published_prerelease",
       "tag": "v0.3.0",
+      "tag_object": "e1b635f53a8c7765729d9a1d54fffb2238389fb7",
+      "tag_commit": "5caf9ee0d89721ccfa560de9136b82cc87436c3b",
+      "release_commit": "5caf9ee0d89721ccfa560de9136b82cc87436c3b",
+      "release_url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0",
+      "assets_uploaded": [
+        "MembraneVisualQC-0.3.0.zip",
+        "MembraneVisualQC-0.3.0.zip.sha256",
+        "membrane_vqc_pymol-0.3.0-py3-none-any.whl",
+        "membrane_vqc_pymol-0.3.0.tar.gz"
+      ],
+      "downloaded_assets_byte_identical": true,
+      "published_zip_size_bytes": 49415,
+      "published_zip_sha256": "ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb",
+      "checksum_asset_matches": true,
+      "wheel_version": "0.3.0",
+      "sdist_version": "0.3.0",
       "pypi": "not_published"
     },
     "historical_release_metadata": {
       "v0.2.0": "reports/release_validation_v0.2.0.json"
     },
+    "stage_4": {"status": "not_started"},
     "published_release_immutability": {
-      "v0.1.0": "must_remain_unchanged",
-      "v0.2.0": "must_remain_unchanged"
+      "v0.1.0": {
+        "status": "confirmed_unchanged",
+        "tag_object": "9a448b4532b94cb81db7a82b08f10007e3ab44a6",
+        "tag_commit": "a8c7959fb1d53dd99771a184443aa16afd287aa6",
+        "assets": 4
+      },
+      "v0.2.0": {
+        "status": "confirmed_unchanged",
+        "tag_object": "96b6ef4d8e68b85d230268eb3baaf7ad2b0d02b9",
+        "tag_commit": "7877fed3c83419e6affa1e4353a65f8756e9303a",
+        "assets": 4
+      }
     }
   }
 }

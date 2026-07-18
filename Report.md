@@ -2,10 +2,9 @@
 
 ## Current status
 
-Stage 3 is complete and merged into `main`. The separate `release/v0.3.0` branch promotes the
-active identity to `0.3.0` and prepares the exact final artifacts. The exact final ZIP passed its
-focused graphical packaging/version smoke and the release PR is ready to open.
-Stage 4 has not started, v0.1.0 and v0.2.0 remain immutable, and PyPI is not used.
+Stage 3 is complete and merged into `main`. v0.3.0 is published as a prerelease for limited public
+testing from annotated tag `v0.3.0`. Stage 4 has not started, v0.1.0 and v0.2.0 remain immutable,
+and PyPI is not used.
 
 ## Environment
 
@@ -441,3 +440,24 @@ both historical development SHAs remain unchanged.
 
 FreeSASA is not installed on Windows, and neither WSL nor Docker is available; the blocking Ubuntu
 Python 3.11 FreeSASA job and the Python 3.10/3.11/3.12 matrix remain required PR checks.
+
+### v0.3.0 publication closure
+
+Final PR head `4fb65d69aa6ddc98cadd074b995bbf77b1fc503a` passed
+[workflow 29649788155](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649788155).
+PR #6 was squash-merged as `5caf9ee0d89721ccfa560de9136b82cc87436c3b`; all four jobs passed
+again in [post-merge workflow 29649853994](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649853994).
+
+Annotated tag object `e1b635f53a8c7765729d9a1d54fffb2238389fb7` targets that exact merge
+commit. The [v0.3.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0)
+contains the Plugin ZIP, checksum, wheel, and sdist. All four published assets were downloaded
+again and matched their local release artifacts byte-for-byte. The ZIP is 49,415 bytes with
+SHA-256 `ae6bddcd95bd96be590077849879c64d57a07c0bffacf1779ff526ea22ddd7cb`; the checksum asset
+contains the same digest, and wheel/sdist metadata report version `0.3.0`.
+
+Schema 1.2 is released and immutable with SHA-256
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`. v0.1.0 and v0.2.0 tag
+objects, targets, releases, and four-asset sets remain unchanged. The official PyPI JSON endpoint
+returns 404 for `membrane-vqc-pymol`; no PyPI publication exists. Stage 4 has not started.
+
+v0.3.0 is published as a prerelease for limited public testing.

@@ -2,11 +2,8 @@
 
 Snapshot date: 2026-07-18 (Europe/Moscow).
 
-Stage 3 is complete and merged into `main`. Release preparation is isolated on
-`release/v0.3.0`, where the active package identity is `0.3.0`. The exact final Plugin ZIP and
-automated release-candidate evidence have passed, including the required exact-ZIP graphical
-packaging smoke. No v0.3.0 tag, GitHub release, or PyPI publication exists yet. Stage 4 has not
-started.
+Stage 3 is complete and merged into `main`. v0.3.0 is published from the final release commit as a
+GitHub prerelease for limited public testing. PyPI is not used, and Stage 4 has not started.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -194,6 +191,15 @@ double ZIP construction. The exact 49,415-byte `dist/MembraneVisualQC-0.3.0.zip`
 The final graphical packaging/version smoke passed on 2026-07-18 with that exact ZIP. All twelve
 focused checks passed, including schema-1.2/version-0.3.0 export, schema-1.1 fallback, repeated
 lifecycle, invalid-orientation cleanup, input preservation, and rotated 1UBQ `76/40/11/13/0`.
-The historical partial and accepted `0.3.0.dev0` artifacts remain unchanged. The Ubuntu FreeSASA
-reference job and Python 3.10/3.11/3.12 matrix will run as required PR checks. No release tag or
-publication has occurred, PyPI is not used, and Stage 4 has not started.
+The historical partial and accepted `0.3.0.dev0` artifacts remain unchanged. The final PR and
+post-merge workflows passed Python 3.10, 3.11, 3.12, and the blocking Ubuntu FreeSASA job.
+
+Final PR head `4fb65d69aa6ddc98cadd074b995bbf77b1fc503a` was squash-merged as
+`5caf9ee0d89721ccfa560de9136b82cc87436c3b`; post-merge workflow
+[29649853994](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29649853994) passed all four
+jobs. Annotated tag object `e1b635f53a8c7765729d9a1d54fffb2238389fb7` targets that merge commit.
+The [v0.3.0 prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0) contains
+four verified uploaded assets. Schema 1.2 is released and immutable. v0.1.0/v0.2.0 remain
+unchanged, no PyPI project exists, and Stage 4 has not started.
+
+v0.3.0 is published as a prerelease for limited public testing.
