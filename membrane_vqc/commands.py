@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
+from .context_models import ExposureConfig, LocalContextConfig
 from . import qc
 from .membrane import aggregate_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
@@ -32,6 +33,9 @@ def mvqc_check(
     quiet: int = 1,
     export_path: str = "",
     input_path: str = "",
+    analyze_context: int = 0,
+    exposure_quality: str = "Standard",
+    exposure_backend: str = "Built-in",
 ):
     """Run one-click membrane visual QC."""
     selection = _selection(selection)
@@ -40,6 +44,7 @@ def mvqc_check(
     clear_owned()
     qc.LAST_REPORT = None
     try:
+        exposure_config, context_config = _analysis_configs(analyze_context, exposure_quality)
         return qc.run_check(
             selection,
             zmin,
@@ -49,6 +54,9 @@ def mvqc_check(
             int(quiet),
             export_path,
             input_path=str(input_path).strip(),
+            exposure_config=exposure_config,
+            local_context_config=context_config,
+            exposure_backend=exposure_backend,
         )
     except Exception:
         # A failed run must not leave partial output looking current.
@@ -71,6 +79,9 @@ def mvqc_check_orientation(
     quiet: int = 1,
     export_path: str = "",
     input_path: str = "",
+    analyze_context: int = 0,
+    exposure_quality: str = "Standard",
+    exposure_backend: str = "Built-in",
 ):
     """Run QC using a validated local planar-orientation JSON document."""
     clear_owned()
@@ -82,6 +93,7 @@ def mvqc_check_orientation(
             raise ValueError("orientation_file must not be empty.")
         cutoff = _positive_float(cutoff, "cutoff")
         loaded = load_orientation_file(orientation_file)
+        exposure_config, context_config = _analysis_configs(analyze_context, exposure_quality)
         return qc.run_check_with_membrane(
             selection=selection,
             membrane=loaded.membrane,
@@ -91,6 +103,9 @@ def mvqc_check_orientation(
             export_path=str(export_path).strip(),
             input_path=str(input_path).strip(),
             orientation_import=loaded,
+            exposure_config=exposure_config,
+            local_context_config=context_config,
+            exposure_backend=exposure_backend,
         )
     except Exception:
         clear_owned()
@@ -180,6 +195,24 @@ def _slab(zmin, zmax) -> tuple[float, float]:
     if lower >= upper:
         raise ValueError("zmin must be less than zmax.")
     return lower, upper
+
+
+def _analysis_configs(enabled, quality) -> tuple[ExposureConfig | None, LocalContextConfig | None]:
+    if isinstance(enabled, bool):
+        normalized = int(enabled)
+    elif isinstance(enabled, int) and enabled in {0, 1}:
+        normalized = enabled
+    elif isinstance(enabled, str) and enabled.strip() in {"0", "1"}:
+        normalized = int(enabled.strip())
+    else:
+        raise ValueError("analyze_context must be 0 or 1.")
+    enabled = bool(normalized)
+    if not enabled:
+        return None, None
+    points = {"fast": 96, "standard": 240, "high": 960}.get(str(quality).strip().lower())
+    if points is None:
+        raise ValueError("exposure_quality must be Fast, Standard, or High.")
+    return ExposureConfig(sphere_points=points), LocalContextConfig()
 
 
 def mvqc_export(path: str = "reports/mvqc_report.json"):

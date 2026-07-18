@@ -98,6 +98,79 @@
         "sidechain_membrane_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
         "warnings": {"type": "array", "items": {"type": "string"}}
       }
+    },
+    "contextContact": {
+      "type": "object",
+      "required": ["type", "target_atom", "partner", "distance_angstrom", "notes"],
+      "properties": {
+        "type": {
+          "enum": [
+            "putative_salt_bridge",
+            "distance_only_potential_hbond",
+            "nearby_water",
+            "nearby_ion",
+            "ligand_proximity",
+            "polar_ligand_proximity"
+          ]
+        },
+        "target_atom": {"type": "string", "minLength": 1},
+        "partner": {
+          "type": "object",
+          "required": ["model", "chain", "resi", "resn", "atom", "element"],
+          "properties": {
+            "model": {"type": "string"},
+            "chain": {"type": "string"},
+            "resi": {"type": "string"},
+            "resn": {"type": "string"},
+            "atom": {"type": "string"},
+            "element": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "distance_angstrom": {"type": "number", "minimum": 0},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "localContextEvidence": {
+      "type": "object",
+      "required": [
+        "status",
+        "burial_state",
+        "contact_support",
+        "context_state",
+        "counts",
+        "contacts",
+        "warnings"
+      ],
+      "properties": {
+        "status": {"enum": ["completed", "unavailable"]},
+        "burial_state": {"enum": ["buried", "intermediate", "exposed", "unknown"]},
+        "contact_support": {"enum": ["detected", "not_detected", "unavailable"]},
+        "context_state": {
+          "enum": [
+            "BURIED_NO_DETECTED_SUPPORT",
+            "BURIED_WITH_POTENTIAL_SUPPORT",
+            "INSUFFICIENT_CONTEXT",
+            "ACCESSIBLE_NO_DETECTED_SUPPORT",
+            "ACCESSIBLE_WITH_POTENTIAL_SUPPORT"
+          ]
+        },
+        "counts": {
+          "type": "object",
+          "required": [
+            "putative_salt_bridges",
+            "potential_hbonds",
+            "waters",
+            "ions",
+            "ligand_contacts"
+          ],
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "contacts": {"type": "array", "items": {"$ref": "#/$defs/contextContact"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
     }
   },
   "properties": {
@@ -190,6 +263,10 @@
       "properties": {
         "overall_status": {
           "enum": ["NO_FLAGS", "REVIEW_ITEMS", "INSUFFICIENT_CONTEXT", "ANALYSIS_ERROR"]
+        },
+        "context_state_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
         }
       }
     },
@@ -241,6 +318,39 @@
             "warnings": {"type": "array", "items": {"type": "string"}},
             "elapsed_seconds": {"type": "number", "minimum": 0}
           }
+        },
+        "local_context": {
+          "type": "object",
+          "required": [
+            "salt_bridge_cutoff_angstrom",
+            "potential_hbond_cutoff_angstrom",
+            "water_cutoff_angstrom",
+            "ion_cutoff_angstrom",
+            "ligand_cutoff_angstrom",
+            "polar_ligand_cutoff_angstrom",
+            "atom_role_policy",
+            "category_atom_counts",
+            "warnings",
+            "elapsed_seconds",
+            "context_state_counts"
+          ],
+          "properties": {
+            "salt_bridge_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "potential_hbond_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "water_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "ion_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "ligand_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "polar_ligand_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "atom_role_policy": {"const": "standard_residue_roles_v1"},
+            "category_atom_counts": {
+              "type": "object",
+              "required": ["protein", "water", "ion", "ligand", "other_hetatm"],
+              "additionalProperties": {"type": "integer", "minimum": 0}
+            },
+            "warnings": {"type": "array", "items": {"type": "string"}},
+            "elapsed_seconds": {"type": "number", "minimum": 0},
+            "context_state_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
+          }
         }
       }
     },
@@ -271,7 +381,8 @@
               "severity": {"enum": ["WARNING", "INSPECT"]},
               "reason": {"type": "string", "minLength": 1},
               "z": {"type": "number"},
-              "exposure": {"$ref": "#/$defs/exposureEvidence"}
+              "exposure": {"$ref": "#/$defs/exposureEvidence"},
+              "local_context": {"$ref": "#/$defs/localContextEvidence"}
             }
           }
         ]
@@ -280,5 +391,18 @@
     "ligand_neighbours": {"type": "array", "items": {"$ref": "#/$defs/depthFields"}},
     "warnings": {"type": "array", "items": {"type": "string"}},
     "limitations": {"type": "array", "items": {"type": "string"}}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"context_analysis": {"required": ["local_context"]}}
+      },
+      "then": {
+        "properties": {
+          "summary": {"required": ["context_state_counts"]},
+          "review_items": {"items": {"required": ["local_context"]}}
+        }
+      }
+    }
+  ]
 }

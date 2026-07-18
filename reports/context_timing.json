@@ -1,0 +1,67 @@
+{
+  "1C3W": {
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 0,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 25,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 16,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "exposure_seconds": 1.5614058000001023,
+    "local_context_seconds": 0.9956007999999201,
+    "report": "reports/1c3w_context_mvqc.json",
+    "review_items": 41
+  },
+  "1PCR": {
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 58,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 17,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "exposure_seconds": 2.988561000000118,
+    "local_context_seconds": 8.752942500000245,
+    "report": "reports/1pcr_context_mvqc.json",
+    "review_items": 76
+  },
+  "1UBQ": {
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 0,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 24,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "exposure_seconds": 0.5894805999996606,
+    "local_context_seconds": 0.16994729999987612,
+    "report": "reports/1ubq_context_mvqc.json",
+    "review_items": 24
+  },
+  "2RH1": {
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 0,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 89,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 15,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "exposure_seconds": 4.676865100000214,
+    "local_context_seconds": 6.061397299999953,
+    "report": "reports/2rh1_context_mvqc.json",
+    "review_items": 104
+  },
+  "bad_core_lys": {
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 0,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+      "INSUFFICIENT_CONTEXT": 0
+    },
+    "exposure_seconds": 0.016029500000513508,
+    "local_context_seconds": 0.001058700000612589,
+    "report": "reports/bad_core_lys_context_mvqc.json",
+    "review_items": 1
+  }
+}

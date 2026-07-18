@@ -141,4 +141,46 @@ PR [#4](https://github.com/TrPavel/membrane-visual-qc/pull/4) was squash-merged 
 `294cf52912e0006d413316b89d7a55fed43f1429`. The subsequent `main`
 [workflow 29584633452](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29584633452)
 passed all four jobs: Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA reference job.
-Stage 3A is complete and merged into main; Stage 3B has not started.
+Stage 3A is complete and merged into main; the section below records the subsequent Stage 3B work.
+
+## Stage 3B local-context validation
+
+Stage 3B is opt-in and retains development version `0.3.0.dev0`. The pure-Python suite covers all
+contact and context-state labels, inclusive and just-outside cutoffs, same-model inter-chain and
+cross-model isolation, histidine ambiguity, altlocs, input-order and rigid-transform invariance,
+missing/unsupported elements, schema 1.2, deterministic exports, GUI forwarding, and PyMOL
+ownership/lifecycle/colour precedence.
+
+The lifecycle-corrected Windows result is 299 passed, eight optional FreeSASA tests skipped, and 85% combined
+coverage. Ruff check and format check passed. Eighteen reports validated: seven schema 1.1 and
+eleven schema 1.2. Wheel and sdist built successfully. The corrected development artifact
+`MembraneVisualQC-0.3.0.dev0.zip` is 49,414 bytes with SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`.
+
+Headless Incentive PyMOL 3.1.8 passed smoke import, all legacy summaries, rotated 1UBQ, Stage 3A
+exposure, the preparation helper, the deterministic context fixture, all four context visual
+objects, and five-structure timing. Observed local-context times at Standard quality were 0.001 s
+synthetic, 0.116 s 1UBQ, 1.068 s 1C3W, 6.063 s 2RH1, and 10.362 s 1PCR. These are observations, not
+promises. The blocking Ubuntu/FreeSASA job remains required in PR CI.
+
+The correction suite also verifies the real FreeSASA orchestration signature (including explicit
+and Auto selection), schema 1.2 command output, the shared five-state review priority, WARNING
+before INSPECT, unchanged CSV residue order, strict 0/1 command parsing, the exact six-type contact
+vocabulary, unsupported HETATM warnings, and zero optional-category count semantics.
+
+The stateful headless PyMOL lifecycle regression runs context ON, OFF, ON, and ON again in one
+process, then attempts an invalid orientation file. It verifies recreation/removal of review and
+context selections, the absence of invalid-review-selection failures, cleared plugin state and
+`LAST_REPORT`, and preservation of the original structure object. This directly covers the
+graphical blocker found after the initially successful rendering checks.
+
+Focused graphical acceptance passed on Windows 10 build 26200, Incentive PyMOL 3.1.8, and bundled
+Python 3.10.20 with the exact corrected 49,414-byte ZIP, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`. Installation/restart,
+`ON → OFF → ON → ON → invalid orientation`, selection recreation, invalid-file cleanup without a
+traceback, schema 1.2 export and unchanged CSV columns, `mvqc_clear` input preservation,
+Standard/Built-in responsiveness, and rotated 1UBQ `76/40/11/13/0` passed. The prior SHA
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf` remains partial historical
+evidence. Stage 3B graphical acceptance is complete.
+
+Graphical integration is accepted. PR #5 remains unmerged until its final required workflow passes.

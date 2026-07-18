@@ -39,8 +39,16 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
   assigned carbon radii.
 - FreeSASA is optional. Its adapter is for reference/parity work and cannot provide membrane-region
   sample partitions through `calcCoord`.
-- Chemical contacts, hydration support, protonation, energetic stabilization, and GUI context
-  visualization remain deferred to separately reviewed Stage 3B.
+
+## Unreleased Stage 3B limitations
+
+- Contacts are distance-only review evidence, not energetic stabilization, coordination,
+  protonation, bond-order, or biological validation claims.
+- Histidine is not treated as unconditionally charged. Arbitrary ligand donor/acceptor chemistry,
+  water bridges, oxidation states, and ion-coordination geometry are not inferred.
+- Only same-model contacts are considered. Missing or ambiguous metadata is reported as
+  unavailable or excluded rather than guessed.
+- GUI context analysis remains opt-in and disabled by default until graphical Stage 3B acceptance.
 
 ## Scientific Interpretation
 

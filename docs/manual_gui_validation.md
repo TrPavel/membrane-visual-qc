@@ -139,3 +139,80 @@ The user-reported smoke passed on 2026-07-16 with the exact 27,459-byte candidat
 is `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. This was a focused
 packaging/version smoke, not a repetition of the full scientific and lifecycle acceptance recorded
 for `0.2.0.dev0`.
+
+## Stage 3B graphical acceptance — PASS
+
+Final focused acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8 and bundled
+Python 3.10.20. The exact accepted development artifact was
+`MembraneVisualQC-0.3.0.dev0.zip`, 49,414 bytes, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`.
+
+| Focused corrected-artifact check | Result |
+| --- | --- |
+| Plugin Manager installation and restart | PASS |
+| Sequential `ON → OFF → ON → ON` lifecycle | PASS |
+| No invalid review-selection error | PASS |
+| Review and context selections recreated | PASS |
+| Invalid orientation cleared stale plugin state without traceback | PASS |
+| Schema 1.2 export and unchanged CSV columns | PASS |
+| `mvqc_clear` preserved the input structure | PASS |
+| Rotated 1UBQ regression `76/40/11/13/0` | PASS |
+| Standard/Built-in responsiveness | PASS |
+
+The complete focused sequence was `ON → OFF → ON → ON → invalid orientation`. Stage 3B graphical
+acceptance is complete. No new screenshot from the accepted corrected artifact was available in
+the workspace, so none is claimed or added. Previously exported manual JSON/CSV evidence remains
+untouched.
+
+### Historical partial attempt — retained
+
+The first graphical attempt used `MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`. Its initial context-enabled
+run passed the expected summary, four context selections, colours, review-colour precedence, and
+context-disabled schema 1.1 fallback. A later sequential rerun exposed this release blocker:
+
+```text
+Error: Invalid selection name "mvqc_core_charged".
+mvqc_core_charged or mvqc_core_polar_inspect
+```
+
+That attempt is recorded as **PARTIAL**, not accepted. The failure came from consulting PyMOL's
+broad `all` namespace during selection deletion/recreation and then styling a compound expression
+containing a stale review-selection name.
+
+The focused graphical retest subsequently used the corrected development artifact
+`dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1` (49,414 bytes). This is not a
+release. That retest passed the sequential lifecycle and cleanup requirements recorded above.
+
+### Acceptance procedure
+
+1. Install the ZIP through Plugin Manager, restart PyMOL, and open the GUI.
+2. Confirm **Analyze exposure and local context** is unchecked by default.
+3. Confirm Fast/Standard/High quality and Built-in/Auto/FreeSASA reference backend choices.
+4. Load `C:/Pymol_script_1/data/synthetic/local_context_review.pdb` as
+   `local_context_review`.
+5. Use legacy global-z `-15/15`, enable context, select Standard/Built-in, and run QC.
+6. Confirm the original charged/polar summary remains visible with a concise context summary.
+7. Confirm orange WARNING and yellow INSPECT styling takes precedence over context colours.
+8. Confirm cyan partner sticks, blue water spheres, violet ion spheres, and magenta ligand sticks
+   exist under the four `mvqc_context_*` names.
+9. Export JSON/CSV. Confirm schema 1.2, `software.version = 0.3.0.dev0`, serialized thresholds,
+   category counts, per-item exposure/local-context evidence, and unchanged CSV columns.
+10. Disable context and rerun; confirm old context objects/evidence disappear and output returns to
+    schema 1.1 behaviour.
+11. Re-enable context, run successfully, then trigger invalid orientation-file Run QC; confirm
+    stale report/review/context objects are cleared and no traceback appears.
+12. Run `mvqc_clear`; confirm every plugin-owned object is removed while
+    `local_context_review` remains.
+13. Repeat on rotated 1UBQ and confirm orientation behaviour and review counts remain unchanged.
+14. Record Standard-quality responsiveness and capture overview, partner, and cleanup screenshots.
+
+Initial rendering/summary/colour and context-disabled checks passed with the historical blocked
+artifact; the lifecycle-dependent checks passed with the corrected artifact. Combined Stage 3B
+graphical acceptance is **PASS**. The following paths remain reserved for genuine accepted-artifact
+screenshots if they are supplied later; no such image is currently claimed:
+
+- `docs/screenshots/manual_stage3b_context_overview.png`
+- `docs/screenshots/manual_stage3b_context_partners.png`
+- `docs/screenshots/manual_stage3b_context_cleanup.png`

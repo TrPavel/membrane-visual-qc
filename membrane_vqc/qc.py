@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import importlib.util
 import math
 from typing import Any, Iterable
 
 from .constants import DEFAULT_INTERFACE_WIDTH, DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
-from .context_models import ExposureConfig
+from .context import analyze_local_context
+from .context_models import CONTEXT_STATE_PRIORITY, ExposureConfig, LocalContextConfig
 from .errors import InputValidationError
 from .exposure import calculate_exposure
+from .freesasa_backend import calculate_freesasa_exposure
 from .membrane import classify_residues_for_membrane, flag_core_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
 from .orientation import PlanarMembrane, legacy_global_z
@@ -18,8 +21,10 @@ from .pymol_adapter import (
     ligand_atoms,
     protein_atoms,
     show_ligand_shell,
+    show_local_context,
     show_residue_selections,
     structure_atoms,
+    clear_context,
 )
 from .report import build_report, export_report
 
@@ -38,6 +43,8 @@ def run_check(
     input_path: str = "",
     exposure_config: ExposureConfig | None = None,
     exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
+    local_context_config: LocalContextConfig | None = None,
+    exposure_backend: str = "built-in",
 ) -> dict[str, Any]:
     """Run the unchanged legacy global-z workflow through the planar engine."""
     selection, zmin, zmax, ligand, cutoff = validate_analysis_inputs(
@@ -55,6 +62,8 @@ def run_check(
         input_path=input_path,
         exposure_config=exposure_config,
         exposure_targets=exposure_targets,
+        local_context_config=local_context_config,
+        exposure_backend=exposure_backend,
     )
 
 
@@ -71,9 +80,13 @@ def run_check_with_membrane(
     orientation_import: Any | None = None,
     exposure_config: ExposureConfig | None = None,
     exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
+    local_context_config: LocalContextConfig | None = None,
+    exposure_backend: str = "built-in",
 ) -> dict[str, Any]:
     """Run membrane visual QC against an explicit arbitrary planar membrane."""
     global LAST_REPORT
+    if local_context_config is not None and exposure_config is None:
+        raise InputValidationError("Local-context analysis requires exposure_config.")
     selection, ligand, cutoff = validate_context_inputs(selection, ligand, cutoff)
     warnings = list(membrane.warnings)
     if membrane.source.startswith("manual") or membrane.source in {"unknown", "unspecified"}:
@@ -108,6 +121,8 @@ def run_check_with_membrane(
         show_residue_selections(residues, flags, cmd_obj)
 
     exposure_analysis = None
+    local_context_analysis = None
+    selected_structure_atoms = None
     if exposure_config is not None:
         protein_residue_keys = {(atom.model, atom.chain, atom.resi, atom.resn) for atom in atoms}
         if exposure_config.target_scope == "review_items":
@@ -119,18 +134,37 @@ def run_check_with_membrane(
                 (str(model or "_"), str(chain or "_"), str(resi), str(resn).upper())
                 for model, chain, resi, resn in (exposure_targets or ())
             } & protein_residue_keys
+        if exposure_config.include_nonprotein_occluders or local_context_config is not None:
+            selected_structure_atoms = structure_atoms(selection, cmd_obj)
         exposure_atoms = (
-            structure_atoms(selection, cmd_obj)
-            if exposure_config.include_nonprotein_occluders
+            selected_structure_atoms
+            if exposure_config.include_nonprotein_occluders and selected_structure_atoms is not None
             else atoms
         )
-        exposure_analysis = calculate_exposure(
+        exposure_analysis = _calculate_exposure(
             exposure_atoms,
             config=exposure_config,
             target_residues=targets,
             membrane=membrane,
+            backend=exposure_backend,
         )
         warnings.extend(exposure_analysis.metadata.warnings)
+
+        if local_context_config is not None:
+            local_context_analysis = analyze_local_context(
+                selected_structure_atoms or atoms,
+                target_residues=targets,
+                exposure_analysis=exposure_analysis,
+                config=local_context_config,
+            )
+            warnings.extend(local_context_analysis.warnings)
+            show_local_context(local_context_analysis, cmd_obj)
+            # Review orange/yellow styling always wins over context styling.
+            show_residue_selections(residues, flags, cmd_obj)
+        else:
+            clear_context(cmd_obj)
+    else:
+        clear_context(cmd_obj)
 
     report = build_report(
         selection=selection,
@@ -149,6 +183,7 @@ def run_check_with_membrane(
         membrane=membrane,
         orientation_import=orientation_import,
         exposure_analysis=exposure_analysis,
+        local_context_analysis=local_context_analysis,
     )
     LAST_REPORT = report
 
@@ -157,6 +192,21 @@ def run_check_with_membrane(
     if not int(quiet):
         print(format_summary(report))
     return report
+
+
+def _calculate_exposure(atoms, *, config, target_residues, membrane, backend):
+    normalized = str(backend).strip().lower().replace("_", "-").replace(" ", "-")
+    if normalized == "auto":
+        normalized = "freesasa" if importlib.util.find_spec("freesasa") is not None else "built-in"
+    if normalized in {"built-in", "builtin"}:
+        return calculate_exposure(
+            atoms, config=config, target_residues=target_residues, membrane=membrane
+        )
+    if normalized in {"freesasa", "freesasa-reference"}:
+        # FreeSASA is a whole-surface reference and intentionally has no membrane
+        # partitioning input. Its result records those partitions as unavailable.
+        return calculate_freesasa_exposure(atoms, config=config, target_residues=target_residues)
+    raise InputValidationError("Exposure backend must be built-in, auto, or freesasa-reference.")
 
 
 def validate_context_inputs(selection: str, ligand: str, cutoff: float) -> tuple[str, str, float]:
@@ -225,11 +275,23 @@ def validate_analysis_inputs(
 def format_summary(report: dict[str, Any]) -> str:
     """Return a concise human-readable summary."""
     summary = report["summary"]
+    context_counts = summary.get("context_state_counts")
+    context = ""
+    if context_counts:
+        context = (
+            " Context: "
+            + ", ".join(
+                f"{context_counts[state]} {state}"
+                for state in CONTEXT_STATE_PRIORITY
+                if context_counts.get(state)
+            )
+            + "."
+        )
     return (
         "Membrane Visual QC: "
         f"{summary['core_residues']} core residues; "
         f"{summary['charged_core_residues']} charged core residues require inspection; "
         f"{summary['polar_core_inspect_residues']} polar core residues marked INSPECT; "
         f"{summary['ligand_neighbour_residues']} ligand-neighbour residues. "
-        "This is a visual QC helper, not a definitive validator."
+        "This is a visual QC helper, not a definitive validator." + context
     )

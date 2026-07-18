@@ -3,8 +3,8 @@
 Released v0.1 reports use `schemas/mvqc-report-1.0.schema.json`. v0.2.0 analysis uses
 additive schema 1.1; schema 1.0 remains immutable and validation dispatches by declared version.
 
-Unreleased Stage 3A develops `schemas/mvqc-report-1.2.schema.json` as a draft for structured
-exposure evidence. Released schemas 1.0 and 1.1 are immutable. Context-disabled Stage 3A calls
+Unreleased Stage 3 develops `schemas/mvqc-report-1.2.schema.json` as a draft for structured
+exposure and local-context evidence. Released schemas 1.0 and 1.1 are immutable. Context-disabled calls
 continue to produce the v0.2-compatible schema 1.1 contract; schema 1.2 is used only when exposure
 analysis is explicitly requested.
 
@@ -23,6 +23,14 @@ membrane regions. This geometric partition cannot distinguish lipid-facing surfa
 water-filled pores and must not be interpreted as lipid accessibility. Missing calculations use
 explicit `null` values and statuses, never substituted zeroes. The rich JSON is canonical and the
 existing CSV columns remain unchanged in Stage 3A.
+
+Stage 3B completes the draft local-context portion. Each analyzed review item receives independent
+`burial_state`, `contact_support`, and `context_state` fields, conservative contact records, and
+counts for putative salt bridges, distance-only potential hydrogen bonds, waters, ions, and ligand
+contacts. Top-level metadata serializes every cutoff, `standard_residue_roles_v1`, category atom
+counts, warnings, elapsed time, and all five context-state counts. These fields never replace or
+downgrade the original `WARNING`/`INSPECT` severity. JSON remains canonical and CSV columns remain
+unchanged.
 
 For a known partition with total SASA zero, core/interface/outside areas remain numeric `0.0` and
 all derived fractions are `null`. For an unavailable partition, both areas and fractions are

@@ -24,6 +24,14 @@ class FakeText:
         return self.value
 
 
+class FakeCheck:
+    def __init__(self, checked):
+        self.checked = checked
+
+    def isChecked(self):
+        return self.checked
+
+
 def planar_dialog():
     dialog = object.__new__(gui.MembraneVQCDialog)
     dialog.QtWidgets = SimpleNamespace()
@@ -66,6 +74,26 @@ def test_successful_planar_gui_run_displays_returned_orientation_source(monkeypa
     assert dialog.orientation_source.value == "synthetic_rigid_transform"
     assert dialog.summary.value == "planar summary"
     assert len(calls) == 1
+
+
+def test_gui_forwards_compact_context_controls(monkeypatch):
+    dialog = planar_dialog()
+    dialog.analyze_context = FakeCheck(True)
+    dialog.exposure_quality = FakeText("High")
+    dialog.exposure_backend = FakeText("Auto")
+    calls = []
+    monkeypatch.setattr(
+        gui,
+        "mvqc_check_orientation",
+        lambda **kwargs: calls.append(kwargs) or {"orientation": {"source": "test"}, "summary": {}},
+    )
+    monkeypatch.setattr(gui, "format_summary", lambda value: "summary")
+
+    dialog.run_qc()
+
+    assert calls[0]["analyze_context"] == 1
+    assert calls[0]["exposure_quality"] == "High"
+    assert calls[0]["exposure_backend"] == "Auto"
 
 
 def test_failed_planar_gui_run_replaces_previous_source_and_shows_readable_error(monkeypatch):

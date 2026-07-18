@@ -8,7 +8,7 @@
       "backend": "builtin_shrake_rupley",
       "backend_version": "1",
       "buried_rsa_threshold": 0.05,
-      "elapsed_seconds": 0.03851529999974446,
+      "elapsed_seconds": 0.016029500000513508,
       "exposed_rsa_threshold": 0.25,
       "freesasa_status": "unavailable",
       "include_hydrogens": false,
@@ -22,6 +22,31 @@
       "sphere_points": 240,
       "target_scope": "review_items",
       "warnings": []
+    },
+    "local_context": {
+      "atom_role_policy": "standard_residue_roles_v1",
+      "category_atom_counts": {
+        "ion": 0,
+        "ligand": 0,
+        "other_hetatm": 0,
+        "protein": 51,
+        "water": 0
+      },
+      "context_state_counts": {
+        "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+        "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 0,
+        "BURIED_NO_DETECTED_SUPPORT": 0,
+        "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+        "INSUFFICIENT_CONTEXT": 0
+      },
+      "elapsed_seconds": 0.001058700000612589,
+      "ion_cutoff_angstrom": 4.0,
+      "ligand_cutoff_angstrom": 5.0,
+      "polar_ligand_cutoff_angstrom": 3.8,
+      "potential_hbond_cutoff_angstrom": 3.5,
+      "salt_bridge_cutoff_angstrom": 4.0,
+      "warnings": [],
+      "water_cutoff_angstrom": 3.5
     },
     "status": "completed",
     "target_scope": "review_items"
@@ -56,6 +81,21 @@
         "warnings": []
       },
       "id": "bad_core_lys/A/6/LYS",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "not_detected",
+        "contacts": [],
+        "context_state": "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 0,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
       "model": "bad_core_lys",
       "nearest_boundary_distance": 15.0,
       "normalized_depth": 1.0,
@@ -68,7 +108,7 @@
       "z": 0.0
     }
   ],
-  "generated_at": "2026-07-18T12:13:05.654013+00:00",
+  "generated_at": "2026-07-18T12:13:05.602874+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -161,6 +201,21 @@
         "warnings": []
       },
       "id": "bad_core_lys/A/6/LYS",
+      "local_context": {
+        "burial_state": "exposed",
+        "contact_support": "not_detected",
+        "contacts": [],
+        "context_state": "ACCESSIBLE_NO_DETECTED_SUPPORT",
+        "counts": {
+          "ions": 0,
+          "ligand_contacts": 0,
+          "potential_hbonds": 0,
+          "putative_salt_bridges": 0,
+          "waters": 0
+        },
+        "status": "completed",
+        "warnings": []
+      },
       "model": "bad_core_lys",
       "nearest_boundary_distance": 15.0,
       "normalized_depth": 1.0,
@@ -188,13 +243,20 @@
   },
   "summary": {
     "charged_core_residues": 1,
+    "context_state_counts": {
+      "ACCESSIBLE_NO_DETECTED_SUPPORT": 1,
+      "ACCESSIBLE_WITH_POTENTIAL_SUPPORT": 0,
+      "BURIED_NO_DETECTED_SUPPORT": 0,
+      "BURIED_WITH_POTENTIAL_SUPPORT": 0,
+      "INSUFFICIENT_CONTEXT": 0
+    },
     "core_residues": 10,
     "ligand_neighbour_residues": 0,
     "overall_status": "REVIEW_ITEMS",
     "polar_core_inspect_residues": 0,
     "total_residues": 10
   },
-  "timestamp": "2026-07-18T12:13:05.654013+00:00",
+  "timestamp": "2026-07-18T12:13:05.602874+00:00",
   "version": "0.3.0.dev0",
   "warnings": [
     "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",

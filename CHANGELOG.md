@@ -8,6 +8,12 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Added
 
+- Began Stage 3B local chemical-context review with conservative contacts, independent context
+  states, completed schema-1.2 evidence, and plugin-owned PyMOL context visuals.
+- Added compact opt-in GUI controls for Fast/Standard/High exposure sampling and Built-in/Auto/
+  FreeSASA-reference backends; context remains disabled by default pending graphical acceptance.
+- Added deterministic pure-Python and headless PyMOL chemical-context fixtures and lifecycle,
+  schema, invariance, cutoff, and deterministic-export coverage.
 - Began the separately reviewable Stage 3A exposure foundation with explicit scientific semantics
   for SASA, RSA, membrane-region accessible area, atom/model preprocessing, and optional FreeSASA
   parity.
@@ -21,6 +27,15 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
+- Made review styling lifecycle-safe across repeated graphical runs by enumerating real named
+  selections, styling each review selection independently, and removing premature hydropathy and
+  ligand-shell restyling assumptions.
+- Made FreeSASA orchestration use its real membrane-independent signature, centralized context
+  priority ordering, tightened the binary context command flag, and limited schema 1.2 to its six
+  explicitly supported conservative contact labels.
+- Completed draft schema 1.2 with serialized context thresholds, category availability,
+  per-review-item contacts/counts/states, and top-level context-state counts while retaining the
+  existing CSV columns.
 - Set the unreleased development identity to `0.3.0.dev0`; released v0.2.0 remains immutable.
 - Replaced the unused combined analysis extra with an explicit optional
   `exposure-reference = ["freesasa>=2.2,<3"]` extra. Core analysis remains dependency-free.

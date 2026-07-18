@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
-from .context_models import ExposureAnalysis
+from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
 from .errors import ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
 
@@ -48,6 +48,7 @@ def build_report(
     membrane: PlanarMembrane | None = None,
     orientation_import: Any | None = None,
     exposure_analysis: ExposureAnalysis | None = None,
+    local_context_analysis: LocalContextAnalysis | None = None,
 ) -> dict[str, Any]:
     """Build a versioned, machine-readable single-structure review report.
 
@@ -78,6 +79,9 @@ def build_report(
     )
     if exposure_analysis is not None:
         review_items = _with_exposure(review_items, exposure_analysis)
+    if local_context_analysis is not None:
+        review_items = _with_local_context(review_items, local_context_analysis)
+        review_items = sorted(review_items, key=_context_review_sort_key)
     source_path, source_hash = _portable_input_metadata(input_path)
     timestamp = datetime.now(timezone.utc).isoformat()
     orientation_warnings = [
@@ -98,7 +102,7 @@ def build_report(
 
     report = {
         "schema_version": CONTEXT_SCHEMA_VERSION
-        if exposure_analysis is not None
+        if exposure_analysis is not None or local_context_analysis is not None
         else SCHEMA_VERSION,
         "report_type": REPORT_TYPE,
         "software": {
@@ -147,6 +151,10 @@ def build_report(
     }
     if exposure_analysis is not None:
         report["context_analysis"] = exposure_analysis.as_report_metadata()
+    if local_context_analysis is not None:
+        metadata = local_context_analysis.as_report_metadata()
+        report.setdefault("context_analysis", {}).update(metadata)
+        report["summary"]["context_state_counts"] = local_context_analysis.state_counts()
     # Transitional aliases for scripts written against the v0.1 development schema.
     report["input"].update(
         {
@@ -257,6 +265,12 @@ def validate_report(report: dict[str, Any]) -> None:
             )
         if schema_version == CONTEXT_SCHEMA_VERSION and "exposure" not in item:
             raise ReportError(f"Review item {index} is missing required exposure evidence.")
+        if (
+            schema_version == CONTEXT_SCHEMA_VERSION
+            and report.get("context_analysis", {}).get("local_context") is not None
+            and "local_context" not in item
+        ):
+            raise ReportError(f"Review item {index} is missing required local-context evidence.")
 
 
 def sha256_file(path: str | Path) -> str:
@@ -279,6 +293,16 @@ def _portable_input_metadata(path: str | Path | None) -> tuple[str, str]:
 
 def _residue_sort_key(item: dict[str, Any]) -> tuple[str, str, str, str]:
     return tuple(str(item.get(key, "")) for key in ("model", "chain", "resi", "resn"))
+
+
+def _context_review_sort_key(item: dict[str, Any]) -> tuple[int, int, str, str, str, str]:
+    context_state = item.get("local_context", {}).get("context_state", "INSUFFICIENT_CONTEXT")
+    severity_priority = {"WARNING": 0, "INSPECT": 1}
+    return (
+        CONTEXT_STATE_PRIORITY.get(context_state, len(CONTEXT_STATE_PRIORITY)),
+        severity_priority.get(str(item.get("severity", "")), len(severity_priority)),
+        *_residue_sort_key(item),
+    )
 
 
 def _with_exposure(
@@ -322,6 +346,43 @@ def _with_exposure(
                 "sidechain_outside_region_accessible_fraction": None,
                 "sidechain_membrane_region_accessible_fraction": None,
                 "warnings": ["Exposure result was unavailable for this review item."],
+            }
+        )
+        enriched.append(copy)
+    return enriched
+
+
+def _with_local_context(
+    review_items: list[dict[str, Any]], analysis: LocalContextAnalysis
+) -> list[dict[str, Any]]:
+    by_residue = analysis.by_residue()
+    enriched: list[dict[str, Any]] = []
+    for item in review_items:
+        key = (
+            str(item.get("model") or "_"),
+            str(item.get("chain") or "_"),
+            str(item.get("resi", "")),
+            str(item.get("resn", "")).upper(),
+        )
+        result = by_residue.get(key)
+        copy = dict(item)
+        copy["local_context"] = (
+            result.as_report_dict()
+            if result is not None
+            else {
+                "status": "unavailable",
+                "burial_state": "unknown",
+                "contact_support": "unavailable",
+                "context_state": "INSUFFICIENT_CONTEXT",
+                "counts": {
+                    "putative_salt_bridges": 0,
+                    "potential_hbonds": 0,
+                    "waters": 0,
+                    "ions": 0,
+                    "ligand_contacts": 0,
+                },
+                "contacts": [],
+                "warnings": ["Local-context result was unavailable for this review item."],
             }
         )
         enriched.append(copy)
