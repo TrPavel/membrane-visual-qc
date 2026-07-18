@@ -209,6 +209,25 @@ def test_builtin_backend_receives_membrane_partition_input(monkeypatch):
     assert result is marker
 
 
+def test_builtin_orchestration_produces_membrane_partition_evidence():
+    atoms = [
+        AtomRecord("m", "A", "1", "LYS", "NZ", 0, 0, 0, element="N"),
+        AtomRecord("m", "A", "1", "LYS", "CE", 1.3, 0, 0, element="C"),
+    ]
+    result = qc._calculate_exposure(
+        atoms,
+        config=ExposureConfig(target_scope="all_residues"),
+        target_residues=None,
+        membrane=legacy_global_z(-15, 15),
+        backend="Built-in",
+    )
+
+    residue = result.residues[0]
+    assert result.metadata.backend == "builtin_shrake_rupley"
+    assert residue.partition.core_area is not None
+    assert residue.partition.core_fraction is not None
+
+
 def test_auto_falls_back_to_builtin_when_freesasa_is_absent(monkeypatch):
     marker = object()
     membrane = legacy_global_z(-15, 15)

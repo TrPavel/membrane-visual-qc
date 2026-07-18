@@ -151,7 +151,7 @@ cross-model isolation, histidine ambiguity, altlocs, input-order and rigid-trans
 missing/unsupported elements, schema 1.2, deterministic exports, GUI forwarding, and PyMOL
 ownership/lifecycle/colour precedence.
 
-The corrected Windows result is 297 passed, eight optional FreeSASA tests skipped, and 85% combined
+The corrected Windows result is 298 passed, eight optional FreeSASA tests skipped, and 85% combined
 coverage. Ruff check and format check passed. Eighteen reports validated: seven schema 1.1 and
 eleven schema 1.2. Wheel and sdist built successfully. The corrected development artifact
 `MembraneVisualQC-0.3.0.dev0.zip` is 49,328 bytes with SHA-256

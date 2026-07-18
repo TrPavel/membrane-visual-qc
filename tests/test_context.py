@@ -190,10 +190,11 @@ def test_unsupported_hetero_element_is_not_contact_evidence():
 
 
 def test_missing_optional_categories_are_counts_not_biological_absence_claims():
+    exposure_result = exposure()
     analysis = analyze_local_context(
         [atom("LYS", "NZ", 0, element="N"), atom("ALA", "CA", 8, resi="2", element="C")],
         target_residues=[("m", "A", "1", "LYS")],
-        exposure_analysis=exposure(),
+        exposure_analysis=exposure_result,
     )
 
     assert dict(analysis.category_atom_counts) == {
@@ -206,6 +207,36 @@ def test_missing_optional_categories_are_counts_not_biological_absence_claims():
     assert analysis.residues[0].contact_support == "not_detected"
     assert analysis.residues[0].contacts == ()
     assert not any("absent" in warning.lower() for warning in analysis.warnings)
+    report = build_report(
+        selection="m",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=2,
+        core_residues=1,
+        flagged_residues=[
+            {
+                "model": "m",
+                "chain": "A",
+                "resi": "1",
+                "resn": "LYS",
+                "classification": "core",
+                "severity": "WARNING",
+                "reason": "zero optional-category fixture",
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+            }
+        ],
+        ligand_neighbours=[],
+        warnings=[],
+        exposure_analysis=exposure_result,
+        local_context_analysis=analysis,
+    )
+    category_counts = report["context_analysis"]["local_context"]["category_atom_counts"]
+    assert category_counts["water"] == category_counts["ion"] == category_counts["ligand"] == 0
+    assert not any("biological absence" in warning.lower() for warning in report["warnings"])
 
 
 def test_nonstandard_residue_with_unknown_exposure_is_insufficient():

@@ -353,11 +353,13 @@ One shared context priority now orders JSON review items and the GUI/report summ
 `ACCESSIBLE_NO_DETECTED_SUPPORT`, `ACCESSIBLE_WITH_POTENTIAL_SUPPORT`. WARNING precedes INSPECT
 within a state, then stable residue identity; CSV retains stable residue order. The public command
 flag accepts only boolean/0/1 values. Schema 1.2 and ADR-0004 contain exactly six supported contact
-types. Unsupported ambiguous HETATM chemistry is excluded with warnings and cannot create contact
-support. Overall `contact_support` spans those six types; zero extracted water, ion, or ligand
-counts are availability observations, not biological-absence claims.
+types: `putative_salt_bridge`, `distance_only_potential_hbond`, `nearby_water`, `nearby_ion`,
+`ligand_proximity`, and `polar_ligand_proximity`. Unsupported ambiguous HETATM chemistry is
+excluded with warnings and cannot create contact support. Overall `contact_support` spans those
+six types; zero extracted water, ion, or ligand counts are availability observations, not
+biological-absence claims.
 
-Corrected local automated validation passed with 297 tests, eight optional FreeSASA tests skipped
+Corrected local automated validation passed with 298 tests, eight optional FreeSASA tests skipped
 on Windows, 85% coverage, Ruff, 18 schema-valid reports, wheel/sdist, and the full retained headless
 PyMOL suite. The 49,328-byte development ZIP has SHA-256
 `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.

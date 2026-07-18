@@ -143,7 +143,7 @@ ADR-0004 without PyMOL or Qt imports. Existing severity is preserved while schem
 independent burial, contact-support, and prioritization states. Exposure remains usable alone;
 context-disabled execution continues to produce schema 1.1.
 
-Current corrected local validation: 297 tests passed, eight optional FreeSASA tests skipped on
+Current corrected local validation: 298 tests passed, eight optional FreeSASA tests skipped on
 Windows, and combined coverage is 85%. Ruff, 18 report validations, wheel/sdist, full retained
 headless PyMOL, context fixtures, and timing passed. The 49,328-byte Plugin ZIP has SHA-256
 `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
