@@ -17,10 +17,14 @@ from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSIO
 from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
 from .errors import ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
+from .orientation_sources import OrientationEvidenceV1
 
 SCHEMA_VERSION = "1.1"
 CONTEXT_SCHEMA_VERSION = "1.2"
-SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION})
+ADAPTER_SCHEMA_VERSION = "1.3"
+SUPPORTED_SCHEMA_VERSIONS = frozenset(
+    {SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION, ADAPTER_SCHEMA_VERSION}
+)
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
 
@@ -47,6 +51,7 @@ def build_report(
     capabilities: dict[str, Any] | None = None,
     membrane: PlanarMembrane | None = None,
     orientation_import: Any | None = None,
+    orientation_evidence: OrientationEvidenceV1 | None = None,
     exposure_analysis: ExposureAnalysis | None = None,
     local_context_analysis: LocalContextAnalysis | None = None,
 ) -> dict[str, Any]:
@@ -99,11 +104,17 @@ def build_report(
     import_record = _orientation_import_dict(orientation_import)
     if import_record is not None:
         orientation["import"] = import_record
+    if orientation_evidence is not None:
+        orientation["evidence"] = orientation_evidence.as_dict()
 
     report = {
-        "schema_version": CONTEXT_SCHEMA_VERSION
-        if exposure_analysis is not None or local_context_analysis is not None
-        else SCHEMA_VERSION,
+        "schema_version": (
+            ADAPTER_SCHEMA_VERSION
+            if orientation_evidence is not None
+            else CONTEXT_SCHEMA_VERSION
+            if exposure_analysis is not None or local_context_analysis is not None
+            else SCHEMA_VERSION
+        ),
         "report_type": REPORT_TYPE,
         "software": {
             "name": PLUGIN_NAME,
@@ -240,6 +251,9 @@ def validate_report(report: dict[str, Any]) -> None:
         raise ReportError("Orientation source is required.")
     if schema_version == CONTEXT_SCHEMA_VERSION and "context_analysis" not in report:
         raise ReportError("Schema 1.2 reports require context_analysis metadata.")
+    if schema_version == ADAPTER_SCHEMA_VERSION and "evidence" not in report["orientation"]:
+        raise ReportError("Schema 1.3 reports require adapter orientation evidence.")
+    has_context = "context_analysis" in report
     required_review_fields = {
         "model",
         "chain",
@@ -263,10 +277,10 @@ def validate_report(report: dict[str, Any]) -> None:
             raise ReportError(
                 f"Review item {index} is missing required fields: " + ", ".join(missing_fields)
             )
-        if schema_version == CONTEXT_SCHEMA_VERSION and "exposure" not in item:
+        if has_context and "exposure" not in item:
             raise ReportError(f"Review item {index} is missing required exposure evidence.")
         if (
-            schema_version == CONTEXT_SCHEMA_VERSION
+            has_context
             and report.get("context_analysis", {}).get("local_context") is not None
             and "local_context" not in item
         ):
@@ -455,6 +469,8 @@ def _orientation_limitations(membrane: PlanarMembrane) -> list[str]:
         limitations[0] = "Manual global-z membrane orientation was used."
     elif membrane.source.startswith("manual"):
         limitations[0] = "Manual planar membrane orientation was used."
+    elif membrane.source == "pdbtm_offline":
+        limitations[0] = "Offline PDBTM orientation was verified by direct coordinate evidence."
     else:
         limitations[0] = (
             "Explicit planar orientation metadata was used and was not independently verified."

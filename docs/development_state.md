@@ -39,9 +39,12 @@ and bounds are derived from every exact payload. Changed structure/semantics, no
 or precision outside the envelope return `unsupported` without reusing a historical fixed limit.
 Official payloads remain local-only and outside Git because redistribution permission is unresolved.
 
-PDBTM source-semantics preflight is complete and merged into main. Stage 4A production
-implementation is unblocked but has not started. Package version remains `0.3.0`; schema 1.3 does
-not exist; no release was created by this work.
+PDBTM source-semantics preflight is complete and merged into main. Stage 4A1 offline core
+implementation is now in development on `feat/pdbtm-offline-import-core` with identity
+`0.4.0.dev0`. The branch adds immutable source models, a deterministic explicit-byte PDBTM API-v1
+adapter, direct identity/inverse applicability, precision/fingerprint evidence, and draft schema
+1.3 report dispatch. It does not add GUI/PyMOL integration, file dialogs, rendering, retrieval,
+OPM, source comparison, or automatic alignment. v0.3.0 remains the latest published release.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -241,3 +244,20 @@ four verified uploaded assets. Schema 1.2 is released and immutable. v0.1.0/v0.2
 unchanged, no PyPI project exists, and Stage 4 had not started at publication.
 
 v0.3.0 is published as a prerelease for limited public testing.
+
+## Stage 4A1 development — offline PDBTM import core
+
+Stage 4A1 is under review on `feat/pdbtm-offline-import-core` with development identity
+`0.4.0.dev0`. The pure-Python core defines immutable orientation-source evidence, strict offline
+PDBTM API-v1 parsing, direct identity/inverse coordinate applicability, precision-derived bounds,
+and draft report schema 1.3. Local validation passed 343 tests with eight optional FreeSASA skips
+and 87% combined coverage; 19 example reports validate (schema 1.1: 7, schema 1.2: 11, schema
+1.3: 1).
+
+The deterministic development artifact is `MembraneVisualQC-0.4.0.dev0.zip`, 61,883 bytes, with
+SHA-256 `1bd6840b2f2189f2e58a5d48a08a7d13a760478b66699159682bb54ad858b589`.
+Schemas 1.0, 1.1, and 1.2 remain byte-identical to their released forms; schema 1.3 is draft and
+unreleased. Official PDBTM payloads are excluded from the implementation and CI fixtures.
+
+No GUI/PyMOL integration, network retrieval, OPM adapter, source comparison, automatic alignment,
+release, or PyPI publication is part of Stage 4A1. v0.3.0 remains the latest published release.

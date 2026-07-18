@@ -1,0 +1,484 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:membrane-vqc:schema:report:1.3-draft",
+  "title": "Membrane Visual QC exposure single-structure review report (draft)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_type",
+    "software",
+    "runtime",
+    "input",
+    "orientation",
+    "parameters",
+    "summary",
+    "review_items",
+    "ligand_neighbours",
+    "warnings",
+    "limitations"
+  ],
+  "$defs": {
+    "vector3": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "nullableNonnegative": {
+      "oneOf": [{"type": "number", "minimum": 0}, {"type": "null"}]
+    },
+    "nullableFraction": {
+      "oneOf": [{"type": "number", "minimum": 0, "maximum": 1}, {"type": "null"}]
+    },
+    "depthFields": {
+      "type": "object",
+      "required": [
+        "signed_distance",
+        "absolute_center_distance",
+        "nearest_boundary_distance",
+        "outside_distance",
+        "normalized_depth"
+      ],
+      "properties": {
+        "signed_distance": {"type": "number"},
+        "absolute_center_distance": {"type": "number", "minimum": 0},
+        "nearest_boundary_distance": {"type": "number", "minimum": 0},
+        "outside_distance": {"type": "number", "minimum": 0},
+        "normalized_depth": {"$ref": "#/$defs/nullableFraction"}
+      }
+    },
+    "exposureEvidence": {
+      "type": "object",
+      "required": [
+        "status",
+        "residue_sasa",
+        "sidechain_sasa",
+        "relative_sasa",
+        "reference_max_sasa",
+        "reference_status",
+        "classification",
+        "core_region_accessible_area",
+        "interface_region_accessible_area",
+        "outside_region_accessible_area",
+        "core_region_accessible_fraction",
+        "interface_region_accessible_fraction",
+        "outside_region_accessible_fraction",
+        "membrane_region_accessible_fraction",
+        "sidechain_core_region_accessible_area",
+        "sidechain_interface_region_accessible_area",
+        "sidechain_outside_region_accessible_area",
+        "sidechain_core_region_accessible_fraction",
+        "sidechain_interface_region_accessible_fraction",
+        "sidechain_outside_region_accessible_fraction",
+        "sidechain_membrane_region_accessible_fraction",
+        "warnings"
+      ],
+      "properties": {
+        "status": {"enum": ["completed", "unavailable"]},
+        "residue_sasa": {"$ref": "#/$defs/nullableNonnegative"},
+        "sidechain_sasa": {"$ref": "#/$defs/nullableNonnegative"},
+        "relative_sasa": {"$ref": "#/$defs/nullableNonnegative"},
+        "reference_max_sasa": {"$ref": "#/$defs/nullableNonnegative"},
+        "reference_status": {"enum": ["available", "unavailable"]},
+        "classification": {"enum": ["buried", "intermediate", "exposed", "unknown"]},
+        "core_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "interface_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "outside_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "core_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "interface_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "outside_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "membrane_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "sidechain_core_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "sidechain_interface_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "sidechain_outside_region_accessible_area": {"$ref": "#/$defs/nullableNonnegative"},
+        "sidechain_core_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "sidechain_interface_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "sidechain_outside_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "sidechain_membrane_region_accessible_fraction": {"$ref": "#/$defs/nullableFraction"},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "contextContact": {
+      "type": "object",
+      "required": ["type", "target_atom", "partner", "distance_angstrom", "notes"],
+      "properties": {
+        "type": {
+          "enum": [
+            "putative_salt_bridge",
+            "distance_only_potential_hbond",
+            "nearby_water",
+            "nearby_ion",
+            "ligand_proximity",
+            "polar_ligand_proximity"
+          ]
+        },
+        "target_atom": {"type": "string", "minLength": 1},
+        "partner": {
+          "type": "object",
+          "required": ["model", "chain", "resi", "resn", "atom", "element"],
+          "properties": {
+            "model": {"type": "string"},
+            "chain": {"type": "string"},
+            "resi": {"type": "string"},
+            "resn": {"type": "string"},
+            "atom": {"type": "string"},
+            "element": {"type": "string"}
+          },
+          "additionalProperties": false
+        },
+        "distance_angstrom": {"type": "number", "minimum": 0},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "localContextEvidence": {
+      "type": "object",
+      "required": [
+        "status",
+        "burial_state",
+        "contact_support",
+        "context_state",
+        "counts",
+        "contacts",
+        "warnings"
+      ],
+      "properties": {
+        "status": {"enum": ["completed", "unavailable"]},
+        "burial_state": {"enum": ["buried", "intermediate", "exposed", "unknown"]},
+        "contact_support": {"enum": ["detected", "not_detected", "unavailable"]},
+        "context_state": {
+          "enum": [
+            "BURIED_NO_DETECTED_SUPPORT",
+            "BURIED_WITH_POTENTIAL_SUPPORT",
+            "INSUFFICIENT_CONTEXT",
+            "ACCESSIBLE_NO_DETECTED_SUPPORT",
+            "ACCESSIBLE_WITH_POTENTIAL_SUPPORT"
+          ]
+        },
+        "counts": {
+          "type": "object",
+          "required": [
+            "putative_salt_bridges",
+            "potential_hbonds",
+            "waters",
+            "ions",
+            "ligand_contacts"
+          ],
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "contacts": {"type": "array", "items": {"$ref": "#/$defs/contextContact"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "1.3"},
+    "report_type": {"const": "single_structure_review"},
+    "software": {
+      "type": "object",
+      "required": ["name", "version", "commit", "commit_status"],
+      "properties": {
+        "name": {"const": "membrane-vqc-pymol"},
+        "version": {"type": "string"},
+        "commit": {"type": "string"},
+        "commit_status": {"enum": ["recorded", "unavailable"]}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["python", "pymol", "pymol_status", "platform"],
+      "properties": {
+        "python": {"type": "string"},
+        "pymol": {"type": "string"},
+        "pymol_status": {"enum": ["recorded", "unavailable"]},
+        "platform": {"type": "string"}
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "selection",
+        "format",
+        "structure_source",
+        "structure_type",
+        "provenance_status"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^$|^[a-f0-9]{64}$"},
+        "selection": {"type": "string", "minLength": 1},
+        "format": {"type": "string"},
+        "structure_source": {"type": "string"},
+        "structure_type": {"type": "string"},
+        "provenance_status": {"enum": ["file_hashed", "input_path_not_supplied"]}
+      }
+    },
+    "orientation": {
+      "type": "object",
+      "required": [
+        "source",
+        "source_version",
+        "geometry",
+        "center",
+        "normal",
+        "lower_offset",
+        "upper_offset",
+        "interface_width",
+        "parameters",
+        "warnings",
+        "evidence"
+      ],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "source_version": {"type": ["string", "null"]},
+        "confidence": {"type": ["string", "null"]},
+        "geometry": {"const": "planar"},
+        "center": {"$ref": "#/$defs/vector3"},
+        "normal": {"$ref": "#/$defs/vector3"},
+        "lower_offset": {"type": "number"},
+        "upper_offset": {"type": "number"},
+        "interface_width": {"type": "number", "minimum": 0},
+        "metadata": {"type": "object"},
+        "parameters": {"type": "object"},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "evidence": {
+          "type": "object",
+          "required": [
+            "model_version",
+            "adapter_name",
+            "adapter_version",
+            "source",
+            "source_scope",
+            "source_geometry",
+            "current_scope",
+            "coordinate_mapping",
+            "current_geometry",
+            "geometric_confidence",
+            "warnings",
+            "raw_metadata"
+          ],
+          "properties": {
+            "model_version": {"const": "1"},
+            "adapter_name": {"type": "string", "minLength": 1},
+            "adapter_version": {"type": "string", "minLength": 1},
+            "source": {
+              "type": "object",
+              "required": ["name", "record_id", "resource_version", "software_version", "raw_payloads"],
+              "properties": {
+                "name": {"const": "PDBTM"},
+                "record_id": {"type": ["string", "null"]},
+                "resource_version": {"type": ["string", "null"]},
+                "software_version": {"type": ["string", "null"]},
+                "raw_payloads": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "type": "object",
+                    "required": ["role", "sha256", "byte_size", "retrieval_verified"],
+                    "properties": {
+                      "role": {"type": "string"},
+                      "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+                      "byte_size": {"type": "integer", "minimum": 0},
+                      "retrieval_verified": {"type": "boolean"}
+                    }
+                  }
+                }
+              }
+            },
+            "source_scope": {"type": "object"},
+            "source_geometry": {"type": "object"},
+            "current_scope": {"type": "object"},
+            "coordinate_mapping": {
+              "type": "object",
+              "required": [
+                "source_to_current",
+                "provider_original_to_transformed",
+                "provider_transformed_to_original",
+                "method",
+                "metrics",
+                "fingerprints",
+                "precision_profile",
+                "thresholds",
+                "determinant",
+                "orthonormality_error"
+              ]
+            },
+            "current_geometry": {"type": "object"},
+            "geometric_confidence": {"type": "string"},
+            "warnings": {"type": "array"},
+            "raw_metadata": {"type": "object"}
+          }
+        },
+        "import": {
+          "type": "object",
+          "required": ["path", "sha256", "schema_version"],
+          "properties": {
+            "path": {"type": "string"},
+            "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "schema_version": {"const": "1.0"}
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "parameters": {"type": "object"},
+    "summary": {
+      "type": "object",
+      "required": ["overall_status"],
+      "properties": {
+        "overall_status": {
+          "enum": ["NO_FLAGS", "REVIEW_ITEMS", "INSUFFICIENT_CONTEXT", "ANALYSIS_ERROR"]
+        },
+        "context_state_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "context_analysis": {
+      "type": "object",
+      "required": ["status", "target_scope", "exposure"],
+      "properties": {
+        "status": {"enum": ["completed", "partial", "unavailable"]},
+        "target_scope": {"enum": ["review_items", "all_residues", "explicit"]},
+        "exposure": {
+          "type": "object",
+          "required": [
+            "backend",
+            "backend_version",
+            "probe_radius_angstrom",
+            "sphere_points",
+            "target_scope",
+            "include_hydrogens",
+            "include_nonprotein_occluders",
+            "radii_model",
+            "rsa_reference",
+            "buried_rsa_threshold",
+            "exposed_rsa_threshold",
+            "alternate_atoms_seen",
+            "alternate_atoms_discarded",
+            "alternate_location_policy",
+            "models",
+            "freesasa_status",
+            "warnings",
+            "elapsed_seconds"
+          ],
+          "properties": {
+            "backend": {"enum": ["builtin_shrake_rupley", "freesasa_reference"]},
+            "backend_version": {"type": "string"},
+            "probe_radius_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "sphere_points": {"type": "integer", "minimum": 1},
+            "target_scope": {"enum": ["review_items", "all_residues", "explicit"]},
+            "include_hydrogens": {"type": "boolean"},
+            "include_nonprotein_occluders": {"type": "boolean"},
+            "radii_model": {"const": "element_vdw_v1"},
+            "rsa_reference": {"const": "tien_2013_theoretical"},
+            "buried_rsa_threshold": {"type": "number", "minimum": 0},
+            "exposed_rsa_threshold": {"type": "number", "minimum": 0},
+            "alternate_atoms_seen": {"type": "integer", "minimum": 0},
+            "alternate_atoms_discarded": {"type": "integer", "minimum": 0},
+            "alternate_location_policy": {"type": "string", "minLength": 1},
+            "models": {"type": "array", "items": {"type": "string"}},
+            "freesasa_status": {"enum": ["available", "unavailable", "used"]},
+            "warnings": {"type": "array", "items": {"type": "string"}},
+            "elapsed_seconds": {"type": "number", "minimum": 0}
+          }
+        },
+        "local_context": {
+          "type": "object",
+          "required": [
+            "salt_bridge_cutoff_angstrom",
+            "potential_hbond_cutoff_angstrom",
+            "water_cutoff_angstrom",
+            "ion_cutoff_angstrom",
+            "ligand_cutoff_angstrom",
+            "polar_ligand_cutoff_angstrom",
+            "atom_role_policy",
+            "category_atom_counts",
+            "warnings",
+            "elapsed_seconds",
+            "context_state_counts"
+          ],
+          "properties": {
+            "salt_bridge_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "potential_hbond_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "water_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "ion_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "ligand_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "polar_ligand_cutoff_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "atom_role_policy": {"const": "standard_residue_roles_v1"},
+            "category_atom_counts": {
+              "type": "object",
+              "required": ["protein", "water", "ion", "ligand", "other_hetatm"],
+              "additionalProperties": {"type": "integer", "minimum": 0}
+            },
+            "warnings": {"type": "array", "items": {"type": "string"}},
+            "elapsed_seconds": {"type": "number", "minimum": 0},
+            "context_state_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
+          }
+        }
+      }
+    },
+    "review_items": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/depthFields"},
+          {
+            "type": "object",
+            "required": [
+              "model",
+              "chain",
+              "resi",
+              "resn",
+              "classification",
+              "severity",
+              "reason",
+              "z"
+            ],
+            "properties": {
+              "model": {"type": "string"},
+              "chain": {"type": "string"},
+              "resi": {"type": "string"},
+              "resn": {"type": "string"},
+              "classification": {"const": "core"},
+              "severity": {"enum": ["WARNING", "INSPECT"]},
+              "reason": {"type": "string", "minLength": 1},
+              "z": {"type": "number"},
+              "exposure": {"$ref": "#/$defs/exposureEvidence"},
+              "local_context": {"$ref": "#/$defs/localContextEvidence"}
+            }
+          }
+        ]
+      }
+    },
+    "ligand_neighbours": {"type": "array", "items": {"$ref": "#/$defs/depthFields"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "allOf": [
+    {
+      "if": {"required": ["context_analysis"]},
+      "then": {
+        "properties": {
+          "review_items": {"items": {"required": ["exposure"]}}
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["context_analysis"],
+        "properties": {"context_analysis": {"required": ["local_context"]}}
+      },
+      "then": {
+        "properties": {
+          "summary": {"required": ["context_state_counts"]},
+          "review_items": {"items": {"required": ["local_context"]}}
+        }
+      }
+    }
+  ]
+}

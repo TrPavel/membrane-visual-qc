@@ -1,5 +1,19 @@
 # Report schemas
 
+## Draft schema 1.3 (Stage 4A1 development)
+
+Development version `0.4.0.dev0` adds unreleased
+`schemas/mvqc-report-1.3.schema.json` for successfully resolved offline PDBTM orientations. It
+serializes source identity, separate exact-payload digests, adapter and provider versions, source
+and current scopes/geometries, the provider matrix and analytical inverse, direct identity/inverse
+match metrics, coordinate fingerprints, precision profile, thresholds, and stable warnings.
+
+Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
+exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.
+Partial, rejected, and unsupported imports cannot create reports. CSV columns are unchanged and do
+not contain rich orientation provenance. Schema 1.3 is draft and unreleased; schemas 1.0, 1.1, and
+1.2 remain byte-identical.
+
 Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`; released v0.2.0 analysis uses
 additive schema 1.1. Both schemas are immutable, and validation dispatches by the declared version.
 

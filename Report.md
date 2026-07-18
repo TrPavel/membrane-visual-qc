@@ -461,3 +461,21 @@ objects, targets, releases, and four-asset sets remain unchanged. The official P
 returns 404 for `membrane-vqc-pymol`; no PyPI publication exists. Stage 4 has not started.
 
 v0.3.0 is published as a prerelease for limited public testing.
+
+## Stage 4A1 offline PDBTM core candidate
+
+The development-only `0.4.0.dev0` implementation adds immutable source evidence, a strict
+pure-Python PDBTM API-v1 offline adapter, coordinate-frame applicability without fitting, mapped
+planar geometry, deterministic coordinate fingerprints, and draft schema 1.3. It does not expose
+GUI/PyMOL import, network retrieval, OPM, source comparison, or automatic alignment.
+
+Final local validation passed Ruff check and format check, 343 tests with eight optional FreeSASA
+skips, 87% coverage, and 19 example reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel/sdist build
+as `0.4.0.dev0`. Two Plugin ZIP builds were identical; the validated
+`MembraneVisualQC-0.4.0.dev0.zip` is 61,883 bytes with SHA-256
+`1bd6840b2f2189f2e58a5d48a08a7d13a760478b66699159682bb54ad858b589`.
+
+Released schemas 1.0–1.2 remain byte-identical. Draft schema 1.3 has SHA-256
+`4a8fea5174533e59a9af617a75f4675de5511c2a2c2da9739c9e1f6e4666158e`. Only synthetic provider
+fixtures are present; official PDBTM payloads remain outside Git. Cross-version Python and
+blocking FreeSASA results remain the required draft-PR checks.

@@ -6,6 +6,19 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Added the Stage 4A1 pure-Python offline PDBTM domain model and API-v1 adapter with strict payload
+  limits, direct coordinate applicability, analytical inverse mapping, precision-derived bounds,
+  deterministic fingerprints, and no fitting or network dependency.
+- Added draft report schema 1.3 for resolved external-orientation provenance while preserving
+  schemas 1.0/1.1/1.2 and existing CSV columns.
+
+### Changed
+
+- Promoted the active development identity to `0.4.0.dev0`; v0.3.0 remains the latest published
+  prerelease. GUI/PyMOL integration, retrieval, OPM, comparison, and Stage 4A2 remain unstarted.
+
 ## [0.3.0] - 2026-07-18
 
 ### Added

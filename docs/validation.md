@@ -233,3 +233,22 @@ with SHA-256 `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`.
 
 The v0.1.0/v0.2.0 tag objects, targets, prereleases, and asset sets remain unchanged. The PyPI JSON
 endpoint returns 404 for this distribution. Stage 4 has not started.
+
+## Stage 4A1 offline-import development validation
+
+The Stage 4A1 core validation uses only synthetic PDBTM-compatible JSON and legacy-PDB payloads.
+No official provider payload is committed or used by CI. The local Windows gate passed Ruff check
+and format check, 343 tests with eight optional FreeSASA skips, 87% combined coverage, and 19
+schema-valid reports (1.1: 7, 1.2: 11, 1.3: 1). Wheel and sdist build as version `0.4.0.dev0`.
+
+Two independent Plugin ZIP builds were byte-for-byte identical. The validated development ZIP is
+`dist/MembraneVisualQC-0.4.0.dev0.zip`, 61,883 bytes, SHA-256
+`1bd6840b2f2189f2e58a5d48a08a7d13a760478b66699159682bb54ad858b589`.
+
+Schema hashes are 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`, and draft 1.3
+`4a8fea5174533e59a9af617a75f4675de5511c2a2c2da9739c9e1f6e4666158e`.
+The Python 3.10/3.11/3.12 and blocking Ubuntu FreeSASA results are recorded by the draft-PR
+workflow; GUI/PyMOL integration is not part of this validation phase.

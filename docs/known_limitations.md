@@ -26,6 +26,15 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - OPM-aligned files are not required for the MVP and are not downloaded automatically.
 - The synthetic PDB is intentionally artificial and only tests deterministic warning behaviour.
 
+## Stage 4A1 development limitations
+
+- The offline PDBTM domain/adapter core is development-only in `0.4.0.dev0`; v0.3.0 remains the
+  latest published release.
+- There is no GUI, PyMOL command, file dialog, or slab-rendering integration for PDBTM imports yet.
+- There is no network retrieval, cache, OPM adapter, source comparison, or automatic alignment.
+- Only reviewed API-v1-compatible JSON plus a plain legacy transformed-PDB companion is supported.
+- Schema 1.3 is draft/unreleased. Partial, rejected, or unsupported imports do not create reports.
+
 ## v0.3.0 exposure limitations
 
 - Conventional SASA and RSA describe solvent accessibility, not lipid accessibility.

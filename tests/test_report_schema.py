@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = ROOT / "schemas" / "mvqc-report-1.0.schema.json"
 SCHEMA_1_1 = ROOT / "schemas" / "mvqc-report-1.1.schema.json"
 SCHEMA_1_2 = ROOT / "schemas" / "mvqc-report-1.2.schema.json"
+SCHEMA_1_3 = ROOT / "schemas" / "mvqc-report-1.3.schema.json"
 
 
 def test_schema_has_stable_non_placeholder_identifier():
@@ -30,6 +31,8 @@ def test_schema_has_stable_non_placeholder_identifier():
     assert schema_1_1["$id"] == "urn:membrane-vqc:schema:report:1.1"
     schema_1_2 = json.loads(SCHEMA_1_2.read_text(encoding="utf-8"))
     assert schema_1_2["$id"] == "urn:membrane-vqc:schema:report:1.2-draft"
+    schema_1_3 = json.loads(SCHEMA_1_3.read_text(encoding="utf-8"))
+    assert schema_1_3["$id"] == "urn:membrane-vqc:schema:report:1.3-draft"
 
 
 def test_released_schema_files_remain_byte_for_byte_immutable():
@@ -38,6 +41,9 @@ def test_released_schema_files_remain_byte_for_byte_immutable():
     )
     assert hashlib.sha256(SCHEMA_1_1.read_bytes()).hexdigest() == (
         "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf"
+    )
+    assert hashlib.sha256(SCHEMA_1_2.read_bytes()).hexdigest() == (
+        "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430"
     )
 
 
@@ -56,7 +62,7 @@ def test_generated_example_reports_validate_against_json_schema():
 def test_generated_examples_can_dispatch_by_declared_schema_version():
     pytest.importorskip("jsonschema")
     reports = default_report_paths(ROOT / "reports")
-    assert validate_reports_by_version(reports) == {"1.1": 7, "1.2": 11}
+    assert validate_reports_by_version(reports) == {"1.1": 7, "1.2": 11, "1.3": 1}
 
 
 def test_exposure_report_validates_against_draft_schema_1_2(tmp_path):
