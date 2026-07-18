@@ -33,6 +33,7 @@ reports/environment_report.json
 # Local agent state
 .agents/
 .codex/
+.local/
 
 # Local planning inputs (not part of the public distribution)
 Context.md

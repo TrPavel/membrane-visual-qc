@@ -1,0 +1,579 @@
+{
+  "schema": "membrane-vqc-pdbtm-semantics-preflight-1",
+  "generated_at": "2026-07-18T17:28:40Z",
+  "result": "PASS",
+  "scope": {
+    "purpose": "Research-only verification of PDBTM source semantics before Stage 4A production implementation",
+    "runtime_code_modified": false,
+    "schema_1_3_created": false,
+    "package_version": "0.3.0",
+    "network_used_by_helper": false,
+    "coordinate_fitting_used": false
+  },
+  "sources": [
+    {
+      "role": "PDBTM current user manual",
+      "url": "https://pdbtm.unitmp.org/documents",
+      "retrieved_at": "2026-07-18T17:16:22Z",
+      "http_status": 200,
+      "media_type": "text/html",
+      "byte_size": 16953,
+      "sha256": "a8ea6d50067311bc880ce50857410ca019caf9c094e2df22f26bd221f02d8b36",
+      "reported_version": null
+    },
+    {
+      "role": "PDBTM OpenAPI",
+      "url": "https://pdbtm.unitmp.org/docs/pdbtm?pdbtm-api-docs.json",
+      "retrieved_at": "2026-07-18T17:16:21Z",
+      "http_status": 200,
+      "media_type": "application/json",
+      "byte_size": 1915,
+      "sha256": "0447baa387a340b37a685f48c0e3561a7996d249da7b5664529526ec4517e971",
+      "reported_version": "OpenAPI 1.0.0"
+    },
+    {
+      "role": "PDBTM usage guide",
+      "url": "https://pdbtm.unitmp.org/usage",
+      "retrieved_at": "2026-07-18T17:21:56Z",
+      "http_status": 200,
+      "media_type": "text/html",
+      "byte_size": 23206,
+      "sha256": "8dd81c6638a17c08297d7e105292b2b3546a1e193a913a43b3437b7a26d0b293",
+      "reported_version": null
+    }
+  ],
+  "literature_references": [
+    {
+      "role": "Primary PDBTM format publication",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC539956/",
+      "citation": "Tusnady et al., Nucleic Acids Research 2005, PDB_TM database paper"
+    }
+  ],
+  "licensing": {
+    "redistribution_status": "UNRESOLVED",
+    "decision": "No raw official PDBTM or RCSB payload is committed",
+    "basis": "No explicit current PDBTM payload redistribution licence was found in the reviewed manual, usage guide, or OpenAPI description"
+  },
+  "format_compatibility_contract": {
+    "api": "PDBTM OpenAPI/API v1",
+    "required_json_field_structure": "Reviewed fields including additional_entry_annotations.membrane.transformation_matrix and membrane.normal",
+    "tested_data_snapshot_resource_version": "1017",
+    "tested_provider_software_version": "3.2.134",
+    "version_policy": "Resource and software versions are always serialized as provenance; a resource-version increment alone does not make a conforming record unsupported",
+    "precision_policy": "Decimal precision and precision-derived bounds are computed from each exact payload",
+    "accepted_envelope": "Only reviewed API v1 field structures, matrix semantics, rigid transforms, and precision profiles inside the reviewed envelope are accepted",
+    "unsupported_conditions": [
+      "changed required field structure",
+      "changed matrix semantics",
+      "non-rigid transform",
+      "numeric precision outside the reviewed envelope"
+    ],
+    "future_schema_compatibility_claimed": false,
+    "historical_fixed_threshold_reuse_after_change": false
+  },
+  "matrix_contract": {
+    "json_path": "additional_entry_annotations.membrane.transformation_matrix",
+    "shape": "3x4",
+    "element_order": "rowx, rowy, rowz; each row contains x, y, z, t",
+    "rotation_storage": "first three columns",
+    "translation_storage": "fourth column",
+    "multiplication": "left multiplication of a coordinate column vector",
+    "accepted_formula": "p_transformed = R * p_original + t",
+    "units": {
+      "rotation": "dimensionless",
+      "coordinates": "angstrom",
+      "translation": "angstrom"
+    },
+    "original_frame": "legacy deposited PDB coordinates for the selected entries",
+    "transformed_frame": "official PDBTM transformed-PDB coordinates",
+    "documentation_conflict": null
+  },
+  "atom_identity_contract": {
+    "fields": [
+      "legacy PDB chain ID mapped through provider ent_cif_chain_map",
+      "residue number",
+      "insertion code",
+      "residue name",
+      "atom name",
+      "resolved altloc"
+    ],
+    "model": 1,
+    "altloc_policy": "blank preferred; otherwise highest occupancy, then lexical altloc",
+    "primary_matching_records": "ATOM",
+    "hetatm_treatment": "Excluded from applicability matching; supplemental all-record correspondence was also verified",
+    "ordering": "lexicographic canonical identity",
+    "minimum_checks": {
+      "matched_atoms": 12,
+      "matched_residues": 3,
+      "maximum_pairwise_separation_angstrom": 10.0,
+      "minimum_off_axis_distance_angstrom": 2.0
+    }
+  },
+  "precision_policy": {
+    "derivation_basis": "Input rounding bounds, not observed implementation residuals",
+    "forward_axis_formula": "eps_y + eps_t_i + sum_j(abs(R_ij) eps_x + abs(x_j) eps_R_ij + eps_x eps_R_ij)",
+    "inverse_formula": "eps_x + norm_inf(R_inverse) * (norm_inf(eps_R) norm_inf(x) + eps_t + eps_y)",
+    "identity_formula": "sqrt(3) * (eps_current + eps_companion)",
+    "runtime_identity_match_limit_angstrom": {
+      "rmsd": 0.002,
+      "maximum_residual": 0.002
+    },
+    "runtime_inverse_match_limit_angstrom": {
+      "rmsd": 0.003,
+      "maximum_residual": 0.003
+    },
+    "provider_forward_validation_limit_policy": "Derived independently from each exact original/deposited, provider-matrix, and transformed-companion payload pair; not the runtime Case-A identity limit",
+    "selection_rule": "Derive precision and bounds from every exact payload; accept only reviewed format and precision profiles, and never silently reuse a historical fixed threshold after a format or precision change"
+  },
+  "runtime_contract_decision": {
+    "case_a": {
+      "condition": "Current coordinates directly match the transformed companion within identity limits",
+      "limit_name": "runtime_identity_match_limit",
+      "rmsd_limit_angstrom": 0.002,
+      "maximum_residual_limit_angstrom": 0.002,
+      "mapping": "identity",
+      "viable": true
+    },
+    "case_b": {
+      "condition": "Current coordinates match the analytically inverse-transformed companion within inverse limits",
+      "limit_name": "runtime_inverse_match_limit",
+      "rmsd_limit_angstrom": 0.003,
+      "maximum_residual_limit_angstrom": 0.003,
+      "mapping": "inverse(provider_original_to_transformed)",
+      "viable": true,
+      "scope": "Verified for the ordinary deposited legacy-PDB coordinates and assembly 1 of both selected entries; these assembly files are coordinate-identical to the deposited files"
+    },
+    "case_c": {
+      "condition": "Neither direct comparison passes",
+      "result": "COORDINATE_FRAME_MISMATCH",
+      "viable": true
+    },
+    "case_d": {
+      "condition": "Both direct comparisons pass",
+      "result": "ambiguous and rejected",
+      "viable": true
+    }
+  },
+  "entries": [
+    {
+      "pdb_id": "1pcr",
+      "membrane_protein_class": "alpha-helical",
+      "classification_evidence": {
+        "tm_type": "Tm_Alpha",
+        "chains": {
+          "A": {
+            "type": "alpha",
+            "num_tm": 5
+          },
+          "B": {
+            "type": "alpha",
+            "num_tm": 5
+          },
+          "C": {
+            "type": "alpha",
+            "num_tm": 1
+          }
+        }
+      },
+      "provider_versions": {
+        "data_resource": "PDBTM",
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "payloads": [
+        {
+          "provider": "PDBTM",
+          "role": "official JSON",
+          "url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.json",
+          "retrieved_at": "2026-07-18T17:09:47Z",
+          "http_status": 200,
+          "media_type": "text/plain; charset=UTF-8",
+          "byte_size": 283537,
+          "sha256": "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0",
+          "reported_version": "PDBTM resource 1017; software 3.2.134"
+        },
+        {
+          "provider": "PDBTM",
+          "role": "official transformed-PDB companion",
+          "url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.trpdb",
+          "retrieved_at": "2026-07-18T17:11:50Z",
+          "http_status": 200,
+          "media_type": "text/plain; charset=UTF-8",
+          "byte_size": 628434,
+          "sha256": "7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698",
+          "reported_version": "paired with PDBTM resource 1017"
+        },
+        {
+          "provider": "RCSB PDB",
+          "role": "official deposited legacy-PDB coordinates",
+          "url": "https://files.rcsb.org/download/1PCR.pdb",
+          "retrieved_at": "2026-07-18T17:11:51Z",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "byte_size": 710208,
+          "sha256": "2e7ed54691e1f036e9d73fa20e4ee068a8adf87969d40fdf78e6f43a6dedc0b0",
+          "reported_version": "latest REVDAT 5, 14-FEB-24"
+        },
+        {
+          "provider": "RCSB PDB",
+          "role": "official biological assembly 1 legacy-PDB coordinates",
+          "url": "https://files.rcsb.org/download/1PCR.pdb1.gz",
+          "retrieved_at": "2026-07-18T17:10:53Z",
+          "http_status": 200,
+          "media_type": "application/gzip",
+          "byte_size": 151425,
+          "sha256": "8ae14328bfe26e3154d4c019c0133b216a98230f6070fac6d4e5de7cd7318211",
+          "reported_version": "not reported inside generated assembly file"
+        }
+      ],
+      "coordinate_file_role": "The matrix maps the deposited legacy-PDB coordinates to the transformed companion; assembly 1 is coordinate-identical to the deposited file",
+      "assembly_and_chain_namespace": {
+        "selected_model": 1,
+        "json_chain_labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "legacy_pdb_chains": [
+          "H",
+          "L",
+          "M"
+        ],
+        "provider_ent_cif_chain_map": {
+          "H": [
+            "C"
+          ],
+          "L": [
+            "A"
+          ],
+          "M": [
+            "B"
+          ]
+        },
+        "assembly_identity_rmsd": 0.0,
+        "assembly_identity_maximum_residual": 0.0
+      },
+      "matrix": {
+        "rotation": [
+          [
+            0.98019749,
+            0.16070147,
+            0.11570647
+          ],
+          [
+            -0.00698903,
+            0.61202049,
+            -0.79081106
+          ],
+          [
+            -0.19789919,
+            0.77434236,
+            0.60102409
+          ]
+        ],
+        "translation": [
+          -40.1937561,
+          -26.91108322,
+          -80.97983551
+        ],
+        "determinant": 1.000000132527091,
+        "orthonormality_max_abs_error": 1.3665335374390963e-07,
+        "inverse_translation": [
+          23.183889021859812,
+          85.63543378578538,
+          32.03992118047575
+        ],
+        "forward_inverse_composition_max_error": 1.6280579355608324e-14
+      },
+      "matched_counts": {
+        "atoms": 6469,
+        "residues": 823,
+        "source_only_atoms": 0,
+        "transformed_only_atoms": 0,
+        "excluded_altloc_records": 0,
+        "supplemental_atom_and_hetatm_matches": 7311
+      },
+      "spatial_distribution": {
+        "maximum_pairwise_separation": 92.61763385554612,
+        "maximum_distance_from_farthest_pair_line": 48.1311047476322,
+        "all_minimum_checks_pass": true
+      },
+      "direct_residuals": {
+        "forward_rmsd": 0.0005019687163977222,
+        "forward_maximum_residual": 0.000834949877168517,
+        "forward_axis_rmsd": [
+          0.00028981691850099746,
+          0.00028891831990031553,
+          0.00029069735192901666
+        ],
+        "forward_axis_maximum_absolute_residual": [
+          0.0005006554299988863,
+          0.0005058978700036576,
+          0.0005043570300031774
+        ],
+        "inverse_rmsd": 0.0005019686942299122,
+        "inverse_maximum_residual": 0.0008349498225592095,
+        "identity_wrong_frame_rmsd": 93.49688745410221,
+        "transpose_convention_rmsd": 134.5328467212269,
+        "pretranslation_convention_rmsd": 78.3134770953085,
+        "inverse_wrong_direction_rmsd": 170.17452753145082
+      },
+      "membrane_semantics": {
+        "json_path": "additional_entry_annotations.membrane.normal",
+        "raw_normal_vector": [
+          0.0,
+          0.0,
+          12.25
+        ],
+        "transformed_centre": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_direction": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "half_thickness": 12.25,
+        "boundaries": [
+          -12.25,
+          12.25
+        ],
+        "definition": "symmetric membrane half-width represented by the normal-vector length; provider Side1/Side2 are non-biological side labels",
+        "single_planar_membrane": true
+      },
+      "precision": {
+        "json_rotation_decimal_places": 8,
+        "json_translation_decimal_places": [
+          7,
+          8,
+          8
+        ],
+        "transformed_pdb_coordinate_decimal_places": 3,
+        "original_pdb_coordinate_decimal_places": 3,
+        "forward_theoretical_maximum_residual": 0.0020951388496643192,
+        "inverse_theoretical_maximum_residual": 0.0022107672648556493,
+        "provider_forward_validation_limit": 0.003,
+        "payload_derived_inverse_bound_ceiling": 0.003
+      },
+      "result": "PASS"
+    },
+    {
+      "pdb_id": "1a0s",
+      "membrane_protein_class": "beta-barrel",
+      "classification_evidence": {
+        "tm_type": "Tm_Beta",
+        "chains": {
+          "A": {
+            "type": "beta",
+            "num_tm": 18
+          },
+          "B": {
+            "type": "beta",
+            "num_tm": 18
+          },
+          "C": {
+            "type": "beta",
+            "num_tm": 18
+          }
+        }
+      },
+      "provider_versions": {
+        "data_resource": "PDBTM",
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "payloads": [
+        {
+          "provider": "PDBTM",
+          "role": "official JSON",
+          "url": "https://pdbtm.unitmp.org/api/v1/entry/1a0s.json",
+          "retrieved_at": "2026-07-18T17:11:52Z",
+          "http_status": 200,
+          "media_type": "text/plain; charset=UTF-8",
+          "byte_size": 425370,
+          "sha256": "22b3985dc13b14520b5507b3ec022211d4c281bdf30f2cdef057073305294f62",
+          "reported_version": "PDBTM resource 1017; software 3.2.134"
+        },
+        {
+          "provider": "PDBTM",
+          "role": "official transformed-PDB companion",
+          "url": "https://pdbtm.unitmp.org/api/v1/entry/1a0s.trpdb",
+          "retrieved_at": "2026-07-18T17:13:59Z",
+          "http_status": 200,
+          "media_type": "text/plain; charset=UTF-8",
+          "byte_size": 823920,
+          "sha256": "f228413887e409312fba5ce76108836856fef62815b1bd8e4ffd97beb01f0b54",
+          "reported_version": "paired with PDBTM resource 1017"
+        },
+        {
+          "provider": "RCSB PDB",
+          "role": "official deposited legacy-PDB coordinates",
+          "url": "https://files.rcsb.org/download/1A0S.pdb",
+          "retrieved_at": "2026-07-18T17:11:32Z",
+          "http_status": 200,
+          "media_type": "text/plain",
+          "byte_size": 857871,
+          "sha256": "5561e34be4c9846cd3aa6355f829add10208b3f62888800bbc200ee021901d28",
+          "reported_version": "latest REVDAT 4, 07-FEB-24"
+        },
+        {
+          "provider": "RCSB PDB",
+          "role": "official biological assembly 1 legacy-PDB coordinates",
+          "url": "https://files.rcsb.org/download/1A0S.pdb1.gz",
+          "retrieved_at": "2026-07-18T17:11:33Z",
+          "http_status": 200,
+          "media_type": "application/gzip",
+          "byte_size": 200349,
+          "sha256": "8d16fe0f40ec1bff7e8160e616baad38ff0b6bd480c7ecf08049ac8f8cf93c13",
+          "reported_version": "not reported inside generated assembly file"
+        }
+      ],
+      "coordinate_file_role": "The matrix maps the deposited legacy-PDB coordinates to the transformed companion; assembly 1 is coordinate-identical to the deposited file",
+      "assembly_and_chain_namespace": {
+        "selected_model": 1,
+        "json_chain_labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "legacy_pdb_chains": [
+          "P",
+          "Q",
+          "R"
+        ],
+        "provider_ent_cif_chain_map": {
+          "P": [
+            "A"
+          ],
+          "Q": [
+            "B"
+          ],
+          "R": [
+            "C"
+          ]
+        },
+        "assembly_identity_rmsd": 0.0,
+        "assembly_identity_maximum_residual": 0.0
+      },
+      "matrix": {
+        "rotation": [
+          [
+            0.99947608,
+            0.00076373,
+            -0.03235693
+          ],
+          [
+            0.0,
+            0.99972159,
+            0.02359663
+          ],
+          [
+            0.03236594,
+            -0.02358427,
+            0.99919778
+          ]
+        ],
+        "translation": [
+          36.43536377,
+          0.22734931,
+          14.42551613
+        ],
+        "determinant": 1.0000000112873162,
+        "orthonormality_max_abs_error": 5.845948503058196e-08,
+        "inverse_translation": [
+          -36.883170394391804,
+          0.08510254868097517,
+          -13.240372259953936
+        ],
+        "forward_inverse_composition_max_error": 1.7764110486817194e-15
+      },
+      "matched_counts": {
+        "atoms": 9606,
+        "residues": 1239,
+        "source_only_atoms": 0,
+        "transformed_only_atoms": 0,
+        "excluded_altloc_records": 0,
+        "supplemental_atom_and_hetatm_matches": 9939
+      },
+      "spatial_distribution": {
+        "maximum_pairwise_separation": 92.38328221599404,
+        "maximum_distance_from_farthest_pair_line": 47.54070912211565,
+        "all_minimum_checks_pass": true
+      },
+      "direct_residuals": {
+        "forward_rmsd": 0.0005011511819099996,
+        "forward_maximum_residual": 0.0008463006677332236,
+        "forward_axis_rmsd": [
+          0.000290674410336939,
+          0.00028862853113104635,
+          0.00028871173395308335
+        ],
+        "forward_axis_maximum_absolute_residual": [
+          0.0005035984499901502,
+          0.0005020993299957865,
+          0.0005017398299962395
+        ],
+        "inverse_rmsd": 0.0005011511800455996,
+        "inverse_maximum_residual": 0.0008463006650538871,
+        "identity_wrong_frame_rmsd": 39.26855386024338,
+        "transpose_convention_rmsd": 3.338288170405901,
+        "pretranslation_convention_rmsd": 1.3048815320087643,
+        "inverse_wrong_direction_rmsd": 78.52620226983643
+      },
+      "membrane_semantics": {
+        "json_path": "additional_entry_annotations.membrane.normal",
+        "raw_normal_vector": [
+          2e-08,
+          -3e-08,
+          9.75
+        ],
+        "transformed_centre": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "normal_direction": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "half_thickness": 9.75,
+        "boundaries": [
+          -9.75,
+          9.75
+        ],
+        "definition": "symmetric membrane half-width represented by the normal-vector length; provider Side1/Side2 are non-biological side labels",
+        "single_planar_membrane": true
+      },
+      "precision": {
+        "json_rotation_decimal_places": 8,
+        "json_translation_decimal_places": [
+          8,
+          8,
+          8
+        ],
+        "transformed_pdb_coordinate_decimal_places": 3,
+        "original_pdb_coordinate_decimal_places": 3,
+        "forward_theoretical_maximum_residual": 0.0017656036591271718,
+        "inverse_theoretical_maximum_residual": 0.0017819069756787158,
+        "provider_forward_validation_limit": 0.002,
+        "payload_derived_inverse_bound_ceiling": 0.002
+      },
+      "result": "PASS"
+    }
+  ],
+  "pass_criteria": {
+    "same_documented_matrix_convention": true,
+    "reproducible_transformed_companion_matching": true,
+    "resolved_assembly_and_chain_semantics": true,
+    "unambiguous_membrane_centre_and_normal": true,
+    "unambiguous_half_thickness": true,
+    "precision_derived_residual_policy": true,
+    "viable_identity_or_inverse_runtime_path": true,
+    "sufficient_atom_count_and_distribution": true,
+    "no_structural_fitting": true
+  },
+  "final_decision": "PDBTM source-semantics preflight passed. Stage 4A production implementation is unblocked but has not started."
+}
