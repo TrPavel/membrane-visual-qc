@@ -12,9 +12,18 @@ from membrane_vqc.context_models import ExposureConfig
 from membrane_vqc.errors import OrientationError, ReportError
 from membrane_vqc.exposure import calculate_exposure
 from membrane_vqc.membrane import AtomRecord
-from membrane_vqc.orientation_sources import OrientationImportResult, StructureContext
-from membrane_vqc.pdbtm_adapter import MAX_PAYLOAD_BYTES, import_pdbtm_orientation
-from membrane_vqc.report import build_report
+from membrane_vqc.orientation_sources import (
+    OrientationImportResult,
+    OrientationPayload,
+    OrientationPayloadSet,
+    StructureContext,
+)
+from membrane_vqc.pdbtm_adapter import (
+    MAX_PAYLOAD_BYTES,
+    PdbtmApiV1Adapter,
+    import_pdbtm_orientation,
+)
+from membrane_vqc.report import build_report, validate_report, validate_stage4_report_semantics
 from scripts.validate_example_reports import validate_reports
 
 
@@ -137,6 +146,68 @@ def _import(current_points, **json_kwargs):
 
 def _codes(result):
     return [item.code for item in result.messages]
+
+
+def _adapter_parse(primary_role="pdbtm_json", companion_roles=()):
+    transformed = _pdb(_apply(POINTS))
+    primary = OrientationPayload(primary_role, _json_payload())
+    companions = tuple(OrientationPayload(role, transformed) for role in companion_roles)
+    return PdbtmApiV1Adapter().parse(
+        OrientationPayloadSet(primary, companions),
+        structure_context=StructureContext(transformed, "test", 1),
+        metadata={},
+    )
+
+
+def _stage4_report():
+    imported = _import(_apply(POINTS))
+    return build_report(
+        selection="test",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=0,
+        flagged_residues=[],
+        ligand_neighbours=[],
+        warnings=[],
+        membrane=imported.membrane,
+        orientation_evidence=imported.evidence,
+    )
+
+
+def test_adapter_rejects_wrong_primary_role_before_parsing_json():
+    result = _adapter_parse(primary_role="json")
+
+    assert result.status == "rejected"
+    assert _codes(result) == ["UNEXPECTED_PAYLOAD_ROLE"]
+
+
+def test_adapter_rejects_unexpected_extra_companion_role():
+    result = _adapter_parse(companion_roles=("transformed_pdb", "notes"))
+
+    assert result.status == "rejected"
+    assert _codes(result) == ["UNEXPECTED_PAYLOAD_ROLE"]
+
+
+def test_adapter_rejects_duplicate_transformed_companions():
+    result = _adapter_parse(companion_roles=("transformed_pdb", "transformed_pdb"))
+
+    assert result.status == "rejected"
+    assert _codes(result) == ["COMPANION_COUNT"]
+
+
+def test_adapter_accepts_exact_partial_and_imported_payload_sets():
+    partial = _adapter_parse()
+    imported = _adapter_parse(companion_roles=("transformed_pdb",))
+
+    assert partial.status == "partial"
+    assert [item.role for item in partial.source.raw_payloads] == ["pdbtm_json"]
+    assert imported.status == "imported"
+    assert [item.role for item in imported.source.raw_payloads] == [
+        "pdbtm_json",
+        "transformed_pdb",
+    ]
 
 
 def test_transformed_identity_match_and_evidence_are_deterministic():
@@ -764,3 +835,77 @@ def test_import_result_and_report_reject_geometry_mismatch(field, value):
             membrane=imported.membrane,
             orientation_evidence=evidence,
         )
+
+
+def test_stage4_semantics_reject_nonunit_normal_after_structural_validation(tmp_path):
+    report = _stage4_report()
+    report["orientation"]["normal"] = [0.5, 0.0, 0.0]
+    report["orientation"]["evidence"]["current_geometry"]["normal"] = [0.5, 0.0, 0.0]
+    path = tmp_path / "nonunit.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(ReportError, match="unit length"):
+        validate_stage4_report_semantics(report)
+    with pytest.raises(ReportError, match="unit length"):
+        validate_report(report)
+    with pytest.raises(ReportError, match="unit length"):
+        validate_reports(SCHEMA_1_3, [path])
+
+
+def test_stage4_semantics_reject_nonunit_source_normal():
+    report = _stage4_report()
+    report["orientation"]["evidence"]["source_geometry"]["normal"] = [0.5, 0.0, 0.0]
+
+    with pytest.raises(ReportError, match="unit length"):
+        validate_stage4_report_semantics(report)
+
+
+def test_stage4_semantics_accept_valid_nonaxis_current_normal():
+    report = _stage4_report()
+    report["orientation"]["normal"] = [0.0, 0.6, 0.8]
+    report["orientation"]["evidence"]["current_geometry"]["normal"] = [0.0, 0.6, 0.8]
+
+    validate_stage4_report_semantics(report)
+
+
+def test_stage4_semantics_reject_asymmetric_source_offsets():
+    report = _stage4_report()
+    report["orientation"]["evidence"]["source_geometry"]["lower_offset"] = -14.0
+
+    with pytest.raises(ReportError, match="offsets must be symmetric"):
+        validate_stage4_report_semantics(report)
+
+
+def test_stage4_semantics_reject_current_and_resolved_geometry_disagreement():
+    report = _stage4_report()
+    report["orientation"]["evidence"]["current_geometry"]["center"][0] = 0.01
+
+    with pytest.raises(ReportError, match="current geometry center"):
+        validate_stage4_report_semantics(report)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_stage4_semantics_reject_nonfinite_normal_components(value):
+    report = _stage4_report()
+    report["orientation"]["normal"][0] = value
+    report["orientation"]["evidence"]["current_geometry"]["normal"][0] = value
+
+    with pytest.raises(ReportError, match="finite number"):
+        validate_stage4_report_semantics(report)
+
+
+def test_import_result_requires_matching_nonnull_source():
+    imported = _import(_apply(POINTS))
+
+    with pytest.raises(OrientationError, match="requires source"):
+        OrientationImportResult("imported", None, imported.evidence, imported.membrane)
+    mismatched_source = replace(imported.source, record_id="other")
+    with pytest.raises(OrientationError, match="source must match"):
+        OrientationImportResult("imported", mismatched_source, imported.evidence, imported.membrane)
+
+
+def test_nonimported_result_rejects_resolved_orientation_evidence():
+    imported = _import(_apply(POINTS))
+
+    with pytest.raises(OrientationError, match="cannot contain resolved"):
+        OrientationImportResult("rejected", imported.source, imported.evidence)

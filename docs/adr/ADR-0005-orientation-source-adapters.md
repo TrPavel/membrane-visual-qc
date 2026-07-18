@@ -322,6 +322,17 @@ normalized source identity, raw SHA-256, adapter name/version, source/current sc
 geometry, exact coordinate mapping, current geometry, confidence, and warnings. Optional
 `orientation_comparison` records thresholds, metrics, mismatch states and both evidence IDs.
 
+Schema 1.3 is the structural contract; JSON Schema does not enforce nonlinear Euclidean unit-vector
+semantics. After structural validation, every schema-1.3 report therefore runs the deterministic
+Stage 4 semantic validator with the shared domain tolerance `1e-9`. It requires finite unit source
+and current normals, reviewed positive-Z source direction, symmetric source offsets, and numerical
+agreement between evidence current geometry and the top-level resolved orientation.
+
+At the adapter boundary, the primary role is exactly `pdbtm_json`. Zero companions produces only
+partial provenance; exactly one `transformed_pdb` companion is the sole resolved-import shape.
+Unknown roles and duplicate transformed companions are rejected before scientific parsing. Thus an
+imported report always serializes exactly one digest for each of those two roles.
+
 Schema dispatch is fixed:
 
 - manual/global-Z or local orientation JSON with context disabled: schema 1.1;
@@ -332,7 +343,8 @@ Schema dispatch is fixed:
 
 Partial, rejected, unsupported or coordinate-mismatched imports produce no QC report and never
 fall back silently to manual geometry. Schemas 1.0, 1.1 and 1.2 are immutable; CSV columns remain
-unchanged. Schema 1.3 is not created in the research PR.
+unchanged. Schema 1.3 is implemented only in the Stage 4A1 draft implementation PR and remains
+unreleased.
 
 ## Consequences
 

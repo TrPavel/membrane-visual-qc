@@ -782,6 +782,29 @@ class PdbtmApiV1Adapter:
         digests = []
         source = None
         try:
+            if payloads.primary.role != "pdbtm_json":
+                _failure(
+                    "rejected",
+                    "UNEXPECTED_PAYLOAD_ROLE",
+                    "Primary payload role must be exactly pdbtm_json.",
+                )
+            unexpected_roles = sorted(
+                {item.role for item in payloads.companions if item.role != "transformed_pdb"}
+            )
+            if unexpected_roles:
+                _failure(
+                    "rejected",
+                    "UNEXPECTED_PAYLOAD_ROLE",
+                    "Companion payload roles must be exactly transformed_pdb; received "
+                    + ", ".join(unexpected_roles)
+                    + ".",
+                )
+            if len(payloads.companions) > 1:
+                _failure(
+                    "rejected",
+                    "COMPANION_COUNT",
+                    "At most one transformed-PDB companion is permitted.",
+                )
             for payload in (payloads.primary, *payloads.companions):
                 _check_payload(payload)
                 digests.append(_digest(payload))
@@ -792,7 +815,7 @@ class PdbtmApiV1Adapter:
             _normal_and_thickness(document)
             provider_chain_labels = _provider_chain_labels(document)
             chain_mapping = _provider_chain_mapping(document, provider_chain_labels)
-            companions = [item for item in payloads.companions if item.role == "transformed_pdb"]
+            companions = list(payloads.companions)
             if not companions:
                 return OrientationImportResult(
                     "partial",
@@ -803,12 +826,6 @@ class PdbtmApiV1Adapter:
                             "JSON provenance was retained, but a transformed-PDB companion is required for geometry resolution.",
                         ),
                     ),
-                )
-            if len(companions) != 1:
-                _failure(
-                    "rejected",
-                    "COMPANION_COUNT",
-                    "Exactly one transformed-PDB companion is required.",
                 )
             transformed = _parse_pdb(
                 companions[0].content, structure_context.model_id, "transformed_pdb"

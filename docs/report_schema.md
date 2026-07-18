@@ -12,6 +12,13 @@ Imported PDBTM evidence requires exactly one JSON and one transformed-PDB digest
 unverified for the public offline API. Provider source geometry uses a null interface width; the
 configured MVQC width is recorded only in resolved current geometry and analysis metadata.
 
+JSON Schema 1.3 defines the structural contract: required fields, types, closed objects, enums,
+and linear numeric bounds. It does not claim to calculate nonlinear Euclidean vector norms. Every
+schema-1.3 report therefore also passes the deterministic Stage 4 semantic validator after JSON
+Schema validation. That validator uses the shared domain tolerance `1e-9` and requires finite unit
+source/current normals, the reviewed positive-Z PDBTM source normal, symmetric source offsets, and
+numerical identity between current evidence geometry and the top-level resolved orientation.
+
 Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
 exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.
 Partial, rejected, and unsupported imports cannot create reports. CSV columns are unchanged and do

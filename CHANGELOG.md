@@ -15,8 +15,8 @@ The format follows Keep a Changelog style, and this project intends to use seman
   schemas 1.0/1.1/1.2 and existing CSV columns.
 - Added strict PDBTM normal, chain/assembly, payload-role, geometry-identity, precision-bound,
   spatial-witness, fingerprint, occupancy, and duplicate-ATOM validation for Stage 4A1 review.
-- Added strict PDBTM normal, chain/assembly, payload-role, geometry-identity, precision-bound,
-  spatial-witness, fingerprint, occupancy, and duplicate-ATOM validation for Stage 4A1 review.
+- Added mandatory schema-1.3 semantic validation for finite unit normals, reviewed source geometry,
+  symmetric PDBTM boundaries, and resolved/report geometry identity after structural validation.
 
 ### Changed
 
@@ -24,8 +24,8 @@ The format follows Keep a Changelog style, and this project intends to use seman
   prerelease. GUI/PyMOL integration, retrieval, OPM, comparison, and Stage 4A2 remain unstarted.
 - Made schema 1.3 normative for every new Stage 4 evidence object and fixed offline retrieval
   provenance at unverified; source geometry no longer claims an MVQC interface width.
-- Made schema 1.3 normative for every new Stage 4 evidence object and fixed offline retrieval
-  provenance at unverified; source geometry no longer claims an MVQC interface width.
+- Restricted offline PDBTM input to one primary `pdbtm_json` payload and zero or one
+  `transformed_pdb` companion; unknown roles and duplicate companions are rejected.
 
 ## [0.3.0] - 2026-07-18
 

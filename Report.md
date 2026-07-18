@@ -474,11 +474,18 @@ assembly provenance, non-spoofable offline retrieval status, explicitly lower-bo
 witnesses, three per-payload theoretical precision bounds, domain/report geometry identity, and
 strict schema-1.3 definitions with negative validation fixtures.
 
-Final local validation passed Ruff check and format check, 369 tests with eight optional FreeSASA
+The final contract correction separates JSON Schema structural validation from mandatory Stage 4
+semantic validation of nonlinear scientific invariants. Every schema-1.3 report now checks finite
+unit normals, the reviewed positive-Z and symmetric PDBTM source geometry, and agreement between
+current evidence and resolved report geometry at tolerance `1e-9`. The adapter accepts only an
+exact `pdbtm_json` primary and zero or one `transformed_pdb` companion; unknown roles and duplicate
+companions are rejected before scientific parsing.
+
+Final local validation passed Ruff check and format check, 383 tests with eight optional FreeSASA
 skips, 87% coverage, and 19 example reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel/sdist build
 as `0.4.0.dev0`. Two Plugin ZIP builds were identical; the validated
-`MembraneVisualQC-0.4.0.dev0.zip` is 64,046 bytes with SHA-256
-`8b456b805efc1cf1cc5485f6d09b13932723670fdca25062feb928699892a032`.
+`MembraneVisualQC-0.4.0.dev0.zip` is 65,209 bytes with SHA-256
+`059264627139ec1a2091fd0f7604d42e16297062f5d5349d270ef53edad0fc9e`.
 
 Released schemas 1.0–1.2 remain byte-identical. Draft schema 1.3 has SHA-256
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Only synthetic provider

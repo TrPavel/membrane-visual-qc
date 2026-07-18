@@ -25,7 +25,7 @@ def test_domain_values_are_frozen_and_json_safe():
 
 
 def test_non_imported_result_cannot_carry_membrane_and_imported_requires_evidence():
-    with pytest.raises(OrientationError, match="requires evidence"):
+    with pytest.raises(OrientationError, match="requires source, evidence"):
         OrientationImportResult("imported")
 
 

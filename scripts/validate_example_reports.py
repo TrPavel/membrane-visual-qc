@@ -6,6 +6,8 @@ import argparse
 import json
 from pathlib import Path
 
+from membrane_vqc.report import validate_stage4_report_semantics
+
 SCHEMA_BY_VERSION = {
     "1.0": Path("schemas/mvqc-report-1.0.schema.json"),
     "1.1": Path("schemas/mvqc-report-1.1.schema.json"),
@@ -38,6 +40,8 @@ def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
     for report_path in report_paths:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         validator.validate(report)
+        if report.get("schema_version") == "1.3":
+            validate_stage4_report_semantics(report)
 
 
 def validate_reports_by_version(report_paths: list[Path]) -> dict[str, int]:

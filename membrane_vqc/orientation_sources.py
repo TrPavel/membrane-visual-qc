@@ -420,13 +420,21 @@ class OrientationImportResult:
     def __post_init__(self) -> None:
         if self.status not in {"imported", "partial", "rejected", "unsupported"}:
             raise OrientationError(f"invalid import status {self.status!r}.")
-        if self.status == "imported" and (self.evidence is None or self.membrane is None):
-            raise OrientationError("imported result requires evidence and a membrane.")
+        if self.status == "imported" and (
+            self.source is None or self.evidence is None or self.membrane is None
+        ):
+            raise OrientationError("imported result requires source, evidence, and a membrane.")
         if self.status == "imported":
+            if self.source != self.evidence.source:
+                raise OrientationError("imported result source must match evidence source.")
             validate_membrane_geometry(self.membrane, self.evidence.current_geometry)
         if self.status != "imported" and self.membrane is not None:
             raise OrientationError(
                 "partial/rejected/unsupported results cannot contain a membrane."
+            )
+        if self.status != "imported" and self.evidence is not None:
+            raise OrientationError(
+                "partial/rejected/unsupported results cannot contain resolved orientation evidence."
             )
         object.__setattr__(self, "messages", tuple(self.messages))
 
