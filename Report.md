@@ -359,10 +359,21 @@ excluded with warnings and cannot create contact support. Overall `contact_suppo
 six types; zero extracted water, ion, or ligand counts are availability observations, not
 biological-absence claims.
 
-Corrected local automated validation passed with 298 tests, eight optional FreeSASA tests skipped
+Corrected local automated validation passed with 299 tests, eight optional FreeSASA tests skipped
 on Windows, 85% coverage, Ruff, 18 schema-valid reports, wheel/sdist, and the full retained headless
-PyMOL suite. The 49,328-byte development ZIP has SHA-256
-`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
+PyMOL suite. The lifecycle-corrected 49,414-byte development ZIP has SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`.
+
+The first graphical attempt with SHA-256 `411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`
+was partial: initial context summary, objects, colours, review precedence, and context-disabled
+fallback passed, but a later sequential run failed with `Invalid selection name
+"mvqc_core_charged"` from the stale compound expression `mvqc_core_charged or
+mvqc_core_polar_inspect`. Review styling now enumerates actual named selections, styles valid names
+one at a time, and skips deleted names. Premature hydropathy and ligand-shell review styling was
+removed; orchestration still recreates review selections after base and context rendering. A new
+one-process headless regression passes ON → OFF → ON → ON → invalid orientation while preserving
+the input object and clearing plugin state/`LAST_REPORT`. Focused graphical retest of the corrected
+ZIP remains required.
 
 The headless synthetic PDB produced four `ACCESSIBLE_WITH_POTENTIAL_SUPPORT` review items. The
 independent state fixtures cover one buried/no-support, one buried/with-support, one

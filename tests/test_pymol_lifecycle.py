@@ -32,7 +32,7 @@ class FakeCmd:
         self.names.discard(name)
 
     def get_names(self, mode):
-        assert mode == "all"
+        assert mode == "selections"
         return sorted(self.names)
 
     def select(self, name, expression):
@@ -65,10 +65,11 @@ def test_clear_slab_deletes_only_boundary_objects():
     assert "mvqc_core_charged" in cmd.names
 
 
-def test_review_style_is_applied_after_ligand_context_colors():
+def test_explicit_final_review_style_is_applied_after_ligand_context_colors():
     cmd = FakeCmd({"mvqc_core_charged", "mvqc_core_polar_inspect"})
 
     show_ligand_shell("protein", "organic", [], cmd)
+    apply_review_style(cmd)
 
     assert cmd.colored[-2:] == [
         ("orange", "mvqc_core_charged"),
@@ -126,6 +127,32 @@ def test_empty_ligand_only_clears_owned_ligand_context():
 
 def test_review_style_is_noop_before_review_selections_exist():
     cmd = FakeCmd({"user_object"})
+
+    apply_review_style(cmd)
+
+    assert cmd.shown == []
+    assert cmd.colored == []
+
+
+def test_review_style_ignores_stale_name_outside_named_selection_namespace():
+    class StatefulCmd(FakeCmd):
+        def __init__(self):
+            super().__init__()
+            self.recently_deleted = {"mvqc_core_charged"}
+
+        def get_names(self, mode):
+            if mode == "all":
+                return sorted(self.names | self.recently_deleted)
+            if mode == "selections":
+                return sorted(self.names)
+            raise AssertionError(f"unexpected get_names mode: {mode}")
+
+        def show(self, representation, selection):
+            if selection not in self.names:
+                raise RuntimeError(f'Invalid selection name "{selection}"')
+            super().show(representation, selection)
+
+    cmd = StatefulCmd()
 
     apply_review_style(cmd)
 

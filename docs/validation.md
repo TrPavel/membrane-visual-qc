@@ -151,11 +151,11 @@ cross-model isolation, histidine ambiguity, altlocs, input-order and rigid-trans
 missing/unsupported elements, schema 1.2, deterministic exports, GUI forwarding, and PyMOL
 ownership/lifecycle/colour precedence.
 
-The corrected Windows result is 298 passed, eight optional FreeSASA tests skipped, and 85% combined
+The lifecycle-corrected Windows result is 299 passed, eight optional FreeSASA tests skipped, and 85% combined
 coverage. Ruff check and format check passed. Eighteen reports validated: seven schema 1.1 and
 eleven schema 1.2. Wheel and sdist built successfully. The corrected development artifact
-`MembraneVisualQC-0.3.0.dev0.zip` is 49,328 bytes with SHA-256
-`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`.
+`MembraneVisualQC-0.3.0.dev0.zip` is 49,414 bytes with SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1`.
 
 Headless Incentive PyMOL 3.1.8 passed smoke import, all legacy summaries, rotated 1UBQ, Stage 3A
 exposure, the preparation helper, the deterministic context fixture, all four context visual
@@ -167,6 +167,12 @@ The correction suite also verifies the real FreeSASA orchestration signature (in
 and Auto selection), schema 1.2 command output, the shared five-state review priority, WARNING
 before INSPECT, unchanged CSV residue order, strict 0/1 command parsing, the exact six-type contact
 vocabulary, unsupported HETATM warnings, and zero optional-category count semantics.
+
+The stateful headless PyMOL lifecycle regression runs context ON, OFF, ON, and ON again in one
+process, then attempts an invalid orientation file. It verifies recreation/removal of review and
+context selections, the absence of invalid-review-selection failures, cleared plugin state and
+`LAST_REPORT`, and preservation of the original structure object. This directly covers the
+graphical blocker found after the initially successful rendering checks.
 
 Graphical integration remains unaccepted until the Stage 3B checklist passes. Draft PR #5 must
 remain unmerged.

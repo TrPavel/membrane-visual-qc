@@ -140,12 +140,29 @@ is `084a7e384364bc46b5b9b3ecdc1b705a4ac80d15e6c320d25f0e1c9f6ec16054`. This was 
 packaging/version smoke, not a repetition of the full scientific and lifecycle acceptance recorded
 for `0.2.0.dev0`.
 
-## Stage 3B graphical acceptance — REQUIRED
+## Stage 3B graphical acceptance — PARTIAL; FOCUSED RETEST REQUIRED
 
-Use development artifact `dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
-`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf` (49,328 bytes). This is not a
-release. It includes the pre-graphical FreeSASA orchestration, context-priority, strict flag, and
-six-contact-contract corrections.
+The first graphical attempt used `MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
+`411752e953785452d58babd0840df425bc1f3f9f3f4d488d106b4489050fdddf`. Its initial context-enabled
+run passed the expected summary, four context selections, colours, review-colour precedence, and
+context-disabled schema 1.1 fallback. A later sequential rerun exposed this release blocker:
+
+```text
+Error: Invalid selection name "mvqc_core_charged".
+mvqc_core_charged or mvqc_core_polar_inspect
+```
+
+That attempt is recorded as **PARTIAL**, not accepted. The failure came from consulting PyMOL's
+broad `all` namespace during selection deletion/recreation and then styling a compound expression
+containing a stale review-selection name.
+
+Focused graphical retest must use the corrected development artifact
+`dist/MembraneVisualQC-0.3.0.dev0.zip`, SHA-256
+`53a34dddcb1d3157f240d03ece3251c6c0565f5bb4bead70c807d641de9a65a1` (49,414 bytes). This is not a
+release. Install it through Plugin Manager, restart PyMOL, and repeat the sequential lifecycle:
+context ON, context OFF, context ON, context ON again, then invalid orientation-file Run QC.
+Confirm that review/context selections are recreated, no invalid review-selection error appears,
+invalid-file cleanup clears plugin state and `LAST_REPORT`, and `local_context_review` remains.
 
 1. Install the ZIP through Plugin Manager, restart PyMOL, and open the GUI.
 2. Confirm **Analyze exposure and local context** is unchecked by default.
@@ -168,7 +185,9 @@ six-contact-contract corrections.
 13. Repeat on rotated 1UBQ and confirm orientation behaviour and review counts remain unchanged.
 14. Record Standard-quality responsiveness and capture overview, partner, and cleanup screenshots.
 
-All items are currently **PENDING graphical validation**. Suggested evidence paths:
+Initial rendering/summary/colour and context-disabled checks passed with the blocked artifact. All
+lifecycle-dependent acceptance remains **PENDING focused graphical retest** with the corrected
+artifact. Suggested evidence paths:
 
 - `docs/screenshots/manual_stage3b_context_overview.png`
 - `docs/screenshots/manual_stage3b_context_partners.png`

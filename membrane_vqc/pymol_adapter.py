@@ -70,17 +70,20 @@ def apply_review_style(cmd_obj: Any | None = None) -> None:
     """Re-apply high-priority review styling above base and context colours."""
     cmd = get_cmd(cmd_obj)
     try:
-        available = set(cmd.get_names("all"))
+        available = set(cmd.get_names("selections"))
     except (AttributeError, TypeError):
-        available = set(MVQC_REVIEW_NAMES)
-    active = [name for name in MVQC_REVIEW_NAMES[1:] if name in available]
-    if not active:
+        # Older cmd-like APIs without selection enumeration cannot safely prove
+        # that an optional named selection exists. Skipping styling is safer than
+        # evaluating a potentially stale name from the broader "all" namespace.
         return
-    cmd.show("sticks", " or ".join(active))
-    if "mvqc_core_charged" in active:
-        cmd.color("orange", "mvqc_core_charged")
-    if "mvqc_core_polar_inspect" in active:
-        cmd.color("yellow", "mvqc_core_polar_inspect")
+    for name, colour in (
+        ("mvqc_core_charged", "orange"),
+        ("mvqc_core_polar_inspect", "yellow"),
+    ):
+        if name not in available:
+            continue
+        cmd.show("sticks", name)
+        cmd.color(colour, name)
 
 
 def get_cmd(cmd_obj: Any | None = None) -> Any:
@@ -430,7 +433,6 @@ def show_ligand_shell(
     cmd.show("sticks", "mvqc_ligand or mvqc_ligand_shell")
     cmd.color("magenta", "mvqc_ligand")
     cmd.color("cyan", "mvqc_ligand_shell")
-    apply_review_style(cmd)
 
 
 def color_hydropathy(
@@ -442,7 +444,6 @@ def color_hydropathy(
         chain = "" if residue.chain == "_" else f" and chain {residue.chain}"
         expr = f"({selection}) and model {residue.model}{chain} and resi {residue.resi} and resn {residue.resn}"
         cmd.color(color_name_for_residue(residue.resn), expr)
-    apply_review_style(cmd)
 
 
 def ensure_parent(path: str | Path) -> None:
