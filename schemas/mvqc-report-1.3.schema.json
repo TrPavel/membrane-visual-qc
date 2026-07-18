@@ -170,6 +170,423 @@
         "warnings": {"type": "array", "items": {"type": "string"}}
       },
       "additionalProperties": false
+    },
+    "nullableString": {
+      "type": ["string", "null"]
+    },
+    "vector4": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number"},
+        {"type": "number"},
+        {"type": "number"},
+        {"type": "number"}
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "unitVector3": {
+      "allOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            {"type": "number", "minimum": -1, "maximum": 1},
+            {"type": "number", "minimum": -1, "maximum": 1},
+            {"type": "number", "minimum": -1, "maximum": 1}
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        },
+        {"not": {"const": [0, 0, 0]}}
+      ]
+    },
+    "affineMatrix4": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/vector4"},
+        {"$ref": "#/$defs/vector4"},
+        {"$ref": "#/$defs/vector4"},
+        {"const": [0, 0, 0, 1]}
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "importMessage": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "message": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "payloadDigest": {
+      "type": "object",
+      "required": [
+        "role",
+        "sha256",
+        "byte_size",
+        "source",
+        "media_type",
+        "retrieved_at",
+        "retrieval_verified"
+      ],
+      "properties": {
+        "role": {"enum": ["pdbtm_json", "transformed_pdb"]},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "byte_size": {"type": "integer", "minimum": 0, "maximum": 5242880},
+        "source": {"$ref": "#/$defs/nullableString"},
+        "media_type": {"$ref": "#/$defs/nullableString"},
+        "retrieved_at": {"$ref": "#/$defs/nullableString"},
+        "retrieval_verified": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "required": [
+        "name",
+        "record_id",
+        "resource_version",
+        "software_version",
+        "source_url",
+        "retrieved_at",
+        "citation",
+        "raw_payloads"
+      ],
+      "properties": {
+        "name": {"const": "PDBTM"},
+        "record_id": {"type": "string", "minLength": 1},
+        "resource_version": {"type": "string", "minLength": 1},
+        "software_version": {"type": "string", "minLength": 1},
+        "source_url": {"$ref": "#/$defs/nullableString"},
+        "retrieved_at": {"$ref": "#/$defs/nullableString"},
+        "citation": {"type": "string", "minLength": 1},
+        "raw_payloads": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/payloadDigest",
+              "properties": {"role": {"const": "pdbtm_json"}}
+            },
+            {
+              "$ref": "#/$defs/payloadDigest",
+              "properties": {"role": {"const": "transformed_pdb"}}
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "additionalProperties": false
+    },
+    "chainMapping": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string", "minLength": 1},
+        "minItems": 1,
+        "uniqueItems": true
+      }
+    },
+    "structureScope": {
+      "type": "object",
+      "required": [
+        "structure_id",
+        "model_id",
+        "biological_assembly",
+        "chains",
+        "chain_namespace",
+        "coordinate_frame",
+        "coordinate_fingerprint",
+        "provider_chain_labels",
+        "legacy_chains",
+        "chain_mapping",
+        "selected_model"
+      ],
+      "properties": {
+        "structure_id": {"type": "string", "minLength": 1},
+        "model_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "biological_assembly": {"$ref": "#/$defs/nullableString"},
+        "chains": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "maxItems": 512,
+          "uniqueItems": true
+        },
+        "chain_namespace": {"const": "legacy_pdb"},
+        "coordinate_frame": {"type": "string", "minLength": 1},
+        "coordinate_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "provider_chain_labels": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "maxItems": 512,
+          "uniqueItems": true
+        },
+        "legacy_chains": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "maxItems": 512,
+          "uniqueItems": true
+        },
+        "chain_mapping": {"$ref": "#/$defs/chainMapping"},
+        "selected_model": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "sourcePlanarGeometry": {
+      "type": "object",
+      "required": [
+        "geometry", "center", "normal", "lower_offset", "upper_offset", "interface_width", "frame"
+      ],
+      "properties": {
+        "geometry": {"const": "planar"},
+        "center": {"$ref": "#/$defs/vector3"},
+        "normal": {"const": [0, 0, 1]},
+        "lower_offset": {"type": "number", "exclusiveMaximum": 0},
+        "upper_offset": {"type": "number", "exclusiveMinimum": 0},
+        "interface_width": {"const": null},
+        "frame": {"const": "pdbtm_transformed"}
+      },
+      "additionalProperties": false
+    },
+    "currentPlanarGeometry": {
+      "type": "object",
+      "required": [
+        "geometry", "center", "normal", "lower_offset", "upper_offset", "interface_width", "frame"
+      ],
+      "properties": {
+        "geometry": {"const": "planar"},
+        "center": {"$ref": "#/$defs/vector3"},
+        "normal": {"$ref": "#/$defs/unitVector3"},
+        "lower_offset": {"type": "number", "exclusiveMaximum": 0},
+        "upper_offset": {"type": "number", "exclusiveMinimum": 0},
+        "interface_width": {"type": "number", "minimum": 0},
+        "frame": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "residualMetrics": {
+      "type": "object",
+      "required": [
+        "matched_atom_count",
+        "matched_residue_count",
+        "rmsd",
+        "maximum_residual",
+        "per_axis_rmsd",
+        "per_axis_maximum_residual",
+        "spatial_witness_separation_lower_bound",
+        "maximum_distance_from_spatial_witness_line",
+        "spatial_witness_method"
+      ],
+      "properties": {
+        "matched_atom_count": {"type": "integer", "minimum": 12},
+        "matched_residue_count": {"type": "integer", "minimum": 3},
+        "rmsd": {"type": "number", "minimum": 0},
+        "maximum_residual": {"type": "number", "minimum": 0},
+        "per_axis_rmsd": {
+          "type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 3, "maxItems": 3
+        },
+        "per_axis_maximum_residual": {
+          "type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 3, "maxItems": 3
+        },
+        "spatial_witness_separation_lower_bound": {"type": "number", "minimum": 10},
+        "maximum_distance_from_spatial_witness_line": {"type": "number", "minimum": 2},
+        "spatial_witness_method": {"const": "lexicographic_double_sweep_lower_bound_v1"}
+      },
+      "additionalProperties": false
+    },
+    "fingerprints": {
+      "type": "object",
+      "required": [
+        "algorithm", "version", "transformed_reference", "inverse_reference", "current", "matched_count"
+      ],
+      "properties": {
+        "algorithm": {"const": "mvqc_atom_identity_coordinates_sha256"},
+        "version": {"const": "1"},
+        "transformed_reference": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "inverse_reference": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "current": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "matched_count": {"type": "integer", "minimum": 12}
+      },
+      "additionalProperties": false
+    },
+    "decimalMatrix3": {
+      "type": "array",
+      "items": {
+        "type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 3, "maxItems": 3
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "precisionProfile": {
+      "type": "object",
+      "required": [
+        "rotation_decimal_places",
+        "translation_decimal_places",
+        "integer_values_use_sibling_field_precision",
+        "current_coordinate_decimal_places",
+        "transformed_coordinate_decimal_places",
+        "normal_xy_noise_limit",
+        "normal_semantics",
+        "runtime_identity_theoretical_bound",
+        "provider_forward_theoretical_bound",
+        "runtime_inverse_theoretical_bound",
+        "provider_forward_axis_bounds",
+        "provider_forward_validation_limit",
+        "reviewed_envelope_decision"
+      ],
+      "properties": {
+        "rotation_decimal_places": {"$ref": "#/$defs/decimalMatrix3"},
+        "translation_decimal_places": {
+          "type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 3, "maxItems": 3
+        },
+        "integer_values_use_sibling_field_precision": {"const": true},
+        "current_coordinate_decimal_places": {"type": "integer", "minimum": 0},
+        "transformed_coordinate_decimal_places": {"type": "integer", "minimum": 0},
+        "normal_xy_noise_limit": {"type": "number", "exclusiveMinimum": 0},
+        "normal_semantics": {"const": "positive_z_half_thickness"},
+        "runtime_identity_theoretical_bound": {"type": "number", "minimum": 0, "maximum": 0.002},
+        "provider_forward_theoretical_bound": {"type": "number", "minimum": 0},
+        "runtime_inverse_theoretical_bound": {"type": "number", "minimum": 0, "maximum": 0.003},
+        "provider_forward_axis_bounds": {
+          "type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 3, "maxItems": 3
+        },
+        "provider_forward_validation_limit": {"type": "number", "minimum": 0},
+        "reviewed_envelope_decision": {"const": "accepted"}
+      },
+      "additionalProperties": false
+    },
+    "identityMatchLimit": {
+      "type": "object",
+      "required": ["rmsd", "maximum_residual"],
+      "properties": {
+        "rmsd": {"const": 0.002},
+        "maximum_residual": {"const": 0.002}
+      },
+      "additionalProperties": false
+    },
+    "inverseMatchLimit": {
+      "type": "object",
+      "required": ["rmsd", "maximum_residual"],
+      "properties": {
+        "rmsd": {"const": 0.003},
+        "maximum_residual": {"const": 0.003}
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "runtime_identity_match_limit", "runtime_inverse_match_limit", "provider_forward_validation_limit"
+      ],
+      "properties": {
+        "runtime_identity_match_limit": {"$ref": "#/$defs/identityMatchLimit"},
+        "runtime_inverse_match_limit": {"$ref": "#/$defs/inverseMatchLimit"},
+        "provider_forward_validation_limit": {"type": "number", "exclusiveMinimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "coordinateMapping": {
+      "type": "object",
+      "required": [
+        "source_frame",
+        "current_frame",
+        "source_to_current",
+        "provider_original_to_transformed",
+        "provider_transformed_to_original",
+        "method",
+        "metrics",
+        "fingerprints",
+        "precision_profile",
+        "thresholds",
+        "determinant",
+        "orthonormality_error"
+      ],
+      "properties": {
+        "source_frame": {"const": "pdbtm_transformed"},
+        "current_frame": {"type": "string", "minLength": 1},
+        "source_to_current": {"$ref": "#/$defs/affineMatrix4"},
+        "provider_original_to_transformed": {"$ref": "#/$defs/affineMatrix4"},
+        "provider_transformed_to_original": {"$ref": "#/$defs/affineMatrix4"},
+        "method": {"enum": ["identity", "inverse_provider_transform"]},
+        "metrics": {
+          "type": "object",
+          "required": ["runtime_identity", "runtime_inverse"],
+          "properties": {
+            "runtime_identity": {"$ref": "#/$defs/residualMetrics"},
+            "runtime_inverse": {"$ref": "#/$defs/residualMetrics"}
+          },
+          "additionalProperties": false
+        },
+        "fingerprints": {"$ref": "#/$defs/fingerprints"},
+        "precision_profile": {"$ref": "#/$defs/precisionProfile"},
+        "thresholds": {"$ref": "#/$defs/thresholds"},
+        "determinant": {"type": "number", "exclusiveMinimum": 0},
+        "orthonormality_error": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "orientationRawMetadata": {
+      "type": "object",
+      "required": [
+        "resource_version",
+        "software_version",
+        "provider_assembly",
+        "current_assembly",
+        "provider_chain_labels",
+        "ent_cif_chain_map",
+        "mvqc_interface_width"
+      ],
+      "properties": {
+        "resource_version": {"type": "string", "minLength": 1},
+        "software_version": {"type": "string", "minLength": 1},
+        "provider_assembly": {"$ref": "#/$defs/nullableString"},
+        "current_assembly": {"$ref": "#/$defs/nullableString"},
+        "provider_chain_labels": {
+          "type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true
+        },
+        "ent_cif_chain_map": {"$ref": "#/$defs/chainMapping"},
+        "mvqc_interface_width": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "orientationEvidence": {
+      "type": "object",
+      "required": [
+        "model_version",
+        "adapter_name",
+        "adapter_version",
+        "source",
+        "source_scope",
+        "source_geometry",
+        "current_scope",
+        "coordinate_mapping",
+        "current_geometry",
+        "geometric_confidence",
+        "warnings",
+        "raw_metadata"
+      ],
+      "properties": {
+        "model_version": {"const": "1"},
+        "adapter_name": {"const": "pdbtm_api_v1_offline"},
+        "adapter_version": {"const": "1"},
+        "source": {"$ref": "#/$defs/sourceIdentity"},
+        "source_scope": {"$ref": "#/$defs/structureScope"},
+        "source_geometry": {"$ref": "#/$defs/sourcePlanarGeometry"},
+        "current_scope": {"$ref": "#/$defs/structureScope"},
+        "coordinate_mapping": {"$ref": "#/$defs/coordinateMapping"},
+        "current_geometry": {"$ref": "#/$defs/currentPlanarGeometry"},
+        "geometric_confidence": {"const": "coordinate_verified"},
+        "warnings": {"type": "array", "items": {"$ref": "#/$defs/importMessage"}},
+        "raw_metadata": {"$ref": "#/$defs/orientationRawMetadata"}
+      },
+      "additionalProperties": false
     }
   },
   "properties": {
@@ -244,74 +661,7 @@
         "metadata": {"type": "object"},
         "parameters": {"type": "object"},
         "warnings": {"type": "array", "items": {"type": "string"}},
-        "evidence": {
-          "type": "object",
-          "required": [
-            "model_version",
-            "adapter_name",
-            "adapter_version",
-            "source",
-            "source_scope",
-            "source_geometry",
-            "current_scope",
-            "coordinate_mapping",
-            "current_geometry",
-            "geometric_confidence",
-            "warnings",
-            "raw_metadata"
-          ],
-          "properties": {
-            "model_version": {"const": "1"},
-            "adapter_name": {"type": "string", "minLength": 1},
-            "adapter_version": {"type": "string", "minLength": 1},
-            "source": {
-              "type": "object",
-              "required": ["name", "record_id", "resource_version", "software_version", "raw_payloads"],
-              "properties": {
-                "name": {"const": "PDBTM"},
-                "record_id": {"type": ["string", "null"]},
-                "resource_version": {"type": ["string", "null"]},
-                "software_version": {"type": ["string", "null"]},
-                "raw_payloads": {
-                  "type": "array",
-                  "minItems": 2,
-                  "items": {
-                    "type": "object",
-                    "required": ["role", "sha256", "byte_size", "retrieval_verified"],
-                    "properties": {
-                      "role": {"type": "string"},
-                      "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-                      "byte_size": {"type": "integer", "minimum": 0},
-                      "retrieval_verified": {"type": "boolean"}
-                    }
-                  }
-                }
-              }
-            },
-            "source_scope": {"type": "object"},
-            "source_geometry": {"type": "object"},
-            "current_scope": {"type": "object"},
-            "coordinate_mapping": {
-              "type": "object",
-              "required": [
-                "source_to_current",
-                "provider_original_to_transformed",
-                "provider_transformed_to_original",
-                "method",
-                "metrics",
-                "fingerprints",
-                "precision_profile",
-                "thresholds",
-                "determinant",
-                "orthonormality_error"
-              ]
-            },
-            "current_geometry": {"type": "object"},
-            "geometric_confidence": {"type": "string"},
-            "warnings": {"type": "array"},
-            "raw_metadata": {"type": "object"}
-          }
-        },
+        "evidence": {"$ref": "#/$defs/orientationEvidence"},
         "import": {
           "type": "object",
           "required": ["path", "sha256", "schema_version"],

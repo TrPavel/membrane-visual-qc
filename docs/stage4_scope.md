@@ -41,6 +41,11 @@ coordinates are compared directly with both the transformed companion and an ana
 inverse-transformed copy. Identity or inverse-provider mapping is accepted only after the
 preflight-defined direct residual check. There is no structural alignment or fitted transform.
 
+PDBTM normal semantics require reviewed x/y serialization noise and positive-z half-thickness.
+Spatial sufficiency is a deterministic lower-bound witness, not a claimed exact diameter. Exact
+provider/current chain sets and `ent_cif_chain_map` are mandatory; Stage 4A1 has no subset mode.
+Caller-supplied offline payloads always serialize `retrieval_verified = false`.
+
 OPM is not included in the first implementation PR. It is a separate experimental follow-up after
 the PDBTM path is accepted.
 

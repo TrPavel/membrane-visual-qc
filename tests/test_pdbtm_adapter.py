@@ -1,12 +1,18 @@
+import copy
+from dataclasses import replace
+import hashlib
+import itertools
 import json
+import math
 from pathlib import Path
 
 import pytest
 
 from membrane_vqc.context_models import ExposureConfig
+from membrane_vqc.errors import OrientationError, ReportError
 from membrane_vqc.exposure import calculate_exposure
 from membrane_vqc.membrane import AtomRecord
-from membrane_vqc.orientation_sources import StructureContext
+from membrane_vqc.orientation_sources import OrientationImportResult, StructureContext
 from membrane_vqc.pdbtm_adapter import MAX_PAYLOAD_BYTES, import_pdbtm_orientation
 from membrane_vqc.report import build_report
 from scripts.validate_example_reports import validate_reports
@@ -91,6 +97,8 @@ def _json_payload(
     mapping=None,
     extra="",
     multiple_membranes=False,
+    assembly=None,
+    chain_labels=("X",),
 ):
     mapping = mapping or {"A": ["X"]}
     mapping_text = json.dumps(mapping, separators=(",", ":"))
@@ -102,13 +110,18 @@ def _json_payload(
         "}"
     )
     membrane_value = f"[{membrane},{membrane}]" if multiple_membranes else membrane
+    assembly_text = f'"assembly_id":"{assembly}",' if assembly is not None else ""
+    chains_text = json.dumps(
+        [{"chain_label": label} for label in chain_labels], separators=(",", ":")
+    )
     return (
         "{"
         '"pdb_id":"test","data_resource":"PDBTM",'
         f'"resource_version":"{resource_version}","software_version":"3.2.134",'
-        '"chains":[{"chain_label":"X"}],'
+        f"{assembly_text}"
+        f'"chains":{chains_text},'
         '"additional_entry_annotations":{'
-        f'"ent_cif_mapping_results":{mapping_text},'
+        f'"ent_cif_mapping_results":{{"ent_cif_chain_map":{mapping_text}}},'
         f'"membrane":{membrane_value}'
         "}}"
     ).encode("utf-8")
@@ -140,6 +153,11 @@ def test_transformed_identity_match_and_evidence_are_deterministic():
     assert fingerprints["algorithm"] == "mvqc_atom_identity_coordinates_sha256"
     assert fingerprints["version"] == "1"
     assert fingerprints["current"] == fingerprints["transformed_reference"]
+    precision = first.evidence.mapping.precision_profile
+    assert precision["runtime_identity_theoretical_bound"] <= 0.002
+    assert precision["runtime_inverse_theoretical_bound"] <= 0.003
+    assert precision["provider_forward_theoretical_bound"] > 0
+    assert precision["reviewed_envelope_decision"] == "accepted"
 
 
 def test_inverse_match_maps_geometry_into_original_frame():
@@ -151,6 +169,16 @@ def test_inverse_match_maps_geometry_into_original_frame():
     assert result.membrane.normal == pytest.approx((0.0, 0.0, 1.0))
     assert result.evidence.current_geometry.center == result.membrane.center
     assert result.evidence.current_geometry.normal == result.membrane.normal
+
+
+def test_provider_geometry_has_no_mvqc_interface_width():
+    result = _import(_apply(POINTS))
+
+    assert result.status == "imported"
+    assert result.evidence.source_geometry.interface_width is None
+    assert result.evidence.current_geometry.interface_width == pytest.approx(3.0)
+    assert result.membrane.interface_width == pytest.approx(3.0)
+    assert result.evidence.raw_metadata["mvqc_interface_width"] == pytest.approx(3.0)
 
 
 def test_neither_reference_matches_without_fitting():
@@ -180,6 +208,23 @@ def test_json_without_companion_is_partial_and_never_creates_membrane():
     assert result.source.raw_payloads[0].retrieval_verified is False
     assert result.membrane is None
     assert result.evidence is None
+
+
+def test_caller_cannot_spoof_verified_retrieval_provenance():
+    context = StructureContext(_pdb(_apply(POINTS)), "test", 1)
+    result = import_pdbtm_orientation(
+        _json_payload(),
+        _pdb(_apply(POINTS)),
+        context,
+        {
+            "json_retrieval_verified": True,
+            "pdb_retrieval_verified": True,
+            "json_source": "https://example.invalid/declared",
+        },
+    )
+
+    assert result.status == "imported"
+    assert {item.retrieval_verified for item in result.source.raw_payloads} == {False}
 
 
 def test_future_resource_snapshot_with_same_contract_is_supported():
@@ -237,6 +282,29 @@ def test_invalid_geometry_format_and_precision_paths(json_payload, expected):
     assert _codes(result) == [expected]
 
 
+@pytest.mark.parametrize(
+    "normal",
+    [
+        (0.001, 0.0, 15.0),
+        (0.0, -0.001, 15.0),
+        (0.0, 0.0, -15.0),
+    ],
+)
+def test_unreviewed_pdbtm_normal_semantics_are_unsupported(normal):
+    result = _import(_apply(POINTS), normal=normal)
+
+    assert result.status == "unsupported"
+    assert _codes(result) == ["UNSUPPORTED_NORMAL_SEMANTICS"]
+
+
+def test_reviewed_near_zero_normal_xy_noise_is_accepted():
+    result = _import(_apply(POINTS), normal=(0.00000001, -0.00000001, 15.0))
+
+    assert result.status == "imported"
+    assert result.evidence.source_geometry.normal == (0.0, 0.0, 1.0)
+    assert result.evidence.source_geometry.upper_offset == 15.0
+
+
 def test_candidate_membrane_limit_is_enforced_before_resolution():
     single = _json_payload()
     marker = b'"membrane":'
@@ -267,6 +335,65 @@ def test_chain_namespace_and_structure_scope_mismatches_are_rejected():
 
     assert _codes(wrong_chain) == ["CHAIN_NAMESPACE_MISMATCH"]
     assert _codes(wrong_id) == ["STRUCTURE_ID_MISMATCH"]
+
+
+def test_missing_chain_map_is_unsupported_even_without_companion():
+    payload = _json_payload().replace(b'"ent_cif_chain_map"', b'"missing_chain_map"')
+    result = import_pdbtm_orientation(payload, None, StructureContext(_pdb(POINTS), "test", 1))
+
+    assert result.status == "unsupported"
+    assert _codes(result) == ["CHAIN_MAPPING_MISSING"]
+
+
+@pytest.mark.parametrize("current_has_extra", [False, True])
+def test_missing_or_extra_legacy_chain_is_rejected(current_has_extra):
+    transformed = _apply(POINTS)
+    companion_chains = {12: "B"} if not current_has_extra else {}
+    current_chains = {12: "B"} if current_has_extra else {}
+    mapping = {"A": ["X"], "B": ["Y"]}
+    payload = _json_payload(mapping=mapping, chain_labels=("X", "Y"))
+    context = StructureContext(_pdb(transformed, chains=current_chains), "test", 1)
+
+    result = import_pdbtm_orientation(payload, _pdb(transformed, chains=companion_chains), context)
+
+    assert result.status == "rejected"
+    assert _codes(result) == ["CHAIN_SET_MISMATCH"]
+
+
+def test_chain_map_and_assembly_provenance_are_serialized_separately():
+    transformed = _apply(POINTS)
+    context = StructureContext(_pdb(transformed), "test", 1, biological_assembly="1")
+    result = import_pdbtm_orientation(_json_payload(assembly="1"), _pdb(transformed), context)
+
+    assert result.status == "imported"
+    source = result.evidence.source_scope.as_dict()
+    current = result.evidence.current_scope.as_dict()
+    assert source["biological_assembly"] == "1"
+    assert current["biological_assembly"] == "1"
+    assert source["provider_chain_labels"] == ["X"]
+    assert source["legacy_chains"] == ["A"]
+    assert source["chain_mapping"] == {"A": ["X"]}
+    assert source["selected_model"] == current["selected_model"] == 1
+
+
+def test_provider_assembly_is_not_copied_from_current_and_mismatch_rejects():
+    transformed = _apply(POINTS)
+    no_provider = import_pdbtm_orientation(
+        _json_payload(),
+        _pdb(transformed),
+        StructureContext(_pdb(transformed), "test", 1, biological_assembly="2"),
+    )
+    mismatch = import_pdbtm_orientation(
+        _json_payload(assembly="1"),
+        _pdb(transformed),
+        StructureContext(_pdb(transformed), "test", 1, biological_assembly="2"),
+    )
+
+    assert no_provider.status == "imported"
+    assert no_provider.evidence.source_scope.biological_assembly is None
+    assert no_provider.evidence.current_scope.biological_assembly == "2"
+    assert mismatch.status == "rejected"
+    assert _codes(mismatch) == ["ASSEMBLY_MISMATCH"]
 
 
 def test_companion_id_and_model_mismatch_are_rejected():
@@ -337,6 +464,106 @@ def test_altloc_policy_prefers_blank_then_occupancy_and_lexical():
     assert result.status == "imported"
 
 
+def test_nonfinite_occupancy_and_duplicate_identity_altloc_are_rejected():
+    transformed = _apply(POINTS)
+    lines = _pdb(transformed).decode("ascii").splitlines()
+    nonfinite = list(lines)
+    nonfinite[1] = nonfinite[1][:54] + "   nan" + nonfinite[1][60:]
+    duplicate = list(lines)
+    duplicate.insert(2, duplicate[1])
+    payload = _json_payload()
+
+    invalid_occupancy = import_pdbtm_orientation(
+        payload,
+        _pdb(transformed),
+        StructureContext(("\n".join(nonfinite) + "\n").encode("ascii"), "test", 1),
+    )
+    duplicate_identity = import_pdbtm_orientation(
+        payload,
+        _pdb(transformed),
+        StructureContext(("\n".join(duplicate) + "\n").encode("ascii"), "test", 1),
+    )
+
+    assert _codes(invalid_occupancy) == ["INVALID_OCCUPANCY"]
+    assert _codes(duplicate_identity) == ["DUPLICATE_ATOM_IDENTITY"]
+
+
+def test_spatial_witness_is_explicitly_a_lower_bound_not_a_maximum():
+    points = [
+        (3.0, -2.0, -1.0),
+        (9.0, -9.0, 1.0),
+        (9.0, 6.0, -2.0),
+        (3.0, 7.0, 2.0),
+        (4.0, 0.0, 0.0),
+        (5.0, 1.0, 1.0),
+        (6.0, -1.0, 0.0),
+        (7.0, 0.0, 1.0),
+        (4.0, 2.0, -1.0),
+        (5.0, 3.0, 0.0),
+        (6.0, 2.0, 1.0),
+        (7.0, 1.0, -1.0),
+    ]
+    identity = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+    translation = (1.0, 0.0, 0.0)
+    transformed = _apply(points, identity, translation)
+    result = import_pdbtm_orientation(
+        _json_payload(rotation=identity, translation=translation),
+        _pdb(transformed),
+        StructureContext(_pdb(transformed), "test", 1),
+    )
+    metrics = result.evidence.mapping.metrics["runtime_identity"]
+    exact = max(math.dist(a, b) for a, b in itertools.combinations(points, 2))
+
+    assert result.status == "imported"
+    assert metrics["spatial_witness_method"] == "lexicographic_double_sweep_lower_bound_v1"
+    assert metrics["spatial_witness_separation_lower_bound"] < exact
+    assert "maximum_pairwise_separation" not in metrics
+
+
+def test_large_coordinates_with_valid_decimals_can_exceed_precision_envelope():
+    c = math.sqrt(0.5)
+    rotation = ((c, -c, 0.0), (c, c, 0.0), (0.0, 0.0, 1.0))
+    points = [(9000.0 + x, y, z) for x, y, z in POINTS]
+    transformed = _apply(points, rotation, (0.0, 0.0, 0.0))
+    payload = _json_payload(rotation=rotation, translation=(0.0, 0.0, 0.0))
+    payload = payload.replace(b"0.70710678", b"0.7071068").replace(b"-0.70710678", b"-0.7071068")
+
+    result = import_pdbtm_orientation(
+        payload, _pdb(transformed), StructureContext(_pdb(points), "test", 1)
+    )
+
+    assert result.status == "unsupported"
+    assert _codes(result) == ["PRECISION_OUTSIDE_ENVELOPE"]
+
+
+def test_signed_zero_fingerprint_is_canonical_and_deterministic():
+    identity = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+    translation = (1.0, 0.0, 0.0)
+    transformed = _apply(POINTS, identity, translation)
+    signed = [(x, -0.0 if y == 0 else y, z) for x, y, z in transformed]
+    result = import_pdbtm_orientation(
+        _json_payload(rotation=identity, translation=translation),
+        _pdb(signed),
+        StructureContext(_pdb(transformed), "test", 1),
+    )
+    fingerprint = result.evidence.mapping.fingerprints["current"]
+    records = []
+    for index, point in enumerate(transformed, 1):
+        residue = (index - 1) // 4 + 1
+        atom = ("CA", "CB", "CG", "CD")[(index - 1) % 4]
+        fields = ("A", str(residue), "", "ALA", atom, "")
+        xyz = tuple(0.0 if round(value, 3) == 0 else round(value, 3) for value in point)
+        records.append((fields, xyz))
+    lines = [
+        "\t".join((*fields, *(f"{value:.3f}" for value in xyz))) for fields, xyz in sorted(records)
+    ]
+    independent = hashlib.sha256(("\n".join(lines) + "\n").encode("utf-8")).hexdigest()
+
+    assert result.status == "imported"
+    assert result.evidence.mapping.fingerprints["transformed_reference"] == fingerprint
+    assert fingerprint == independent
+
+
 def test_payload_size_boundary_and_container_rejection():
     context = StructureContext(_pdb(POINTS), "test", 1)
     exact = _json_payload() + b" " * (MAX_PAYLOAD_BYTES - len(_json_payload()))
@@ -361,6 +588,14 @@ def test_payload_size_boundary_and_container_rejection():
 def test_strict_json_limits(payload, expected):
     result = import_pdbtm_orientation(payload, None, StructureContext(_pdb(POINTS), "test", 1))
     assert _codes(result) == [expected]
+
+
+def test_json_chain_count_limit_is_enforced():
+    labels = tuple(f"X{index}" for index in range(513))
+    context = StructureContext(_pdb(POINTS), "test", 1)
+    result = import_pdbtm_orientation(_json_payload(chain_labels=labels), None, context)
+    assert result.status == "rejected"
+    assert _codes(result) == ["CHAIN_LIMIT"]
 
 
 def test_pdb_line_and_record_limits_are_enforced():
@@ -428,3 +663,104 @@ def test_schema_1_3_report_with_stage3_context(tmp_path):
     assert report["schema_version"] == "1.3"
     assert "context_analysis" in report
     validate_reports(SCHEMA_1_3, [path])
+
+
+def test_schema_1_3_rejects_malformed_or_incomplete_stage4_evidence():
+    jsonschema = pytest.importorskip("jsonschema")
+    imported = _import(_apply(POINTS))
+    report = build_report(
+        selection="test",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=0,
+        flagged_residues=[],
+        ligand_neighbours=[],
+        warnings=[],
+        membrane=imported.membrane,
+        orientation_evidence=imported.evidence,
+    )
+    schema = json.loads(SCHEMA_1_3.read_text(encoding="utf-8"))
+    validator = jsonschema.Draft202012Validator(schema)
+    invalid_reports = []
+
+    malformed_matrix = copy.deepcopy(report)
+    malformed_matrix["orientation"]["evidence"]["coordinate_mapping"]["source_to_current"] = [
+        [1, 0, 0, 0]
+    ]
+    invalid_reports.append(malformed_matrix)
+
+    for field in ("chain_namespace", "chain_mapping"):
+        missing_scope = copy.deepcopy(report)
+        del missing_scope["orientation"]["evidence"]["source_scope"][field]
+        invalid_reports.append(missing_scope)
+
+    invalid_fingerprint = copy.deepcopy(report)
+    invalid_fingerprint["orientation"]["evidence"]["coordinate_mapping"]["fingerprints"][
+        "current"
+    ] = "not-a-digest"
+    invalid_reports.append(invalid_fingerprint)
+
+    missing_payload = copy.deepcopy(report)
+    missing_payload["orientation"]["evidence"]["source"]["raw_payloads"].pop()
+    invalid_reports.append(missing_payload)
+
+    duplicate_role = copy.deepcopy(report)
+    duplicate_role["orientation"]["evidence"]["source"]["raw_payloads"][1]["role"] = "pdbtm_json"
+    invalid_reports.append(duplicate_role)
+
+    missing_threshold = copy.deepcopy(report)
+    del missing_threshold["orientation"]["evidence"]["coordinate_mapping"]["thresholds"][
+        "runtime_inverse_match_limit"
+    ]
+    invalid_reports.append(missing_threshold)
+
+    for normal in ([0, 0, 0], [0, 0, 2]):
+        invalid_normal = copy.deepcopy(report)
+        invalid_normal["orientation"]["evidence"]["current_geometry"]["normal"] = normal
+        invalid_reports.append(invalid_normal)
+
+    unknown_method = copy.deepcopy(report)
+    unknown_method["orientation"]["evidence"]["coordinate_mapping"]["method"] = "best_fit"
+    invalid_reports.append(unknown_method)
+
+    unexpected = copy.deepcopy(report)
+    unexpected["orientation"]["evidence"]["unexpected"] = True
+    invalid_reports.append(unexpected)
+
+    assert not list(validator.iter_errors(report))
+    assert all(list(validator.iter_errors(item)) for item in invalid_reports)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("center", (1.0, 0.0, 0.0)),
+        ("normal", (1.0, 0.0, 0.0)),
+        ("lower_offset", -14.0),
+        ("upper_offset", 14.0),
+        ("interface_width", 4.0),
+    ],
+)
+def test_import_result_and_report_reject_geometry_mismatch(field, value):
+    imported = _import(_apply(POINTS))
+    geometry = replace(imported.evidence.current_geometry, **{field: value})
+    evidence = replace(imported.evidence, current_geometry=geometry)
+
+    with pytest.raises(OrientationError, match="does not match"):
+        OrientationImportResult("imported", imported.source, evidence, imported.membrane)
+    with pytest.raises(ReportError, match="does not match"):
+        build_report(
+            selection="test",
+            zmin=-15,
+            zmax=15,
+            ligand_selection="",
+            cutoff=5,
+            total_residues=0,
+            flagged_residues=[],
+            ligand_neighbours=[],
+            warnings=[],
+            membrane=imported.membrane,
+            orientation_evidence=evidence,
+        )

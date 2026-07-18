@@ -8,6 +8,7 @@ from membrane_vqc.orientation_sources import (
     ImportMessage,
     OrientationImportResult,
     PayloadDigest,
+    PlanarGeometryEvidence,
     StructureContext,
 )
 
@@ -39,3 +40,32 @@ def test_payload_digest_rejects_invalid_hash_and_finite_contract_is_enforced():
     with pytest.raises(OrientationError, match="64 lowercase"):
         PayloadDigest("json", "not-a-hash", 1)
     assert not math.isnan(float(PayloadDigest("json", "0" * 64, 1).byte_size))
+
+
+def test_payload_digest_never_trusts_caller_retrieval_verification():
+    digest = PayloadDigest("json", "0" * 64, 1, retrieval_verified=True)
+
+    assert digest.retrieval_verified is False
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"normal": (0.0, 0.0, 0.0)}, "non-zero"),
+        ({"normal": (0.0, 0.0, 2.0)}, "unit vector"),
+        ({"interface_width": -1.0}, "non-negative"),
+    ],
+)
+def test_planar_geometry_evidence_enforces_unit_normal_and_width(kwargs, message):
+    values = {
+        "center": (0.0, 0.0, 0.0),
+        "normal": (0.0, 0.0, 1.0),
+        "lower_offset": -1.0,
+        "upper_offset": 1.0,
+        "interface_width": None,
+        "frame": "source",
+    }
+    values.update(kwargs)
+
+    with pytest.raises(OrientationError, match=message):
+        PlanarGeometryEvidence(**values)

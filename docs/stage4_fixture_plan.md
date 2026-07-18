@@ -1,6 +1,7 @@
 # Stage 4 orientation adapter fixture plan
 
-Status: design-only. Expected results are defined independently of implementation.
+Status: accepted design; Stage 4A1 synthetic cases are implemented in draft PR #9. Expected
+results remain defined independently of implementation. Stage 4A2 integration has not started.
 
 ## Fixture policy
 
@@ -22,10 +23,11 @@ format permits it. Expected warning codes are stable; human messages may add det
 |---|---|---|
 | Valid planar bundle | finite centre `(0,0,0)`, normal `(0,0,2)`, offsets `-12,+12`, JSON plus matching transformed PDB and exact current coordinate match | `imported`; normal `(0,0,1)`; offsets unchanged; separate raw hashes; direct-match evidence; source/current geometry retained |
 | JSON without companion | valid official-format JSON only | `partial`; provenance retained; no current geometry, `PlanarMembrane`, or QC report |
-| Inverted normal | normal `(0,0,-2)` with correspondingly mapped side evidence | `imported`; normalized `(0,0,-1)`; no silent sign flip; topology direction retained |
+| Inverted normal | normal `(0,0,-2)` | `unsupported` with `UNSUPPORTED_NORMAL_SEMANTICS`; reviewed PDBTM transformed normal requires positive Z |
 | Reversed unlabeled boundaries | two recoverable planes supplied as `+12,-12` | ordered `-12,+12`; `BOUNDARIES_REORDERED`; raw values retained |
 | Reversed labelled boundaries | biological side labels contradict numeric/matrix semantics | `rejected`; no `PlanarMembrane`; no guessed relabelling |
-| Non-unit normal | `(3,4,0)` | normalized `(0.6,0.8,0)`; offsets remain distances in angstrom only if provider spec defines them that way |
+| Off-axis normal | large x/y component | `unsupported` with `UNSUPPORTED_NORMAL_SEMANTICS`; arbitrary direction is never replaced by +Z |
+| Serialization-noise normal | near-zero x/y inside reviewed envelope and positive z | `imported`; physical direction +Z and `half_thickness = z` |
 | Zero normal | `(0,0,0)` | `rejected` with `ZERO_NORMAL` |
 | Missing thickness | no offsets, half-width, or boundary planes | `partial`; source identity/hash retained; no current membrane |
 | Missing centre | orientation requires centre and source provides no reconstructible origin | `partial` or source-specific `rejected`; never substitute origin |
@@ -50,7 +52,9 @@ format permits it. Expected warning codes are stable; human messages may add det
 | Non-rigid transform | scale, shear, reflection, or singular matrix | `rejected` in Stage 4A; determinant/orthogonality reason reported |
 | Neither coordinate reference matches | metadata agrees but direct residuals fail for transformed and inverse-transformed references | `COORDINATE_FRAME_MISMATCH`; no membrane/QC report |
 | Metadata-only apparent match | same PDB ID, chains and assembly but different coordinates | rejected as coordinate mismatch; metadata never substitutes for atom evidence |
-| Too few/narrow atoms | fewer than 12 atoms, fewer than 3 residues, span under 10 angstrom, or no point 2 angstrom off farthest-pair line | `partial`/insufficient coordinate evidence; no membrane |
+| Too few/narrow atoms | fewer than 12 atoms, fewer than 3 residues, deterministic spatial-witness lower bound under 10 angstrom, or no point 2 angstrom off its witness line | rejected/insufficient coordinate evidence; no membrane; witness is not labelled as a maximum |
+| Double-sweep counterexample | exact diameter exceeds deterministic witness separation | witness is serialized explicitly as a lower bound; no `maximum_pairwise_separation` claim |
+| Precision-bound overflow | valid decimal places but large coordinates make identity/inverse theoretical bound exceed fixed runtime envelope | `unsupported / PRECISION_OUTSIDE_ENVELOPE` before coordinate-frame verdict |
 
 The rotated fixture uses the same rigid transform already validated by the project:
 
@@ -105,6 +109,8 @@ PR.
 - invalid UTF-8 and embedded NUL;
 - 250,000 and 250,001 records;
 - excessive chain/candidate/string counts;
+- non-finite occupancy and duplicate identical ATOM identity/altloc;
+- caller metadata attempting to set `retrieval_verified=true`;
 - ZIP, GZIP and polyglot input;
 - malicious filename and symlink supplied by test harness.
 

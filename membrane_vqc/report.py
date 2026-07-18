@@ -15,9 +15,9 @@ from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
 from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
-from .errors import ReportError
+from .errors import OrientationError, ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
-from .orientation_sources import OrientationEvidenceV1
+from .orientation_sources import OrientationEvidenceV1, validate_membrane_geometry
 
 SCHEMA_VERSION = "1.1"
 CONTEXT_SCHEMA_VERSION = "1.2"
@@ -76,6 +76,13 @@ def build_report(
     )
 
     membrane = membrane or legacy_global_z(zmin, zmax, DEFAULT_INTERFACE_WIDTH)
+    if orientation_evidence is not None:
+        try:
+            validate_membrane_geometry(membrane, orientation_evidence.current_geometry)
+        except OrientationError as exc:
+            raise ReportError(
+                f"orientation evidence does not match resolved membrane: {exc}"
+            ) from exc
     review_items = sorted(
         (_with_depth_fields(item, membrane) for item in flagged_residues), key=_residue_sort_key
     )

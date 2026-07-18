@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
 import hashlib
 import json
 import math
@@ -36,6 +36,7 @@ MAX_MEMBRANES = 8
 MAX_STRING_CODEPOINTS = 4096
 MAX_COORDINATE = 1_000_000.0
 MIN_NORMAL_NORM = 1e-12
+NORMAL_XY_NOISE_LIMIT = 1e-7
 RUNTIME_IDENTITY_LIMIT = 0.002
 RUNTIME_INVERSE_LIMIT = 0.003
 RIGID_TOLERANCE = 1e-5
@@ -121,7 +122,7 @@ def _digest(payload: OrientationPayload) -> PayloadDigest:
         source=payload.source_url,
         media_type=payload.media_type,
         retrieved_at=payload.retrieved_at,
-        retrieval_verified=bool(payload.retrieval_verified),
+        retrieval_verified=False,
     )
 
 
@@ -378,6 +379,7 @@ def _parse_pdb(payload: bytes, model: int, role: str) -> _PdbData:
     current_model = 1
     saw_model = False
     candidates: dict[tuple[str, str, str, str, str], list[_Atom]] = {}
+    seen_identity_altloc: set[tuple[str, str, str, str, str, str]] = set()
     decimal_places = set()
     for line in decoded:
         record = line[:6].strip()
@@ -403,6 +405,8 @@ def _parse_pdb(payload: bytes, model: int, role: str) -> _PdbData:
             raise AssertionError from exc
         if any(not math.isfinite(v) or abs(v) > MAX_COORDINATE for v in coordinates):
             _failure("rejected", "INVALID_COORDINATE", f"{role} contains an invalid coordinate.")
+        if not math.isfinite(occupancy):
+            _failure("rejected", "INVALID_OCCUPANCY", f"{role} contains non-finite occupancy.")
         decimal_places.update(len(value.partition(".")[2]) for value in coord_text)
         chain = line[21:22].strip() or "_"
         residue_number = line[22:26].strip()
@@ -411,6 +415,14 @@ def _parse_pdb(payload: bytes, model: int, role: str) -> _PdbData:
         atom_name = line[12:16].strip().upper()
         altloc = line[16:17].strip()
         base = (chain, residue_number, insertion, residue_name, atom_name)
+        identity_altloc = (*base, altloc)
+        if identity_altloc in seen_identity_altloc:
+            _failure(
+                "rejected",
+                "DUPLICATE_ATOM_IDENTITY",
+                f"{role} repeats an identical ATOM identity and altloc.",
+            )
+        seen_identity_altloc.add(identity_altloc)
         identity = AtomIdentity(*base, altloc)
         candidates.setdefault(base, []).append(_Atom(identity, coordinates, occupancy, altloc))
     if saw_model and not any(
@@ -509,8 +521,9 @@ def _metrics(
         "maximum_residual": max(residuals),
         "per_axis_rmsd": [math.sqrt(value / len(residuals)) for value in axis_sq],
         "per_axis_maximum_residual": axis_max,
-        "maximum_pairwise_separation": separation,
-        "maximum_distance_from_farthest_pair_line": off_axis,
+        "spatial_witness_separation_lower_bound": separation,
+        "maximum_distance_from_spatial_witness_line": off_axis,
+        "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
         "identities": identities,
     }
 
@@ -527,7 +540,14 @@ def _fingerprint(identities, coordinates, places: int) -> str:
             identity.resolved_altloc,
         )
         xyz = coordinates[identity]
-        lines.append("\t".join((*fields, *(f"{value:.{places}f}" for value in xyz))))
+        quantum = Decimal(1).scaleb(-places)
+        normalized = []
+        for value in xyz:
+            rounded = Decimal(str(value)).quantize(quantum, rounding=ROUND_HALF_EVEN)
+            if rounded == 0:
+                rounded = abs(rounded)
+            normalized.append(format(rounded, f".{places}f"))
+        lines.append("\t".join((*fields, *normalized)))
     return hashlib.sha256(("\n".join(lines) + "\n").encode("utf-8")).hexdigest()
 
 
@@ -544,7 +564,45 @@ def _source_identity(metadata, payloads, digests) -> SourceIdentity:
     )
 
 
-def _chain_contract(metadata, current: _PdbData, transformed: _PdbData) -> None:
+def _provider_identity_contract(metadata: Mapping[str, object]) -> None:
+    if metadata.get("data_resource") != "PDBTM":
+        _failure(
+            "unsupported",
+            "UNSUPPORTED_FIELD_STRUCTURE",
+            "data_resource must identify PDBTM.",
+        )
+    for key in ("pdb_id", "resource_version", "software_version"):
+        value = metadata.get(key)
+        if not isinstance(value, str) or not value.strip():
+            _failure(
+                "unsupported",
+                "UNSUPPORTED_FIELD_STRUCTURE",
+                f"{key} must be non-empty text.",
+            )
+
+
+def _provider_chain_labels(metadata: Mapping[str, object]) -> tuple[str, ...]:
+    json_chains = metadata.get("chains")
+    if not isinstance(json_chains, list):
+        _failure("unsupported", "UNSUPPORTED_FIELD_STRUCTURE", "chains must be an array.")
+    if len(json_chains) > MAX_CHAINS:
+        _failure("rejected", "CHAIN_LIMIT", "PDBTM JSON exceeds 512 chains.")
+    if any(
+        not isinstance(item, Mapping)
+        or not isinstance(item.get("chain_label"), str)
+        or not item["chain_label"].strip()
+        for item in json_chains
+    ):
+        _failure("unsupported", "UNSUPPORTED_FIELD_STRUCTURE", "Every chain needs chain_label.")
+    labels = {str(item["chain_label"]) for item in json_chains}
+    if len(labels) != len(json_chains):
+        _failure("rejected", "DUPLICATE_CHAIN_LABEL", "PDBTM JSON chain labels must be unique.")
+    return tuple(sorted(labels))
+
+
+def _provider_chain_mapping(
+    metadata: Mapping[str, object], provider_labels: tuple[str, ...]
+) -> dict[str, tuple[str, ...]]:
     annotations = metadata.get("additional_entry_annotations")
     if not isinstance(annotations, Mapping):
         _failure(
@@ -552,25 +610,61 @@ def _chain_contract(metadata, current: _PdbData, transformed: _PdbData) -> None:
             "UNSUPPORTED_FIELD_STRUCTURE",
             "additional_entry_annotations is required.",
         )
-    mapping = annotations.get("ent_cif_mapping_results")
-    if not isinstance(mapping, Mapping):
+    mapping_results = annotations.get("ent_cif_mapping_results")
+    mapping = (
+        mapping_results.get("ent_cif_chain_map") if isinstance(mapping_results, Mapping) else None
+    )
+    if not isinstance(mapping, Mapping) or not mapping:
         _failure("unsupported", "CHAIN_MAPPING_MISSING", "ent_cif_chain_map is required.")
-    json_chains = metadata.get("chains")
-    if not isinstance(json_chains, list):
-        _failure("unsupported", "UNSUPPORTED_FIELD_STRUCTURE", "chains must be an array.")
-    labels = {str(item.get("chain_label")) for item in json_chains if isinstance(item, Mapping)}
-    for chain in set(current.chains) | set(transformed.chains):
-        targets = mapping.get(chain)
+    if len(mapping) > MAX_CHAINS:
+        _failure("rejected", "CHAIN_LIMIT", "ent_cif_chain_map exceeds 512 legacy chains.")
+    labels = set(provider_labels)
+    normalized: dict[str, tuple[str, ...]] = {}
+    for chain, targets in mapping.items():
+        if not isinstance(chain, str) or not chain:
+            _failure(
+                "unsupported",
+                "UNSUPPORTED_FIELD_STRUCTURE",
+                "ent_cif_chain_map keys must be non-empty text.",
+            )
         if (
             not isinstance(targets, list)
             or not targets
-            or any(str(value) not in labels for value in targets)
+            or any(not isinstance(value, str) or value not in labels for value in targets)
         ):
             _failure(
                 "rejected",
                 "CHAIN_NAMESPACE_MISMATCH",
                 f"Legacy chain {chain} is not mapped to a declared JSON chain.",
             )
+        normalized[chain] = tuple(sorted(targets))
+    mapped_labels = {label for targets in normalized.values() for label in targets}
+    if mapped_labels != labels:
+        _failure(
+            "rejected",
+            "CHAIN_NAMESPACE_MISMATCH",
+            "Provider chain labels must exactly match ent_cif_chain_map targets.",
+        )
+    return dict(sorted(normalized.items()))
+
+
+def _chain_contract(
+    current: _PdbData,
+    transformed: _PdbData,
+    mapping: Mapping[str, tuple[str, ...]],
+) -> None:
+    if set(current.chains) != set(transformed.chains):
+        _failure(
+            "rejected",
+            "CHAIN_SET_MISMATCH",
+            "Current and transformed legacy-PDB chain sets must match exactly.",
+        )
+    if set(mapping) != set(transformed.chains):
+        _failure(
+            "rejected",
+            "CHAIN_NAMESPACE_MISMATCH",
+            "ent_cif_chain_map keys must exactly match the legacy-PDB chain set.",
+        )
 
 
 def _normal_and_thickness(metadata) -> tuple[tuple[float, float, float], float]:
@@ -594,10 +688,21 @@ def _normal_and_thickness(metadata) -> tuple[tuple[float, float, float], float]:
     if not isinstance(normal, Mapping) or not all(axis in normal for axis in ("x", "y", "z")):
         _failure("rejected", "MISSING_NORMAL", "PDBTM membrane normal is required.")
     vector = tuple(_number(normal[axis], f"normal.{axis}") for axis in ("x", "y", "z"))
-    thickness = math.sqrt(sum(value * value for value in vector))
-    if thickness <= MIN_NORMAL_NORM:
+    if abs(vector[0]) > NORMAL_XY_NOISE_LIMIT or abs(vector[1]) > NORMAL_XY_NOISE_LIMIT:
+        _failure(
+            "unsupported",
+            "UNSUPPORTED_NORMAL_SEMANTICS",
+            "PDBTM transformed normal x/y exceed the reviewed serialization-noise envelope.",
+        )
+    if abs(vector[2]) <= MIN_NORMAL_NORM:
         _failure("rejected", "ZERO_NORMAL", "PDBTM membrane normal must be non-zero.")
-    return (0.0, 0.0, 1.0), thickness
+    if vector[2] < 0:
+        _failure(
+            "unsupported",
+            "UNSUPPORTED_NORMAL_SEMANTICS",
+            "PDBTM transformed normal z must be positive.",
+        )
+    return (0.0, 0.0, 1.0), vector[2]
 
 
 def _precision_bounds(transform: _Transform, original, transformed) -> dict[str, object]:
@@ -617,10 +722,41 @@ def _precision_bounds(transform: _Transform, original, transformed) -> dict[str,
         axis_bounds.append(bound)
     forward = math.sqrt(sum(value * value for value in axis_bounds))
     limit = math.ceil(forward * 1000) / 1000
+    identity = math.sqrt(3.0) * (eps_x + eps_y)
+    inverse = tuple(tuple(transform.inverse4[i][j] for j in range(3)) for i in range(3))
+    inverse_norm = max(sum(abs(value) for value in row) for row in inverse)
+    matrix_error_norm = max(
+        sum(0.5 * 10 ** -rotation_places[i][j] for j in range(3)) for i in range(3)
+    )
+    translation_error = max(0.5 * 10**-places for places in translation_places)
+    source_magnitude = max(magnitudes)
+    inverse_axis = eps_x + inverse_norm * (
+        matrix_error_norm * source_magnitude + translation_error + eps_y
+    )
+    inverse_bound = math.sqrt(3.0) * inverse_axis
     return {
-        "provider_forward_theoretical_maximum_residual": forward,
+        "runtime_identity_theoretical_bound": identity,
+        "provider_forward_theoretical_bound": forward,
+        "runtime_inverse_theoretical_bound": inverse_bound,
+        "provider_forward_axis_bounds": axis_bounds,
         "provider_forward_validation_limit": limit,
+        "reviewed_envelope_decision": "accepted",
     }
+
+
+def _provider_assembly(metadata: Mapping[str, object]) -> str | None:
+    values = {
+        str(metadata[key]).strip()
+        for key in ("assembly_id", "biological_assembly")
+        if metadata.get(key) is not None and str(metadata[key]).strip()
+    }
+    if len(values) > 1:
+        _failure(
+            "unsupported",
+            "UNSUPPORTED_FIELD_STRUCTURE",
+            "Provider assembly fields disagree.",
+        )
+    return next(iter(values), None)
 
 
 class PdbtmApiV1Adapter:
@@ -650,9 +786,12 @@ class PdbtmApiV1Adapter:
                 _check_payload(payload)
                 digests.append(_digest(payload))
             document = _load_json(payloads.primary)
+            _provider_identity_contract(document)
             source = _source_identity(document, payloads, digests)
             transform = _matrix(document)
             _normal_and_thickness(document)
+            provider_chain_labels = _provider_chain_labels(document)
+            chain_mapping = _provider_chain_mapping(document, provider_chain_labels)
             companions = [item for item in payloads.companions if item.role == "transformed_pdb"]
             if not companions:
                 return OrientationImportResult(
@@ -693,7 +832,24 @@ class PdbtmApiV1Adapter:
                     "COMPANION_ID_MISMATCH",
                     "Transformed companion PDB ID does not match JSON record.",
                 )
-            _chain_contract(document, current, transformed)
+            if current.structure_id and current.structure_id != record_id:
+                _failure(
+                    "rejected",
+                    "STRUCTURE_ID_MISMATCH",
+                    "Current legacy-PDB ID does not match the PDBTM record.",
+                )
+            _chain_contract(current, transformed, chain_mapping)
+            provider_assembly = _provider_assembly(document)
+            if (
+                provider_assembly is not None
+                and structure_context.biological_assembly is not None
+                and provider_assembly != structure_context.biological_assembly
+            ):
+                _failure(
+                    "rejected",
+                    "ASSEMBLY_MISMATCH",
+                    "Provider and current biological assemblies do not match.",
+                )
             reference_a = {
                 identity: atom.coordinates for identity, atom in transformed.atoms.items()
             }
@@ -701,6 +857,26 @@ class PdbtmApiV1Adapter:
                 identity: _point(transform.inverse4, atom.coordinates)
                 for identity, atom in transformed.atoms.items()
             }
+            bounds = _precision_bounds(
+                transform,
+                _PdbData(
+                    {i: _Atom(i, reference_b[i], 1, "") for i in reference_b},
+                    transformed.chains,
+                    current.coordinate_decimal_places,
+                    record_id,
+                    structure_context.model_id,
+                ),
+                transformed,
+            )
+            if (
+                bounds["runtime_identity_theoretical_bound"] > RUNTIME_IDENTITY_LIMIT
+                or bounds["runtime_inverse_theoretical_bound"] > RUNTIME_INVERSE_LIMIT
+            ):
+                _failure(
+                    "unsupported",
+                    "PRECISION_OUTSIDE_ENVELOPE",
+                    "Exact payload rounding bounds exceed the reviewed runtime match envelope.",
+                )
             metrics_a = _metrics(current, reference_a)
             metrics_b = _metrics(current, reference_b)
             pass_a = (
@@ -746,7 +922,7 @@ class PdbtmApiV1Adapter:
             }
             normal, half = _normal_and_thickness(document)
             source_geometry = PlanarGeometryEvidence(
-                (0, 0, 0), normal, -half, half, DEFAULT_INTERFACE_WIDTH, "pdbtm_transformed"
+                (0, 0, 0), normal, -half, half, None, "pdbtm_transformed"
             )
             source_to_current = (
                 tuple(tuple(1.0 if i == j else 0.0 for j in range(4)) for i in range(4))
@@ -776,21 +952,12 @@ class PdbtmApiV1Adapter:
                 confidence="coordinate_verified",
                 metadata={"adapter": ADAPTER_NAME},
             )
-            bounds = _precision_bounds(
-                transform,
-                _PdbData(
-                    {i: _Atom(i, reference_b[i], 1, "") for i in reference_b},
-                    transformed.chains,
-                    3,
-                    record_id,
-                    structure_context.model_id,
-                ),
-                transformed,
-            )
             precision = {
                 **transform.precision,
                 "current_coordinate_decimal_places": current.coordinate_decimal_places,
                 "transformed_coordinate_decimal_places": transformed.coordinate_decimal_places,
+                "normal_xy_noise_limit": NORMAL_XY_NOISE_LIMIT,
+                "normal_semantics": "positive_z_half_thickness",
                 **bounds,
             }
             mapping = CoordinateMapping(
@@ -822,11 +989,15 @@ class PdbtmApiV1Adapter:
             source_scope = StructureScope(
                 record_id,
                 str(structure_context.model_id),
-                structure_context.biological_assembly,
+                provider_assembly,
                 transformed.chains,
                 "legacy_pdb",
                 "pdbtm_transformed",
                 fingerprints["transformed_reference"],
+                provider_chain_labels,
+                transformed.chains,
+                chain_mapping,
+                structure_context.model_id,
             )
             current_scope = StructureScope(
                 structure_context.structure_id or record_id,
@@ -836,6 +1007,10 @@ class PdbtmApiV1Adapter:
                 "legacy_pdb",
                 structure_context.coordinate_frame,
                 fingerprints["current"],
+                provider_chain_labels,
+                current.chains,
+                chain_mapping,
+                structure_context.model_id,
             )
             evidence = OrientationEvidenceV1(
                 "1",
@@ -851,6 +1026,11 @@ class PdbtmApiV1Adapter:
                 raw_metadata={
                     "resource_version": source.resource_version,
                     "software_version": source.software_version,
+                    "provider_assembly": provider_assembly,
+                    "current_assembly": structure_context.biological_assembly,
+                    "provider_chain_labels": provider_chain_labels,
+                    "ent_cif_chain_map": chain_mapping,
+                    "mvqc_interface_width": DEFAULT_INTERFACE_WIDTH,
                 },
             )
             return OrientationImportResult("imported", source, evidence, membrane)
@@ -878,7 +1058,7 @@ def import_pdbtm_orientation(
         metadata.get("json_media_type"),
         metadata.get("json_source"),
         metadata.get("json_retrieved_at"),
-        bool(metadata.get("json_retrieval_verified", False)),
+        False,
     )
     companions = (
         ()
@@ -890,7 +1070,7 @@ def import_pdbtm_orientation(
                 metadata.get("pdb_media_type"),
                 metadata.get("pdb_source"),
                 metadata.get("pdb_retrieved_at"),
-                bool(metadata.get("pdb_retrieval_verified", False)),
+                False,
             ),
         )
     )

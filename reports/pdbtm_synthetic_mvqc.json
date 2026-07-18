@@ -1,7 +1,7 @@
 {
   "capabilities": {},
   "flagged_residues": [],
-  "generated_at": "2026-07-18T21:52:11.435166+00:00",
+  "generated_at": "2026-07-18T22:51:07.824311+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -47,8 +47,7 @@
           "runtime_identity": {
             "matched_atom_count": 12,
             "matched_residue_count": 3,
-            "maximum_distance_from_farthest_pair_line": 6.586264646032502,
-            "maximum_pairwise_separation": 12.68857754044952,
+            "maximum_distance_from_spatial_witness_line": 6.586264646032502,
             "maximum_residual": 0.0,
             "per_axis_maximum_residual": [
               0.0,
@@ -60,13 +59,14 @@
               0.0,
               0.0
             ],
-            "rmsd": 0.0
+            "rmsd": 0.0,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 12.68857754044952
           },
           "runtime_inverse": {
             "matched_atom_count": 12,
             "matched_residue_count": 3,
-            "maximum_distance_from_farthest_pair_line": 6.586264646032502,
-            "maximum_pairwise_separation": 12.68857754044952,
+            "maximum_distance_from_spatial_witness_line": 6.586264646032502,
             "maximum_residual": 11.575836902790225,
             "per_axis_maximum_residual": [
               10.0,
@@ -78,15 +78,25 @@
               5.7081812631812365,
               3.0
             ],
-            "rmsd": 8.563488385776752
+            "rmsd": 8.563488385776752,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 12.68857754044952
           }
         },
         "orthonormality_error": 0.0,
         "precision_profile": {
           "current_coordinate_decimal_places": 3,
           "integer_values_use_sibling_field_precision": true,
-          "provider_forward_theoretical_maximum_residual": 0.0017322760001546233,
+          "normal_semantics": "positive_z_half_thickness",
+          "normal_xy_noise_limit": 1e-07,
+          "provider_forward_axis_bounds": [
+            0.001000130015,
+            0.001000130015,
+            0.001000130015
+          ],
+          "provider_forward_theoretical_bound": 0.0017322760001546233,
           "provider_forward_validation_limit": 0.002,
+          "reviewed_envelope_decision": "accepted",
           "rotation_decimal_places": [
             [
               8,
@@ -104,6 +114,8 @@
               8
             ]
           ],
+          "runtime_identity_theoretical_bound": 0.0017320508075688772,
+          "runtime_inverse_theoretical_bound": 0.0017323972307207718,
           "transformed_coordinate_decimal_places": 3,
           "translation_decimal_places": [
             8,
@@ -221,18 +233,41 @@
       },
       "current_scope": {
         "biological_assembly": null,
+        "chain_mapping": {
+          "A": [
+            "X"
+          ]
+        },
         "chain_namespace": "legacy_pdb",
         "chains": [
           "A"
         ],
         "coordinate_fingerprint": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
         "coordinate_frame": "current_model",
+        "legacy_chains": [
+          "A"
+        ],
         "model_id": "1",
+        "provider_chain_labels": [
+          "X"
+        ],
+        "selected_model": 1,
         "structure_id": "test"
       },
       "geometric_confidence": "coordinate_verified",
       "model_version": "1",
       "raw_metadata": {
+        "current_assembly": null,
+        "ent_cif_chain_map": {
+          "A": [
+            "X"
+          ]
+        },
+        "mvqc_interface_width": 3.0,
+        "provider_assembly": null,
+        "provider_chain_labels": [
+          "X"
+        ],
         "resource_version": "1017",
         "software_version": "3.2.134"
       },
@@ -241,12 +276,12 @@
         "name": "PDBTM",
         "raw_payloads": [
           {
-            "byte_size": 504,
+            "byte_size": 526,
             "media_type": null,
             "retrieval_verified": false,
             "retrieved_at": null,
             "role": "pdbtm_json",
-            "sha256": "a5d2c3a8282510639f9832c21bbb84cce4469b64300dd84261ee2b43618ef814",
+            "sha256": "674e19b2dd334d516ecc992c04f696dd80ea8e2cf17784bd0c13d0d1db6f7457",
             "source": null
           },
           {
@@ -273,7 +308,7 @@
         ],
         "frame": "pdbtm_transformed",
         "geometry": "planar",
-        "interface_width": 3.0,
+        "interface_width": null,
         "lower_offset": -15.0,
         "normal": [
           0.0,
@@ -284,13 +319,25 @@
       },
       "source_scope": {
         "biological_assembly": null,
+        "chain_mapping": {
+          "A": [
+            "X"
+          ]
+        },
         "chain_namespace": "legacy_pdb",
         "chains": [
           "A"
         ],
         "coordinate_fingerprint": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
         "coordinate_frame": "pdbtm_transformed",
+        "legacy_chains": [
+          "A"
+        ],
         "model_id": "1",
+        "provider_chain_labels": [
+          "X"
+        ],
+        "selected_model": 1,
         "structure_id": "test"
       },
       "warnings": []
@@ -340,7 +387,7 @@
   },
   "schema_version": "1.3",
   "software": {
-    "commit": "6f4fb65a48f92540327fa06866412fc5eb16ce82",
+    "commit": "3191c47e7b78ce2147d95a461c60e9e23b9d84ba",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
     "version": "0.4.0.dev0"
@@ -353,7 +400,7 @@
     "polar_core_inspect_residues": 0,
     "total_residues": 0
   },
-  "timestamp": "2026-07-18T21:52:11.435166+00:00",
+  "timestamp": "2026-07-18T22:51:07.824311+00:00",
   "version": "0.4.0.dev0",
   "warnings": []
 }

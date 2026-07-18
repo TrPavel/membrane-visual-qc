@@ -7,6 +7,10 @@ Development version `0.4.0.dev0` adds unreleased
 serializes source identity, separate exact-payload digests, adapter and provider versions, source
 and current scopes/geometries, the provider matrix and analytical inverse, direct identity/inverse
 match metrics, coordinate fingerprints, precision profile, thresholds, and stable warnings.
+Every Stage 4 evidence structure has exact required fields and rejects unexpected properties.
+Imported PDBTM evidence requires exactly one JSON and one transformed-PDB digest, both explicitly
+unverified for the public offline API. Provider source geometry uses a null interface width; the
+configured MVQC width is recorded only in resolved current geometry and analysis metadata.
 
 Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
 exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.

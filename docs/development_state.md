@@ -250,12 +250,15 @@ v0.3.0 is published as a prerelease for limited public testing.
 Stage 4A1 is under review on `feat/pdbtm-offline-import-core` with development identity
 `0.4.0.dev0`. The pure-Python core defines immutable orientation-source evidence, strict offline
 PDBTM API-v1 parsing, direct identity/inverse coordinate applicability, precision-derived bounds,
-and draft report schema 1.3. Local validation passed 343 tests with eight optional FreeSASA skips
+and draft report schema 1.3. The review correction enforces positive-Z PDBTM normal semantics,
+exact chain/assembly provenance, unverified caller-supplied retrieval, conservative spatial-witness
+terminology, dynamic runtime precision bounds, geometry identity, and strict schema definitions.
+Local validation passed 369 tests with eight optional FreeSASA skips
 and 87% combined coverage; 19 example reports validate (schema 1.1: 7, schema 1.2: 11, schema
 1.3: 1).
 
-The deterministic development artifact is `MembraneVisualQC-0.4.0.dev0.zip`, 61,883 bytes, with
-SHA-256 `1bd6840b2f2189f2e58a5d48a08a7d13a760478b66699159682bb54ad858b589`.
+The deterministic development artifact is `MembraneVisualQC-0.4.0.dev0.zip`, 64,046 bytes, with
+SHA-256 `8b456b805efc1cf1cc5485f6d09b13932723670fdca25062feb928699892a032`.
 Schemas 1.0, 1.1, and 1.2 remain byte-identical to their released forms; schema 1.3 is draft and
 unreleased. Official PDBTM payloads are excluded from the implementation and CI fixtures.
 

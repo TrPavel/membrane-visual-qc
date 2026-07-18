@@ -469,13 +469,18 @@ pure-Python PDBTM API-v1 offline adapter, coordinate-frame applicability without
 planar geometry, deterministic coordinate fingerprints, and draft schema 1.3. It does not expose
 GUI/PyMOL import, network retrieval, OPM, source comparison, or automatic alignment.
 
-Final local validation passed Ruff check and format check, 343 tests with eight optional FreeSASA
+The requested review correction now enforces reviewed +Z normal semantics, exact chain-map and
+assembly provenance, non-spoofable offline retrieval status, explicitly lower-bound spatial
+witnesses, three per-payload theoretical precision bounds, domain/report geometry identity, and
+strict schema-1.3 definitions with negative validation fixtures.
+
+Final local validation passed Ruff check and format check, 369 tests with eight optional FreeSASA
 skips, 87% coverage, and 19 example reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel/sdist build
 as `0.4.0.dev0`. Two Plugin ZIP builds were identical; the validated
-`MembraneVisualQC-0.4.0.dev0.zip` is 61,883 bytes with SHA-256
-`1bd6840b2f2189f2e58a5d48a08a7d13a760478b66699159682bb54ad858b589`.
+`MembraneVisualQC-0.4.0.dev0.zip` is 64,046 bytes with SHA-256
+`8b456b805efc1cf1cc5485f6d09b13932723670fdca25062feb928699892a032`.
 
 Released schemas 1.0–1.2 remain byte-identical. Draft schema 1.3 has SHA-256
-`4a8fea5174533e59a9af617a75f4675de5511c2a2c2da9739c9e1f6e4666158e`. Only synthetic provider
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Only synthetic provider
 fixtures are present; official PDBTM payloads remain outside Git. Cross-version Python and
 blocking FreeSASA results remain the required draft-PR checks.

@@ -14,6 +14,7 @@ from .orientation import PlanarMembrane
 JsonScalar = str | int | float | bool | None
 JsonValue = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 ImportStatus = Literal["imported", "partial", "rejected", "unsupported"]
+GEOMETRY_MATCH_TOLERANCE = 1e-9
 
 
 def _text(value: object, name: str, *, optional: bool = False) -> str | None:
@@ -111,6 +112,9 @@ class PayloadDigest:
             raise OrientationError("payload byte_size must be non-negative.")
         for name in ("source", "media_type", "retrieved_at"):
             object.__setattr__(self, name, _text(getattr(self, name), name, optional=True))
+        # Offline Stage 4A1 callers supply untrusted local bytes. Verified retrieval
+        # is reserved for a future trusted transport boundary.
+        object.__setattr__(self, "retrieval_verified", False)
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -172,6 +176,10 @@ class StructureScope:
     chain_namespace: str
     coordinate_frame: str
     coordinate_fingerprint: str | None = None
+    provider_chain_labels: tuple[str, ...] = ()
+    legacy_chains: tuple[str, ...] = ()
+    chain_mapping: Mapping[str, object] = field(default_factory=dict)
+    selected_model: int = 1
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -193,6 +201,19 @@ class StructureScope:
             "coordinate_fingerprint",
             _text(self.coordinate_fingerprint, "coordinate_fingerprint", optional=True),
         )
+        object.__setattr__(
+            self,
+            "provider_chain_labels",
+            tuple(sorted({_text(x, "provider_chain_label") for x in self.provider_chain_labels})),
+        )
+        object.__setattr__(
+            self,
+            "legacy_chains",
+            tuple(sorted({_text(x, "legacy_chain") for x in self.legacy_chains})),
+        )
+        object.__setattr__(self, "chain_mapping", _json_safe(self.chain_mapping, "chain_mapping"))
+        if isinstance(self.selected_model, bool) or self.selected_model < 1:
+            raise OrientationError("selected_model must be a positive integer.")
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -203,6 +224,10 @@ class StructureScope:
             "chain_namespace": self.chain_namespace,
             "coordinate_frame": self.coordinate_frame,
             "coordinate_fingerprint": self.coordinate_fingerprint,
+            "provider_chain_labels": list(self.provider_chain_labels),
+            "legacy_chains": list(self.legacy_chains),
+            "chain_mapping": _thaw(self.chain_mapping),
+            "selected_model": self.selected_model,
         }
 
 
@@ -218,6 +243,11 @@ class PlanarGeometryEvidence:
     def __post_init__(self) -> None:
         object.__setattr__(self, "center", _tuple3(self.center, "center"))
         object.__setattr__(self, "normal", _tuple3(self.normal, "normal"))
+        normal_length = math.sqrt(sum(value * value for value in self.normal))
+        if normal_length <= GEOMETRY_MATCH_TOLERANCE:
+            raise OrientationError("normal must be non-zero.")
+        if not math.isclose(normal_length, 1.0, rel_tol=0.0, abs_tol=GEOMETRY_MATCH_TOLERANCE):
+            raise OrientationError("normal must be a unit vector.")
         object.__setattr__(self, "lower_offset", _finite(self.lower_offset, "lower_offset"))
         object.__setattr__(self, "upper_offset", _finite(self.upper_offset, "upper_offset"))
         if self.lower_offset >= self.upper_offset:
@@ -226,6 +256,8 @@ class PlanarGeometryEvidence:
             object.__setattr__(
                 self, "interface_width", _finite(self.interface_width, "interface_width")
             )
+            if self.interface_width < 0:
+                raise OrientationError("interface_width must be non-negative or null.")
         object.__setattr__(self, "frame", _text(self.frame, "frame"))
 
     def as_dict(self) -> dict[str, object]:
@@ -390,6 +422,8 @@ class OrientationImportResult:
             raise OrientationError(f"invalid import status {self.status!r}.")
         if self.status == "imported" and (self.evidence is None or self.membrane is None):
             raise OrientationError("imported result requires evidence and a membrane.")
+        if self.status == "imported":
+            validate_membrane_geometry(self.membrane, self.evidence.current_geometry)
         if self.status != "imported" and self.membrane is not None:
             raise OrientationError(
                 "partial/rejected/unsupported results cannot contain a membrane."
@@ -403,3 +437,32 @@ class OrientationImportResult:
             "evidence": None if self.evidence is None else self.evidence.as_dict(),
             "messages": [item.as_dict() for item in self.messages],
         }
+
+
+def validate_membrane_geometry(membrane: PlanarMembrane, geometry: PlanarGeometryEvidence) -> None:
+    """Require one numerical geometry across the resolved domain and report evidence."""
+
+    checks = (
+        (membrane.center, geometry.center, "centre"),
+        (membrane.normal, geometry.normal, "normal"),
+    )
+    for actual, expected, label in checks:
+        if any(
+            not math.isclose(a, b, rel_tol=0.0, abs_tol=GEOMETRY_MATCH_TOLERANCE)
+            for a, b in zip(actual, expected, strict=True)
+        ):
+            raise OrientationError(
+                f"resolved membrane {label} does not match orientation evidence."
+            )
+    scalar_checks = (
+        (membrane.lower_offset, geometry.lower_offset, "lower_offset"),
+        (membrane.upper_offset, geometry.upper_offset, "upper_offset"),
+        (membrane.interface_width, geometry.interface_width, "interface_width"),
+    )
+    for actual, expected, label in scalar_checks:
+        if expected is None or not math.isclose(
+            actual, expected, rel_tol=0.0, abs_tol=GEOMETRY_MATCH_TOLERANCE
+        ):
+            raise OrientationError(
+                f"resolved membrane {label} does not match orientation evidence."
+            )
