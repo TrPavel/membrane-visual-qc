@@ -5,12 +5,19 @@ Snapshot date: 2026-07-18 (Europe/Moscow).
 Stage 3 is complete and merged into `main`. v0.3.0 is published from the final release commit as a
 GitHub prerelease for limited public testing. PyPI is not used.
 
-Stage 4 research began on 2026-07-18 in the isolated branch
-`research/stage4-orientation-sources`. This is a documentation-only design gate for orientation
-source interoperability, provenance, optional retrieval, and comparison semantics. No production
-Stage 4 code has started; Stage 4A requires explicit design acceptance. Package version remains
-`0.3.0`, released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable, and
-Stage 4 functionality is not advertised as available.
+Stage 4 research and architecture design are complete and merged through
+[#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
+`3740c4dd8bc3a1c6f69778c4715926a19480bbfa` passed
+[workflow 29652529942](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29652529942)
+and was squash-merged as `bbaabaefee2274f06f954aab16446e8f7e0def7a`. The
+[post-merge workflow 29652573284](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29652573284)
+passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job.
+
+ADR-0005 is accepted for Stage 4A architecture, with PDBTM-only offline import as the first
+implementation scope. The required PDBTM source-semantics preflight has not started, and Stage 4A
+production implementation has not started. Package version remains `0.3.0`; schema 1.3 does not
+exist; released schemas 1.0/1.1/1.2 and v0.1.0/v0.2.0/v0.3.0 evidence remain immutable. No release
+was created and Stage 4 functionality is not advertised as available.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
