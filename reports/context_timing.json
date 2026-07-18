@@ -7,8 +7,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 16,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 0.9120910999999978,
-    "local_context_seconds": 1.0677330000000893,
+    "exposure_seconds": 1.0884068000000298,
+    "local_context_seconds": 0.7087467000001197,
     "report": "reports/1c3w_context_mvqc.json",
     "review_items": 41
   },
@@ -20,8 +20,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 17,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 4.43373930000007,
-    "local_context_seconds": 10.361798200000067,
+    "exposure_seconds": 2.1729347000000416,
+    "local_context_seconds": 5.692758599999706,
     "report": "reports/1pcr_context_mvqc.json",
     "review_items": 76
   },
@@ -33,8 +33,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 0,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 0.4939549000000625,
-    "local_context_seconds": 0.11618240000007063,
+    "exposure_seconds": 0.4614240000000791,
+    "local_context_seconds": 0.12312359999987166,
     "report": "reports/1ubq_context_mvqc.json",
     "review_items": 24
   },
@@ -46,8 +46,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 15,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 4.081247300000086,
-    "local_context_seconds": 6.062778900000012,
+    "exposure_seconds": 2.986033099999986,
+    "local_context_seconds": 4.009078699999918,
     "report": "reports/2rh1_context_mvqc.json",
     "review_items": 104
   },
@@ -59,8 +59,8 @@
       "BURIED_WITH_POTENTIAL_SUPPORT": 0,
       "INSUFFICIENT_CONTEXT": 0
     },
-    "exposure_seconds": 0.013887900000099762,
-    "local_context_seconds": 0.0007235000000491709,
+    "exposure_seconds": 0.013623400000142283,
+    "local_context_seconds": 0.0007194999998318963,
     "report": "reports/bad_core_lys_context_mvqc.json",
     "review_items": 1
   }

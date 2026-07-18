@@ -386,7 +386,7 @@
       "z": 11.890999794006348
     }
   ],
-  "generated_at": "2026-07-18T11:16:05.794952+00:00",
+  "generated_at": "2026-07-18T11:51:13.764478+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -843,7 +843,7 @@
   },
   "schema_version": "1.1",
   "software": {
-    "commit": "c871f905c5037da3437d4e1656b0f6cdcd00afae",
+    "commit": "ee561cde92faa9dd09a358c9b602cc17344e8328",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
     "version": "0.3.0.dev0"
@@ -856,7 +856,7 @@
     "polar_core_inspect_residues": 13,
     "total_residues": 76
   },
-  "timestamp": "2026-07-18T11:16:05.794952+00:00",
+  "timestamp": "2026-07-18T11:51:13.764478+00:00",
   "version": "0.3.0.dev0",
   "warnings": [
     "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only.",
