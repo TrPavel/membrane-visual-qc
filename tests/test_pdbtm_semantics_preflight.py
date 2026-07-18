@@ -192,7 +192,11 @@ def test_load_json_precision_and_tolerance_derivation(tmp_path):
     _write_pdb(source_path, [(0, 0, 0), (10, 2, 3)])
     _write_pdb(target_path, [(0, 0, 0), (10, 2, 3)], transformed=loaded)
     tolerances = derive_tolerances(loaded, parse_pdb(source_path), parse_pdb(target_path))
-    assert tolerances["identity_proposed_maximum_residual_limit"] == 0.002
+    assert tolerances["runtime_identity_match_maximum_residual_limit"] == 0.002
+    assert tolerances["provider_forward_validation_rmsd_limit"] > 0
+    assert tolerances["provider_forward_validation_maximum_residual_limit"] > 0
+    assert tolerances["runtime_inverse_match_rmsd_limit"] > 0
+    assert tolerances["runtime_inverse_match_maximum_residual_limit"] > 0
     assert tolerances["forward_theoretical_maximum_residual"] > 0
     assert tolerances["inverse_theoretical_maximum_residual"] > 0
 

@@ -398,15 +398,17 @@ def derive_tolerances(
         "translation_rounding": list(transform.translation_rounding),
         "coordinate_magnitude_by_axis": coordinate_magnitudes,
         "identity_theoretical_maximum_residual": identity_maximum,
-        "identity_proposed_rmsd_limit": ceiling_milliangstrom(identity_maximum),
-        "identity_proposed_maximum_residual_limit": ceiling_milliangstrom(identity_maximum),
+        "runtime_identity_match_rmsd_limit": ceiling_milliangstrom(identity_maximum),
+        "runtime_identity_match_maximum_residual_limit": ceiling_milliangstrom(identity_maximum),
         "forward_theoretical_axis_bounds": forward_axis_bounds,
         "forward_theoretical_maximum_residual": forward_maximum,
-        "forward_proposed_rmsd_limit": ceiling_milliangstrom(forward_maximum),
-        "forward_proposed_maximum_residual_limit": ceiling_milliangstrom(forward_maximum),
+        "provider_forward_validation_rmsd_limit": ceiling_milliangstrom(forward_maximum),
+        "provider_forward_validation_maximum_residual_limit": ceiling_milliangstrom(
+            forward_maximum
+        ),
         "inverse_theoretical_maximum_residual": inverse_maximum,
-        "inverse_proposed_rmsd_limit": ceiling_milliangstrom(inverse_maximum),
-        "inverse_proposed_maximum_residual_limit": ceiling_milliangstrom(inverse_maximum),
+        "runtime_inverse_match_rmsd_limit": ceiling_milliangstrom(inverse_maximum),
+        "runtime_inverse_match_maximum_residual_limit": ceiling_milliangstrom(inverse_maximum),
     }
 
 

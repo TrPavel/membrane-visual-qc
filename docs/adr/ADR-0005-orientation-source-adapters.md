@@ -1,11 +1,12 @@
 # ADR-0005: Orientation source adapters and coordinate provenance
 
-- Status: Accepted for Stage 4A architecture; PDBTM source-semantics preflight required before production implementation
+- Status: Accepted for Stage 4A implementation; PDBTM source-semantics preflight passed
 - Date: 2026-07-18
 - Depends on: ADR-0002 planar orientation convention
 
-Architecture acceptance does not mean that Stage 4 functionality is implemented. Production
-implementation required the PDBTM source-semantics preflight described here.
+Architecture acceptance is not implementation completion. The required PDBTM source-semantics
+preflight has passed, so Stage 4A production implementation is now unblocked. No Stage 4A
+production code has started.
 
 ## PDBTM source-semantics preflight result
 
@@ -18,8 +19,10 @@ and corresponding RCSB coordinates for `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`
 - explicit legacy-PDB-to-JSON chain mapping;
 - transformed centre at the origin, +Z normal, and normal-vector magnitude as symmetric
   half-thickness;
-- resource-1017 precision-derived limits of 0.002 angstrom for identity matching and 0.003
-  angstrom for inverse matching, applied to both RMSD and maximum residual.
+- runtime identity limits of 0.002 angstrom and runtime inverse limits of 0.003 angstrom, applied
+  to both RMSD and maximum residual;
+- an independently precision-derived provider-forward validation limit for each exact payload
+  pair, including 0.003 angstrom for the tested `1pcr` pair.
 
 The machine-readable result is
 [`pdbtm_semantics_preflight_results.json`](../pdbtm_semantics_preflight_results.json). Raw official
@@ -144,7 +147,7 @@ class OrientationAdapter(Protocol):
     adapter_name: str
     adapter_version: str
     supported_media_types: tuple[str, ...]
-    supported_source_versions: tuple[str, ...]
+    supported_format_profiles: tuple[str, ...]
 
     def can_parse(
         self, payloads: OrientationPayloadSet, metadata: Mapping[str, object]
@@ -169,7 +172,14 @@ Every parse:
 - hashes every exact input payload before decoding;
 - uses declared UTF-8/ASCII only, rejects undecodable bytes, duplicate security-sensitive keys,
   NaN and infinity;
-- accepts only documented source versions; unknown versions return `unsupported`;
+- accepts only OpenAPI/API v1 payloads whose required JSON field structure and numeric precision
+  profile are inside the reviewed adapter contract and precision envelope;
+- serializes provider `resource_version` and `software_version` as provenance on every result;
+- does not reject a record solely because its resource snapshot incremented, but does not claim
+  compatibility with an untested future schema;
+- derives decimal precision and precision bounds from each exact payload; changed field structure,
+  changed matrix semantics, non-rigid transforms, or precision outside the reviewed envelope return
+  `unsupported`, with no historical fixed threshold silently reused;
 - uses angstroms internally and records any source-unit conversion;
 - normalizes a finite non-zero normal without losing the supplied vector in raw metadata;
 - produces ordered `lower_offset < upper_offset`; recoverable unlabeled reversal is reordered with
@@ -209,9 +219,21 @@ There are only three outcomes:
   `source_to_current = inverse(provider_original_to_transformed)`;
 - neither matches: `COORDINATE_FRAME_MISMATCH`, no `PlanarMembrane`, and no QC report.
 
-If both appear to match within the preflight-derived tolerance, the result is ambiguous and
-rejected rather than choosing one. No Kabsch fit, translation fit, atom-derived transform, or other
-optimization is permitted.
+Runtime Case A uses `runtime_identity_match_limit`: RMSD and maximum residual must each be no more
+than 0.002 angstrom when current coordinates are directly compared with the transformed companion.
+Runtime Case B uses `runtime_inverse_match_limit`: RMSD and maximum residual must each be no more
+than 0.003 angstrom when current coordinates are compared with the analytically
+inverse-transformed companion.
+
+These runtime limits are distinct from `provider_forward_validation_limit`, which validates the
+provider matrix by transforming original/deposited coordinates and comparing them with the
+transformed companion. That limit is derived independently from each exact payload pair and may be
+0.003 angstrom for `1pcr`; it is not the runtime Case-A identity limit. All provider resource and
+software versions, derived precision, and limits are serialized.
+
+If both runtime references appear to match within their respective limits, the result is ambiguous
+and rejected rather than choosing one. No Kabsch fit, translation fit, atom-derived transform, or
+other optimization is permitted.
 
 ### Coordinate and scope matching
 
@@ -232,9 +254,17 @@ least 2 angstrom from the line through the farthest pair. These are minimum appl
 not biological-quality thresholds.
 
 Coordinates are compared directly. RMSD and maximum per-atom Euclidean residual are calculated for
-each candidate reference without fitting. The acceptance tolerance must be derived before
-implementation from the decimal coordinate precision and matrix precision observed in at least two
-official provider pairs; it cannot be chosen after examining implementation output.
+each candidate reference without fitting. The adapter derives decimal coordinate and matrix
+precision from every exact payload before comparison and computes precision-derived bounds for
+that payload; bounds cannot be chosen after examining implementation output.
+
+The reviewed OpenAPI/API v1 field structure and numeric precision envelope define format
+compatibility. PDBTM resource `1017` is the tested data snapshot and provider software `3.2.134` is
+the tested software, not a promise that an untested future schema is compatible. A resource-version
+increment alone is not grounds for rejection when the contract and precision profile remain inside
+the reviewed envelope. Changed field structure, changed matrix semantics, a non-rigid transform, or
+precision outside that envelope returns `unsupported`; no historical fixed threshold is silently
+reused.
 
 The evidence serializes the selected model, chain namespace, altloc policy, matched atom count,
 RMSD, maximum residual, spatial-distribution measurements, selected reference, and both canonical

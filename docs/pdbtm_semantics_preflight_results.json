@@ -54,6 +54,23 @@
     "decision": "No raw official PDBTM or RCSB payload is committed",
     "basis": "No explicit current PDBTM payload redistribution licence was found in the reviewed manual, usage guide, or OpenAPI description"
   },
+  "format_compatibility_contract": {
+    "api": "PDBTM OpenAPI/API v1",
+    "required_json_field_structure": "Reviewed fields including additional_entry_annotations.membrane.transformation_matrix and membrane.normal",
+    "tested_data_snapshot_resource_version": "1017",
+    "tested_provider_software_version": "3.2.134",
+    "version_policy": "Resource and software versions are always serialized as provenance; a resource-version increment alone does not make a conforming record unsupported",
+    "precision_policy": "Decimal precision and precision-derived bounds are computed from each exact payload",
+    "accepted_envelope": "Only reviewed API v1 field structures, matrix semantics, rigid transforms, and precision profiles inside the reviewed envelope are accepted",
+    "unsupported_conditions": [
+      "changed required field structure",
+      "changed matrix semantics",
+      "non-rigid transform",
+      "numeric precision outside the reviewed envelope"
+    ],
+    "future_schema_compatibility_claimed": false,
+    "historical_fixed_threshold_reuse_after_change": false
+  },
   "matrix_contract": {
     "json_path": "additional_entry_annotations.membrane.transformation_matrix",
     "shape": "3x4",
@@ -97,22 +114,31 @@
     "forward_axis_formula": "eps_y + eps_t_i + sum_j(abs(R_ij) eps_x + abs(x_j) eps_R_ij + eps_x eps_R_ij)",
     "inverse_formula": "eps_x + norm_inf(R_inverse) * (norm_inf(eps_R) norm_inf(x) + eps_t + eps_y)",
     "identity_formula": "sqrt(3) * (eps_current + eps_companion)",
-    "proposed_limits_angstrom": {
-      "identity_rmsd": 0.002,
-      "identity_maximum_residual": 0.002,
-      "inverse_rmsd": 0.003,
-      "inverse_maximum_residual": 0.003
+    "runtime_identity_match_limit_angstrom": {
+      "rmsd": 0.002,
+      "maximum_residual": 0.002
     },
-    "selection_rule": "Use the conservative ceiling required by either official pair at resource version 1017; future precision/version changes require renewed derivation"
+    "runtime_inverse_match_limit_angstrom": {
+      "rmsd": 0.003,
+      "maximum_residual": 0.003
+    },
+    "provider_forward_validation_limit_policy": "Derived independently from each exact original/deposited, provider-matrix, and transformed-companion payload pair; not the runtime Case-A identity limit",
+    "selection_rule": "Derive precision and bounds from every exact payload; accept only reviewed format and precision profiles, and never silently reuse a historical fixed threshold after a format or precision change"
   },
   "runtime_contract_decision": {
     "case_a": {
       "condition": "Current coordinates directly match the transformed companion within identity limits",
+      "limit_name": "runtime_identity_match_limit",
+      "rmsd_limit_angstrom": 0.002,
+      "maximum_residual_limit_angstrom": 0.002,
       "mapping": "identity",
       "viable": true
     },
     "case_b": {
       "condition": "Current coordinates match the analytically inverse-transformed companion within inverse limits",
+      "limit_name": "runtime_inverse_match_limit",
+      "rmsd_limit_angstrom": 0.003,
+      "maximum_residual_limit_angstrom": 0.003,
       "mapping": "inverse(provider_original_to_transformed)",
       "viable": true,
       "scope": "Verified for the ordinary deposited legacy-PDB coordinates and assembly 1 of both selected entries; these assembly files are coordinate-identical to the deposited files"
@@ -328,8 +354,8 @@
         "original_pdb_coordinate_decimal_places": 3,
         "forward_theoretical_maximum_residual": 0.0020951388496643192,
         "inverse_theoretical_maximum_residual": 0.0022107672648556493,
-        "proposed_forward_limit": 0.003,
-        "proposed_inverse_limit": 0.003
+        "provider_forward_validation_limit": 0.003,
+        "payload_derived_inverse_bound_ceiling": 0.003
       },
       "result": "PASS"
     },
@@ -532,8 +558,8 @@
         "original_pdb_coordinate_decimal_places": 3,
         "forward_theoretical_maximum_residual": 0.0017656036591271718,
         "inverse_theoretical_maximum_residual": 0.0017819069756787158,
-        "proposed_forward_limit": 0.002,
-        "proposed_inverse_limit": 0.002
+        "provider_forward_validation_limit": 0.002,
+        "payload_derived_inverse_bound_ceiling": 0.002
       },
       "result": "PASS"
     }

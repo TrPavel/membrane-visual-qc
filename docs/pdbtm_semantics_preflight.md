@@ -8,7 +8,8 @@ Scope: research and validation only; Stage 4A production implementation has not 
 
 ## Decision
 
-The accepted three-input PDBTM contract is viable for the tested current provider resource:
+The accepted three-input PDBTM contract is viable for the reviewed OpenAPI/API v1 format and
+required JSON field structure represented by the tested payloads:
 
 1. official PDBTM JSON;
 2. its matching official transformed-PDB companion;
@@ -54,7 +55,9 @@ Entry selection used current PDBTM JSON metadata, not remembered classifications
 | `1pcr` | `Tm_Alpha`; chains A/B each report five alpha segments and C reports one | Three-chain photosynthetic reaction centre; large rotation and translation | Alpha-helical pair with nontrivial transform and meaningful chain mapping |
 | `1a0s` | `Tm_Beta`; chains A/B/C each report 18 beta segments | Three-chain sucrose-specific porin; nonzero rotation and translation | Beta-barrel pair selected from current provider metadata |
 
-Both records report PDBTM resource version `1017` and software version `3.2.134`.
+Both records report PDBTM resource version `1017`, the tested data snapshot, and software version
+`3.2.134`, the tested provider software. These values are provenance and must always be serialized;
+they are distinct from the adapter's format-compatibility contract.
 
 ### Local-only payload policy
 
@@ -220,19 +223,30 @@ The analytical inverse uses the conservative infinity-norm bound:
 The identity comparison bound is `sqrt(3) × (εcurrent + εcompanion)`. Coordinate rounding is
 0.0005 Å for each three-decimal coordinate component.
 
-| Entry | Forward theoretical max | Inverse theoretical max | Conservative ceiling |
+| Entry | Provider-forward theoretical max | Inverse theoretical max | `provider_forward_validation_limit` |
 |---|---:|---:|---:|
 | 1pcr | 0.002095 Å | 0.002211 Å | 0.003 Å |
 | 1a0s | 0.001765 Å | 0.001782 Å | 0.002 Å |
 
-The proposed resource-1017 policy is:
+The three distinct tolerance terms are:
 
-- identity match: RMSD ≤ 0.002 Å and maximum residual ≤ 0.002 Å;
-- inverse match: RMSD ≤ 0.003 Å and maximum residual ≤ 0.003 Å.
+- Runtime Case A, `runtime_identity_match_limit`: direct current-coordinate comparison with the
+  transformed-PDB companion; RMSD ≤ 0.002 Å and maximum residual ≤ 0.002 Å.
+- Runtime Case B, `runtime_inverse_match_limit`: current coordinates compared with the analytically
+  inverse-transformed companion; RMSD ≤ 0.003 Å and maximum residual ≤ 0.003 Å.
+- Preflight matrix validation, `provider_forward_validation_limit`: original/deposited coordinates
+  transformed with the provider matrix and compared with the transformed companion. This is
+  independently derived for each exact payload pair and is 0.003 Å for tested `1pcr`; it is not the
+  runtime Case-A identity limit.
 
-The common inverse limit uses the more conservative of the two independently derived pair bounds.
-It was not chosen from observed residuals. A provider version or numeric-format change requires a
-new precision derivation rather than silently retaining these limits.
+The common runtime inverse limit uses the more conservative of the independently derived pair
+bounds. It was not chosen from observed residuals. The adapter must derive decimal precision and
+precision bounds from every exact payload and serialize those results together with resource and
+software versions. A resource-version increment alone does not make an otherwise conforming record
+unsupported. Only OpenAPI/API v1 field structures and precision profiles inside the reviewed
+contract and envelope are accepted. Changed field structure, changed matrix semantics, non-rigid
+transforms, or precision outside the reviewed envelope return `unsupported`; no historical fixed
+threshold may be silently reused. This does not claim compatibility with an untested future schema.
 
 ## Runtime-contract cases
 
@@ -274,8 +288,10 @@ smallest residual.
 
 ## Boundary after preflight
 
-This PASS is specific to the documented PDBTM JSON plus transformed-PDB companion contract and the
-tested provider resource/format. It does not authorize OPM, network retrieval, source comparison,
+This PASS is specific to the documented PDBTM OpenAPI/API v1 JSON field structure plus
+transformed-PDB companion contract and the reviewed precision envelope. Resource `1017` and
+software `3.2.134` are the tested provenance snapshot, not fixed compatibility gates. It does not
+authorize OPM, network retrieval, source comparison,
 automatic alignment, curved membranes, or assumptions based only on PDB IDs/chains/assemblies.
 
 PDBTM source-semantics preflight passed. Stage 4A production implementation is unblocked but has
