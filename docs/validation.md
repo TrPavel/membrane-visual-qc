@@ -336,3 +336,31 @@ byte-identical to the ZIP from corrected workflow `29703424337`. Identity and an
 version `0.4.0`, schema 1.3, Unicode rendering, and coordinate preservation passed. Relatively low
 slab contrast remains a non-blocking pre-v1.0 backlog item. The exact authoritative Plugin ZIP is
 approved for publication; `docs/v0.4.0_graphical_smoke.md` records the complete evidence.
+
+## v0.4.0 publication verification
+
+PR #11 final head `3e4fa8c1fa95c51aae25c48afee3c884ccf3eb98` passed
+[workflow 29704112287](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29704112287),
+then squash merge `8fcf499467a42bda6e7b18e90a180f72a410d1db` passed all four jobs in
+[post-merge workflow 29704177651](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29704177651).
+Annotated tag object `bd6f67d6981266b83fddb06715df3565eb65ae7e` targets that exact merge.
+
+The [v0.4.0 prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0) contains
+exactly the four authoritative assets documented above. Each asset was downloaded after
+publication and matched its frozen source by filename, byte size, and SHA-256. Plugin Manifest,
+wheel metadata, and sdist metadata report `0.4.0`; the wheel tag is `py3-none-any`; schemas 1.0–1.3
+are present in the sdist; forbidden local, report-export, provider-payload, and unsafe-path entries
+are absent.
+
+The retained result is 421 passed, eight optional skips, 87% coverage, and 19 valid reports
+(schema 1.1: 7, 1.2: 11, 1.3: 1). Schema hashes remain:
+
+- 1.0: `5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`;
+- 1.1: `86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`;
+- 1.2: `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`;
+- 1.3: `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+Schema 1.3 is released and immutable. Exact graphical smoke passed on Windows 10 build 26200 with
+Incentive PyMOL 3.1.8 and bundled Python 3.10.20. The official PyPI JSON endpoint returns 404; no
+PyPI publication was created. Stage 4B has not started, and relatively low slab contrast remains a
+non-blocking pre-v1.0 backlog item.

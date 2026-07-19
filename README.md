@@ -25,8 +25,8 @@ applicability, PyMOL commands, the third GUI orientation mode, and released repo
 
 ## Installation
 
-v0.4.0 is prepared as a GitHub prerelease for limited public testing. After publication, public
-users should download `MembraneVisualQC-0.4.0.zip` and its checksum from the
+v0.4.0 is published as a GitHub prerelease for limited public testing. Public users should
+download `MembraneVisualQC-0.4.0.zip` and its checksum from the
 [v0.4.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0).
 GitHub Releases is the primary public installation route; `dist/MembraneVisualQC-0.4.0.zip` is the
 local release-build path. The wheel and source distribution are GitHub release assets for

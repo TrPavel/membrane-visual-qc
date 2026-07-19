@@ -1,9 +1,10 @@
 # Development state
 
-Snapshot date: 2026-07-19 (Europe/Moscow).
+Snapshot date: 2026-07-20 (Europe/Moscow).
 
-Stage 3 is complete and merged into `main`. v0.3.0 is published from the final release commit as a
-GitHub prerelease for limited public testing. PyPI is not used.
+Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
+latest published GitHub prerelease for limited public testing. PyPI is not used, and Stage 4B has
+not started.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
@@ -39,12 +40,10 @@ and bounds are derived from every exact payload. Changed structure/semantics, no
 or precision outside the envelope return `unsupported` without reusing a historical fixed limit.
 Official payloads remain local-only and outside Git because redistribution permission is unresolved.
 
-PDBTM source-semantics preflight and Stage 4A1 are complete and merged into `main`. Stage 4A2
-offline PyMOL/GUI integration is in development on `feat/pdbtm-offline-import-pymol` with identity
-`0.4.0.dev0`. The branch connects the accepted core to explicit local file selection, a complete
-single-state current-object snapshot, current-frame slab rendering, QC/report lifecycle, and the
-third GUI orientation mode. It adds no retrieval, OPM, comparison, fitting, or automatic
-alignment. v0.3.0 remains the latest published release.
+PDBTM source-semantics preflight, Stage 4A1, and Stage 4A2 are complete and merged into `main`.
+The released offline workflow uses explicit local file selection, a complete single-state
+current-object snapshot, current-frame slab rendering, QC/report lifecycle, and the third GUI
+orientation mode. It adds no retrieval, OPM, comparison, fitting, or automatic alignment.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -376,3 +375,31 @@ Exact v0.4.0 release-artifact graphical smoke passed using the 69,241-byte Plugi
 1pcr identity and inverse applicability, failure cleanup, `mvqc_clear`, global-Z, and planar
 regressions passed. The exact authoritative Plugin ZIP is approved for publication; details are in
 `docs/v0.4.0_graphical_smoke.md`.
+
+## v0.4.0 publication
+
+PR #11 final head `3e4fa8c1fa95c51aae25c48afee3c884ccf3eb98` passed
+[workflow 29704112287](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29704112287)
+and was squash-merged as `8fcf499467a42bda6e7b18e90a180f72a410d1db`. All four jobs passed in
+[post-merge workflow 29704177651](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29704177651).
+
+Annotated tag object `bd6f67d6981266b83fddb06715df3565eb65ae7e` targets the PR #11 squash
+commit. The [v0.4.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0)
+contains exactly four verified assets:
+
+- `MembraneVisualQC-0.4.0.zip`: 69,241 bytes; SHA-256
+  `bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`;
+- `MembraneVisualQC-0.4.0.zip.sha256`: 93 bytes; SHA-256
+  `6527c5736aae8e226102a7e0ee7521f3dffdda9fe2b4e2a4a7c9e23719ede876`;
+- `membrane_vqc_pymol-0.4.0-py3-none-any.whl`: 73,261 bytes; SHA-256
+  `449e091743e5811da70c5309c86274abc5a4144cd8a842fc61f1723552b1b658`;
+- `membrane_vqc_pymol-0.4.0.tar.gz`: 128,782 bytes; SHA-256
+  `8853b893e08a33feb742c9679241116628955c995ded12898a9ea407c38f1c07`.
+
+All four published assets were downloaded and matched the frozen authoritative files
+byte-for-byte. Exact graphical smoke passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8
+and bundled Python 3.10.20. The retained suite passed 421 tests with eight optional skips and 87%
+coverage; 19 reports validate (schema 1.1: 7, 1.2: 11, 1.3: 1). Schema 1.3 is released and
+immutable alongside schemas 1.0–1.2. The official PyPI JSON endpoint returns 404; no PyPI
+publication exists. Stage 4B has not started, and low slab contrast remains a non-blocking pre-v1.0
+backlog item.

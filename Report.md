@@ -558,3 +558,25 @@ The active schema-1.3 report was regenerated with the release code at
 `2f0247474c1b1a8da59c7307fa12fba8c009ca97`. Its accepted synthetic scientific semantics remain
 unchanged, while its payload digests now describe the exact current synthetic inputs. Structural
 and mandatory Stage 4 semantic validation pass.
+
+## v0.4.0 publication closure
+
+PR #11 final head `3e4fa8c1fa95c51aae25c48afee3c884ccf3eb98` passed workflow `29704112287`
+and was squash-merged as `8fcf499467a42bda6e7b18e90a180f72a410d1db`; post-merge workflow
+`29704177651` passed Python 3.10, 3.11, 3.12, and blocking FreeSASA. Annotated tag object
+`bd6f67d6981266b83fddb06715df3565eb65ae7e` targets that exact merge commit.
+
+The [v0.4.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0)
+contains the four authoritative Plugin ZIP, checksum sidecar, wheel, and sdist assets. All four
+were downloaded after publication and matched the frozen corrected-workflow files byte-for-byte.
+The ZIP is 69,241 bytes with SHA-256
+`bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`; wheel and sdist hashes
+are `449e091743e5811da70c5309c86274abc5a4144cd8a842fc61f1723552b1b658` and
+`8853b893e08a33feb742c9679241116628955c995ded12898a9ea407c38f1c07`.
+
+Exact-artifact graphical smoke passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8 and
+Python 3.10.20. The retained suite passed 421 tests with eight optional skips and 87% coverage;
+19 reports validate (schema 1.1: 7, 1.2: 11, 1.3: 1). Schema 1.3 is released and immutable with
+SHA-256 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`; schemas 1.0–1.2
+remain unchanged. The official PyPI JSON endpoint returns 404; no PyPI publication was created.
+Stage 4B has not started, and low slab contrast remains a non-blocking pre-v1.0 backlog item.
