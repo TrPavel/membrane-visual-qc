@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -63,10 +64,25 @@ def test_schema_1_3_release_report_has_no_absolute_local_provider_path():
     assert report["schema_version"] == "1.3"
     assert report["software"]["version"] == "0.4.0"
     assert report["version"] == "0.4.0"
+    assert report["software"]["commit_status"] == "recorded"
+    assert report["software"]["commit"] == "2f0247474c1b1a8da59c7307fa12fba8c009ca97"
+    assert report["generated_at"] == "2026-07-19T20:48:41.424766+00:00"
+    assert report["timestamp"] == report["generated_at"]
     assert all(
         payload["source"] is None
         for payload in report["orientation"]["evidence"]["source"]["raw_payloads"]
     )
+    payloads = {
+        payload["role"]: payload
+        for payload in report["orientation"]["evidence"]["source"]["raw_payloads"]
+    }
+    for role, relative_path in {
+        "pdbtm_json": "data/synthetic/pdbtm_api_v1_test.json",
+        "transformed_pdb": "data/synthetic/pdbtm_transformed_test.pdb",
+    }.items():
+        data = (ROOT / relative_path).read_bytes()
+        assert payloads[role]["byte_size"] == len(data)
+        assert payloads[role]["sha256"] == hashlib.sha256(data).hexdigest()
 
 
 def test_release_validator_rejects_report_exports_in_archives(tmp_path):

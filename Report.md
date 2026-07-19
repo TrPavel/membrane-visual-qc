@@ -540,3 +540,21 @@ Official PDBTM/RCSB payloads remain outside Git.
 
 The exact v0.4.0 Plugin ZIP graphical smoke remains a separate post-review gate. No tag, GitHub
 Release, or PyPI publication exists, and Stage 4B has not started.
+
+The publication set is frozen from GitHub Actions workflow `29702735453`, artifact ID
+`8446942786`, archive digest
+`59884e5a6edc0f83ea3ca5ecb3e1ca0d8c092fc2fc9dc25f63c1798192bbb2fb`. Its authoritative
+wheel is 73,261 bytes with SHA-256
+`07a78e72d03a84c87f54dd1db64b65f2505b6663c75d0d912d0c38332d9e2ef1`; its authoritative
+sdist is 128,532 bytes with SHA-256
+`7cd22d8597e489876c6ac71202ef39499acbc7784b13df90771d803e2ed986f4`. The four extracted files
+are retained outside Git and must be used unchanged for later publication. Inspection confirms
+version `0.4.0`, wheel tag `py3-none-any`, all four report schemas in the sdist, and no local,
+report-export, manual Stage 4A2, official-provider, or unsafe-path entries. Wheel/sdist byte
+reproducibility is not claimed.
+
+The active schema-1.3 report was regenerated with the release code at
+`2026-07-19T20:48:41.424766+00:00` and truthfully records parent commit
+`2f0247474c1b1a8da59c7307fa12fba8c009ca97`. Its accepted synthetic scientific semantics remain
+unchanged, while its payload digests now describe the exact current synthetic inputs. Structural
+and mandatory Stage 4 semantic validation pass.

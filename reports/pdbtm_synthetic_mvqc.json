@@ -1,7 +1,7 @@
 {
   "capabilities": {},
   "flagged_residues": [],
-  "generated_at": "2026-07-18T22:51:07.824311+00:00",
+  "generated_at": "2026-07-19T20:48:41.424766+00:00",
   "input": {
     "cutoff": 5.0,
     "format": "",
@@ -276,12 +276,12 @@
         "name": "PDBTM",
         "raw_payloads": [
           {
-            "byte_size": 526,
+            "byte_size": 527,
             "media_type": null,
             "retrieval_verified": false,
             "retrieved_at": null,
             "role": "pdbtm_json",
-            "sha256": "674e19b2dd334d516ecc992c04f696dd80ea8e2cf17784bd0c13d0d1db6f7457",
+            "sha256": "7577a8135d0934ea39f118ad0b19b2475f48529dc105626b37a2437522272a7e",
             "source": null
           },
           {
@@ -290,7 +290,7 @@
             "retrieval_verified": false,
             "retrieved_at": null,
             "role": "transformed_pdb",
-            "sha256": "ccaa826fd62a2f4f5b9a6be532e3dd34c469319d249668dc09fe8c245c89a619",
+            "sha256": "2bf25ae63c52eae197de7d9bf1f963dca972ff687a2482282a19ef3900f59cb1",
             "source": null
           }
         ],
@@ -387,7 +387,7 @@
   },
   "schema_version": "1.3",
   "software": {
-    "commit": "3191c47e7b78ce2147d95a461c60e9e23b9d84ba",
+    "commit": "2f0247474c1b1a8da59c7307fa12fba8c009ca97",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
     "version": "0.4.0"
@@ -400,7 +400,7 @@
     "polar_core_inspect_residues": 0,
     "total_residues": 0
   },
-  "timestamp": "2026-07-18T22:51:07.824311+00:00",
+  "timestamp": "2026-07-19T20:48:41.424766+00:00",
   "version": "0.4.0",
   "warnings": []
 }

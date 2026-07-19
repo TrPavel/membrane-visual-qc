@@ -313,3 +313,18 @@ The standard setuptools wheel and sdist contain timestamps and therefore are not
 byte-reproducible across separate builds; their version metadata and required contents pass the
 deterministic validator. The blocking Python matrix and Ubuntu FreeSASA job remain required in the
 draft PR workflow. Exact-artifact graphical smoke has not started.
+
+The future publication assets are frozen from workflow `29702735453`, artifact ID `8446942786`,
+archive digest `59884e5a6edc0f83ea3ca5ecb3e1ca0d8c092fc2fc9dc25f63c1798192bbb2fb`.
+The authoritative wheel is 73,261 bytes with SHA-256
+`07a78e72d03a84c87f54dd1db64b65f2505b6663c75d0d912d0c38332d9e2ef1`; the authoritative
+sdist is 128,532 bytes with SHA-256
+`7cd22d8597e489876c6ac71202ef39499acbc7784b13df90771d803e2ed986f4`. Inspection confirmed
+version `0.4.0`, wheel tag `py3-none-any`, schemas 1.0–1.3 in the sdist, and absence of `.local`,
+reports, manual Stage 4A2 exports, official provider payloads, and unsafe paths. Byte reproducibility
+is not claimed for wheel or sdist.
+
+`reports/pdbtm_synthetic_mvqc.json` was regenerated from release-preparation parent commit
+`2f0247474c1b1a8da59c7307fa12fba8c009ca97` at `2026-07-19T20:48:41.424766+00:00`. Its current
+payload digests and commit provenance are generated rather than hand-promoted; structural schema
+1.3 and mandatory Stage 4 semantic validation both pass.
