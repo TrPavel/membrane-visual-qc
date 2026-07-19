@@ -12,6 +12,7 @@ from scripts.build_plugin_zip import build_plugin_zip
 from scripts.validate_release_artifacts import (
     ReleaseArtifactError,
     _assert_safe_archive_names,
+    _validate_version_agreement,
     validate_current_development_artifacts,
     validate_release_candidate_artifacts,
     verify_frozen_v040_evidence,
@@ -19,6 +20,90 @@ from scripts.validate_release_artifacts import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _copy_project_with_version(tmp_path, version):
+    project = tmp_path / "alternate-project"
+    project.mkdir()
+    shutil.copytree(ROOT / "membrane_vqc", project / "membrane_vqc")
+    shutil.copy2(ROOT / "pyproject.toml", project / "pyproject.toml")
+    pyproject = project / "pyproject.toml"
+    pyproject.write_text(
+        pyproject.read_text(encoding="utf-8").replace(
+            'version = "0.5.0.dev0"', f'version = "{version}"', 1
+        ),
+        encoding="utf-8",
+    )
+    constants = project / "membrane_vqc" / "constants.py"
+    constants.write_text(
+        constants.read_text(encoding="utf-8").replace(
+            'VERSION = "0.5.0.dev0"', f'VERSION = "{version}"', 1
+        ),
+        encoding="utf-8",
+    )
+    return project
+
+
+def test_version_agreement_imports_the_supplied_alternate_project(tmp_path):
+    from membrane_vqc.constants import VERSION as ambient_version
+
+    version = "9.9.9.dev0"
+    project = _copy_project_with_version(tmp_path, version)
+
+    result = _validate_version_agreement(project, version)
+
+    assert ambient_version != version
+    assert result["pyproject"] == version
+    assert result["constants"] == version
+    assert result["package"] == version
+    assert Path(result["file"]).is_relative_to(project / "membrane_vqc")
+
+
+def test_version_agreement_reports_all_target_version_values(tmp_path):
+    project = _copy_project_with_version(tmp_path, "9.9.9.dev0")
+    constants = project / "membrane_vqc" / "constants.py"
+    constants.write_text(
+        constants.read_text(encoding="utf-8").replace(
+            'VERSION = "9.9.9.dev0"', 'VERSION = "9.9.8.dev0"', 1
+        ),
+        encoding="utf-8",
+    )
+    package_init = project / "membrane_vqc" / "__init__.py"
+    package_init.write_text(
+        package_init.read_text(encoding="utf-8") + '\n__version__ = "9.9.7.dev0"\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseArtifactError) as captured:
+        _validate_version_agreement(project, "9.9.9.dev0")
+
+    message = str(captured.value)
+    assert "pyproject=9.9.9.dev0" in message
+    assert "constants=9.9.8.dev0" in message
+    assert "package=9.9.7.dev0" in message
+
+
+def test_version_agreement_rejects_package_from_wrong_origin(tmp_path, monkeypatch):
+    project = tmp_path / "alternate-project"
+    project.mkdir()
+    shutil.copy2(ROOT / "pyproject.toml", project / "pyproject.toml")
+    monkeypatch.setenv("PYTHONPATH", str(ROOT))
+
+    with pytest.raises(ReleaseArtifactError, match="resolved outside") as captured:
+        _validate_version_agreement(project, "0.5.0.dev0")
+
+    assert str(ROOT / "membrane_vqc") in str(captured.value)
+    assert str(project / "membrane_vqc") in str(captured.value)
+
+
+def test_version_agreement_wraps_broken_target_package(tmp_path):
+    project = _copy_project_with_version(tmp_path, "9.9.9.dev0")
+    (project / "membrane_vqc" / "__init__.py").write_text(
+        "this is not valid Python !!!\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ReleaseArtifactError, match="Could not inspect target package"):
+        _validate_version_agreement(project, "9.9.9.dev0")
 
 
 def test_release_version_is_consistent_across_representative_artifacts(tmp_path):

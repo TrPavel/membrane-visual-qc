@@ -6,8 +6,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
+import subprocess
 import sys
 import tarfile
 import zipfile
@@ -67,6 +69,19 @@ FROZEN_V040_REPORT_PROVENANCE = {
         },
     },
 }
+_PACKAGE_VERSION_PROBE = """
+import json
+from pathlib import Path
+
+import membrane_vqc
+from membrane_vqc.constants import VERSION
+
+print(json.dumps({
+    "constants": VERSION,
+    "package": membrane_vqc.__version__,
+    "file": str(Path(membrane_vqc.__file__).resolve()),
+}))
+"""
 
 
 class ReleaseArtifactError(ValueError):
@@ -106,19 +121,71 @@ def _contains_absolute_windows_path(value: object) -> bool:
     return False
 
 
-def _validate_version_agreement(project_root: Path, expected_version: str) -> None:
-    """Require the source, runtime constant, and package export to agree."""
+def _target_package_versions(project_root: Path) -> dict[str, str]:
+    """Read runtime versions from an isolated import of the target checkout."""
+    project_root = project_root.resolve()
+    environment = os.environ.copy()
+    inherited_pythonpath = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = str(project_root) + (
+        os.pathsep + inherited_pythonpath if inherited_pythonpath else ""
+    )
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-c", _PACKAGE_VERSION_PROBE],
+            cwd=project_root,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ReleaseArtifactError(f"Could not inspect target package: {error}") from error
+
+    if completed.returncode != 0:
+        diagnostic = next(
+            (line.strip() for line in reversed(completed.stderr.splitlines()) if line.strip()),
+            "no diagnostic output",
+        )
+        raise ReleaseArtifactError(
+            f"Could not inspect target package (exit {completed.returncode}): {diagnostic}"
+        )
+    try:
+        result = json.loads(completed.stdout)
+    except (json.JSONDecodeError, TypeError) as error:
+        raise ReleaseArtifactError("Target package probe returned malformed JSON") from error
+    if not isinstance(result, dict) or any(
+        not isinstance(result.get(key), str) for key in ("constants", "package", "file")
+    ):
+        raise ReleaseArtifactError("Target package probe returned an invalid contract")
+
+    package_file = Path(result["file"]).resolve()
+    target_package = (project_root / "membrane_vqc").resolve()
+    if not package_file.is_relative_to(target_package):
+        raise ReleaseArtifactError(
+            "Target package resolved outside the supplied project root: "
+            f"file={package_file}, expected_under={target_package}"
+        )
+    return {key: result[key] for key in ("constants", "package", "file")}
+
+
+def _validate_version_agreement(project_root: Path, expected_version: str) -> dict[str, str]:
+    """Require target-checkout source and runtime versions to agree."""
     source_version = project_version(project_root)
+    package = _target_package_versions(project_root)
 
-    from membrane_vqc import __version__
-    from membrane_vqc.constants import VERSION
-
-    if {source_version, VERSION, __version__} != {expected_version}:
+    if {source_version, package["constants"], package["package"]} != {expected_version}:
         raise ReleaseArtifactError(
             "Version mismatch: "
             f"expected={expected_version}, pyproject={source_version}, "
-            f"constants={VERSION}, package={__version__}"
+            f"constants={package['constants']}, package={package['package']}"
         )
+    return {
+        "pyproject": source_version,
+        "constants": package["constants"],
+        "package": package["package"],
+        "file": package["file"],
+    }
 
 
 def _validate_artifact_set(
