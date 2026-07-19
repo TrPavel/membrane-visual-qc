@@ -35,19 +35,21 @@ jobs:
       - name: Build and validate Plugin Manager ZIP
         run: |
           python scripts/build_plugin_zip.py
-          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.4.0.zip
-      - name: Validate release-version and artifact consistency
-        run: python scripts/validate_release_artifacts.py
+          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.5.0.dev0.zip
+      - name: Validate current development artifacts
+        run: python scripts/validate_release_artifacts.py --mode current-development
+      - name: Verify frozen v0.4.0 evidence
+        run: python scripts/validate_release_artifacts.py --mode frozen-v0.4.0
       - name: Upload release-build inputs
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
         with:
           name: membrane-vqc-build
           path: |
-            dist/*.whl
-            dist/*.tar.gz
-            dist/*.zip
-            dist/*.sha256
+            dist/MembraneVisualQC-0.5.0.dev0.zip
+            dist/MembraneVisualQC-0.5.0.dev0.zip.sha256
+            dist/membrane_vqc_pymol-0.5.0.dev0-py3-none-any.whl
+            dist/membrane_vqc_pymol-0.5.0.dev0.tar.gz
 
   freesasa-reference:
     name: FreeSASA reference (Python 3.11)
