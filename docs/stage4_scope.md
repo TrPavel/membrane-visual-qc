@@ -146,10 +146,9 @@ semantics. Released 1.0, 1.1 and 1.2 remain immutable.
 - comparison is optional in 1.3 and absent when not requested;
 - existing CSV columns remain unchanged; rich provenance remains JSON-only.
 
-Schema 1.3 is now a draft development schema in `0.4.0.dev0`. It is not released or immutable yet.
-Stage 4A1 provides only explicit-byte pure-Python import and report serialization; file dialogs,
-Offline PyMOL commands, rendering, and GUI controls are Stage 4A2 development work. Network
-acquisition remains Stage 4B or later work.
+Schema 1.3 is the immutable v0.4.0 release contract. Stage 4A provides explicit-byte pure-Python
+import, report serialization, local file selection, offline PyMOL commands, current-frame rendering,
+and GUI controls. Network acquisition remains deferred and is not part of v0.4.0.
 
 ## Estimate
 

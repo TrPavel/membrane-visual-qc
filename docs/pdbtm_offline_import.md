@@ -1,7 +1,7 @@
 # Offline PDBTM import in PyMOL
 
-Status: Stage 4A2 development feature in `0.4.0.dev0`. v0.3.0 remains the latest published
-release. Report schema 1.3 remains draft and unreleased.
+Status: v0.4.0 release workflow. Report schema 1.3 is the immutable v0.4.0 PDBTM provenance
+contract and requires both JSON Schema structural validation and Stage 4 semantic validation.
 
 ## Required local files
 
@@ -64,4 +64,13 @@ exposure plus local context all remain schema 1.3; CSV columns are unchanged.
 
 Coordinate applicability shows only that the loaded current coordinates match one reviewed
 provider reference within declared tolerances. It is not a verdict that the membrane orientation
-is biologically correct.
+is biologically correct. Provider Side1/Side2 labels are not converted into inside/outside biology.
+Ordinary SASA is not lipid accessibility, local chemical-context labels remain conservative
+evidence, and reports are visual-QC evidence rather than definitive structural validation.
+
+## Deferred functionality
+
+v0.4.0 includes no network retrieval, OPM adapter, cross-source comparison, curved or multiple
+membranes, batch CLI, model-to-model comparison, automatic fitting/alignment, or automatic
+biological verdict. Relatively low slab contrast on dark backgrounds is a non-blocking pre-v1.0 UI
+backlog item.

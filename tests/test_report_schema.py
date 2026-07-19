@@ -65,6 +65,9 @@ def test_released_schema_files_remain_byte_for_byte_immutable():
     assert hashlib.sha256(SCHEMA_1_2.read_bytes()).hexdigest() == (
         "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430"
     )
+    assert hashlib.sha256(SCHEMA_1_3.read_bytes()).hexdigest() == (
+        "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc"
+    )
 
 
 def test_generated_example_reports_validate_against_json_schema():

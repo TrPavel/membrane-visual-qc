@@ -20,18 +20,19 @@ by a local orientation JSON file. Opt-in analysis adds deterministic SASA/RSA, m
 surface partitioning, and conservative local chemical-context evidence while preserving the
 original review severities.
 
-Development version `0.4.0.dev0` additionally integrates the reviewed offline PDBTM API-v1 pair
-contract with PyMOL and the GUI. It is unreleased: v0.3.0 remains the public prerelease.
+Version `0.4.0` adds the reviewed offline PDBTM API-v1 pair contract, direct coordinate-frame
+applicability, PyMOL commands, the third GUI orientation mode, and released report schema 1.3.
 
 ## Installation
 
-v0.3.0 is published as a prerelease for limited public testing. Public users should download
-`MembraneVisualQC-0.3.0.zip` and its checksum from the
-[v0.3.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.3.0).
-GitHub Releases is the primary public installation route; `dist/MembraneVisualQC-0.3.0.zip` is the
-local-development/build path.
+v0.4.0 is prepared as a GitHub prerelease for limited public testing. After publication, public
+users should download `MembraneVisualQC-0.4.0.zip` and its checksum from the
+[v0.4.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0).
+GitHub Releases is the primary public installation route; `dist/MembraneVisualQC-0.4.0.zip` is the
+local release-build path. The wheel and source distribution are GitHub release assets for
+inspection and development; this project is not published to PyPI.
 
-Install the release ZIP through PyMOL Plugin Manager, restart PyMOL, and open
+Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The
 published [v0.1.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.1.0) and
 [v0.2.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0) tags, releases, and
@@ -83,19 +84,26 @@ clears partial plugin output so stale visuals do not appear current.
 Planar orientation commands own file parsing and cleanup: an invalid file clears stale QC state or
 slab boundaries, and the GUI reports the orientation source as `unavailable`.
 
-The unreleased offline PDBTM commands require an explicit matching local JSON/transformed-PDB
-pair and exactly one single-state PyMOL object. They never retrieve data, fit or transform the
-object, or serialize local paths into the report. See
+The offline PDBTM commands require an explicit matching local JSON/transformed-PDB pair and exactly
+one single-state PyMOL molecular object. Applicability always checks the complete containing object,
+although analysis may target a selection within it. Current coordinates must directly match either
+the transformed companion or its analytical inverse reference. The plugin never retrieves data,
+fits, rotates, translates, or otherwise transforms the input object, and it does not serialize local
+paths into the report. See
 [docs/pdbtm_offline_import.md](docs/pdbtm_offline_import.md).
 
 ## Reports and interpretation
 
 v0.1.0 reports use immutable schema 1.0; v0.2.0 reports use immutable schema 1.1. In v0.3.0,
 opt-in exposure or context analysis uses schema 1.2, while context-disabled runs continue to emit
-schema 1.1. Schema 1.2 is the v0.3.0 release schema and becomes immutable on publication. All are
+schema 1.1. Schema 1.2 is the immutable v0.3.0 release schema. All are
 documented in [docs/report_schema.md](docs/report_schema.md). Biological review
 states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
 `NO_FLAGS` means only that configured heuristics emitted no items.
+
+Resolved PDBTM reports use immutable schema 1.3 in v0.4.0, whether Context is OFF or ON. Schema
+1.3 requires JSON Schema structural validation followed by the mandatory Stage 4 semantic
+validator for nonlinear scientific invariants. Schemas 1.0–1.3 are immutable release contracts.
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
@@ -105,10 +113,10 @@ provenance as unavailable. Future reports produced from a Git checkout should re
 
 The legacy orientation remains supported and assumes the membrane normal is the global z-axis.
 v0.2.0 maps that command to the general planar model as `manual_global_z`; it can also import a
-local, versioned orientation JSON file. No external orientation adapter is included. Ordinary
-RCSB coordinates are not automatically membrane-oriented, and imported orientation metadata is
-not independently verified. Reported depth values are geometric evidence, not proof of biological
-burial.
+local, versioned orientation JSON file. Ordinary RCSB coordinates are not automatically
+membrane-oriented. PDBTM applicability is direct geometric evidence, not proof that an orientation
+is biologically correct; provider Side1/Side2 labels are not converted into inside/outside biology.
+Reported depth values are geometric evidence, not proof of biological burial.
 
 v0.3.0 builds local chemical-context review on the deterministic SASA/RSA foundation. Opt-in
 analysis adds conservative distance-only contacts and independent burial/contact/context states
@@ -136,11 +144,13 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 
 ## Current limitations
 
-No automatic OPM/PPM/PDBTM/TmDet retrieval, definitive chemical-interaction inference, lipid-facing
-surface classification, comparison workflow, batch CLI, or curved/multiple-membrane model is
-included in v0.3.0. See [docs/known_limitations.md](docs/known_limitations.md).
+No network retrieval, OPM integration, cross-source comparison, curved or multiple membranes,
+batch CLI, model-to-model comparison, automatic biological verdict, or definitive
+chemical-interaction inference is included in v0.4.0. Ordinary SASA is not lipid accessibility,
+local chemical-context labels are conservative evidence, and reports are visual-QC evidence rather
+than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md).
 
 ## Licence and citation
 
-MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.3.0` and the exact
+MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.4.0` and the exact
 version used. The implementation is clean-room and does not copy GPL PyMOL plugin code.

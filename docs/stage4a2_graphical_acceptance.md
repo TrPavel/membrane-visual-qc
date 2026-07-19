@@ -99,3 +99,23 @@ UI styling remains deferred to a dedicated pre-v1.0 polish pass.
 - [x] repeated lifecycle and `mvqc_clear` input preservation — PASS
 - [x] legacy global-z regression — PASS
 - [x] planar orientation-file regression — PASS
+
+## v0.4.0 release-artifact smoke gate
+
+The acceptance above belongs to the exact `0.4.0.dev0` artifact and remains the detailed Stage 4A2
+functional evidence. It is not exact-artifact acceptance for `MembraneVisualQC-0.4.0.zip`, whose
+embedded version and checksum differ.
+
+After automated review of the v0.4.0 preparation PR, a short separate graphical smoke must cover:
+
+- [ ] Plugin Manager installation and full restart
+- [ ] all three GUI orientation modes
+- [ ] one PDBTM identity case
+- [ ] one PDBTM analytical-inverse case
+- [ ] schema-1.3 export with `software.version = 0.4.0`
+- [ ] wrong-pair cleanup
+- [ ] `mvqc_clear` input preservation
+- [ ] legacy global-z regression
+- [ ] planar orientation-file regression
+
+No v0.4.0 graphical result is claimed until that exact release ZIP is installed and observed.

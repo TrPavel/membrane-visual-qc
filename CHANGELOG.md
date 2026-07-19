@@ -6,37 +6,50 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-19
+
 ### Added
 
-- Added Stage 4A2 offline PDBTM integration for a complete current PyMOL object: explicit local
-  JSON/transformed-PDB selection, identity or analytical-inverse applicability, current-frame slab
-  rendering, schema-1.3 QC reports, GUI controls, and deterministic lifecycle cleanup.
-- Added real PyMOL 3.1.8 snapshot-semantics probes plus synthetic and local-only official-payload
-  headless validation. Official provider payloads remain outside Git.
-
-- Added the Stage 4A1 pure-Python offline PDBTM domain model and API-v1 adapter with strict payload
-  limits, direct coordinate applicability, analytical inverse mapping, precision-derived bounds,
-  deterministic fingerprints, and no fitting or network dependency.
-- Added draft report schema 1.3 for resolved external-orientation provenance while preserving
-  schemas 1.0/1.1/1.2 and existing CSV columns.
-- Added strict PDBTM normal, chain/assembly, payload-role, geometry-identity, precision-bound,
-  spatial-witness, fingerprint, occupancy, and duplicate-ATOM validation for Stage 4A1 review.
-- Added mandatory schema-1.3 semantic validation for finite unit normals, reviewed source geometry,
-  symmetric PDBTM boundaries, and resolved/report geometry identity after structural validation.
+- Added offline PDBTM API-v1 import from an explicit JSON record and matching transformed-PDB
+  companion, with direct identity or analytical-inverse coordinate applicability and no fitting.
+- Added `mvqc_check_pdbtm`, `mvqc_slab_pdbtm`, current-frame membrane rendering, Context OFF/ON,
+  and the third GUI orientation mode, **PDBTM offline pair**.
+- Added report schema 1.3 provenance for exact payload digests, provider/adapter versions, source
+  and current geometry, coordinate fingerprints, precision profiles, matrices, thresholds, and
+  direct-match evidence while preserving existing CSV columns.
+- Added strict payload-role/count/size, chain, assembly, normal, precision, coordinate-frame,
+  occupancy, duplicate-ATOM, and spatial-witness validation.
+- Added mandatory schema-1.3 semantic validation for nonlinear scientific invariants after JSON
+  Schema structural validation.
+- Added synthetic CI fixtures, real PyMOL snapshot probes, and ignored local-only official-payload
+  acceptance for `1pcr` and `1a0s`; official provider payloads remain outside Git.
 
 ### Changed
 
-- The active development identity remains `0.4.0.dev0`; v0.3.0 remains the latest published
-  prerelease. Stage 4A2 adds only offline PyMOL/GUI integration; retrieval, OPM, comparison,
-  automatic alignment, and Stage 4B have not started.
-- Made schema 1.3 normative for every new Stage 4 evidence object and fixed offline retrieval
-  provenance at unverified; source geometry no longer claims an MVQC interface width.
+- Promoted the active release-candidate identity to `0.4.0` and froze schema 1.3 as the v0.4.0
+  release contract; schemas 1.0–1.3 are immutable release schemas.
+- Made schema 1.3 normative for resolved PDBTM evidence and fixed offline retrieval provenance at
+  unverified; source geometry does not claim an MVQC interface width.
 - Restricted offline PDBTM input to one primary `pdbtm_json` payload and zero or one
   `transformed_pdb` companion; unknown roles and duplicate companions are rejected.
+- Kept the input PyMOL object unchanged: applicability uses the complete containing single-state
+  object even when analysis targets a selection inside it.
+- Kept network retrieval, OPM, cross-source comparison, and automatic fitting/alignment outside
+  v0.4.0.
+
+### Fixed
+
 - Replaced corrupted PDBTM GUI literals with explicit Unicode escapes so ellipses, middle dots,
   and angstrom symbols render correctly across source-loading environments.
 - Made PDBTM Show Slab invalidate every prior plugin visual and `LAST_REPORT` on both success and
   failure; a slab-only orientation can no longer leave stale review/context evidence exportable.
+
+### Documentation
+
+- Added the offline PDBTM workflow, exact-artifact graphical acceptance record, schema 1.3
+  structural/semantic contract, limitations, validation evidence, and v0.4.0 release notes.
+- Recorded relatively low slab contrast on dark backgrounds as a non-blocking pre-v1.0 UI backlog
+  item without changing runtime rendering.
 
 ## [0.3.0] - 2026-07-18
 
