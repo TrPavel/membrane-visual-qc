@@ -245,26 +245,27 @@ unchanged, no PyPI project exists, and Stage 4 had not started at publication.
 
 v0.3.0 is published as a prerelease for limited public testing.
 
-## Stage 4A1 development — offline PDBTM import core
+## Stage 4A1 complete — offline PDBTM import core
 
-Stage 4A1 is under review on `feat/pdbtm-offline-import-core` with development identity
-`0.4.0.dev0`. The pure-Python core defines immutable orientation-source evidence, strict offline
-PDBTM API-v1 parsing, direct identity/inverse coordinate applicability, precision-derived bounds,
-and draft report schema 1.3. The review correction enforces positive-Z PDBTM normal semantics,
-exact chain/assembly provenance, unverified caller-supplied retrieval, conservative spatial-witness
-terminology, dynamic runtime precision bounds, geometry identity, and strict schema definitions.
-The final contract correction adds mandatory post-schema scientific validation of unit normals,
-PDBTM source symmetry/+Z semantics, and resolved geometry identity. It also rejects every payload
-role set except JSON-only partial provenance or exactly one `pdbtm_json` plus one
-`transformed_pdb` for a resolved import.
-Local validation passed 384 tests with eight optional FreeSASA skips
-and 87% combined coverage; 19 example reports validate (schema 1.1: 7, schema 1.2: 11, schema
-1.3: 1).
+Stage 4A1 was accepted at PR head `4c717b751a0711cf132fa6d9011c1454a8449939` and squash-merged
+as `dbe2180386bc4c7230a08b2d064b0487347964c4`. The
+[post-merge workflow](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29666872403)
+passed Python 3.10, 3.11, 3.12, and the blocking Ubuntu FreeSASA Python 3.11 job.
 
-The deterministic development artifact is `MembraneVisualQC-0.4.0.dev0.zip`, 65,209 bytes, with
-SHA-256 `059264627139ec1a2091fd0f7604d42e16297062f5d5349d270ef53edad0fc9e`.
-Schemas 1.0, 1.1, and 1.2 remain byte-identical to their released forms; schema 1.3 is draft and
-unreleased. Official PDBTM payloads are excluded from the implementation and CI fixtures.
+Clean synchronized `main` validation passed 384 tests with eight optional FreeSASA skips and 87%
+combined coverage. All 19 example reports validate: schema 1.1: 7, schema 1.2: 11, schema 1.3: 1.
+Schema-1.3 reports undergo both JSON Schema structural validation and mandatory Stage 4 semantic
+validation of nonlinear scientific invariants. The offline adapter contract accepts exactly one
+`pdbtm_json` primary with either zero companions for partial provenance or exactly one
+`transformed_pdb` companion for resolved import; unknown roles and duplicates are rejected.
 
-No GUI/PyMOL integration, network retrieval, OPM adapter, source comparison, automatic alignment,
-release, or PyPI publication is part of Stage 4A1. v0.3.0 remains the latest published release.
+The deterministic development artifact remains `MembraneVisualQC-0.4.0.dev0.zip`, 65,209 bytes,
+with SHA-256 `059264627139ec1a2091fd0f7604d42e16297062f5d5349d270ef53edad0fc9e`.
+Schemas 1.0, 1.1, and 1.2 remain byte-identical to their released forms. Schema 1.3 remains draft
+and unreleased with SHA-256
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Official PDBTM/RCSB
+provider payloads remain outside Git.
+
+The development version remains `0.4.0.dev0`. No release or PyPI publication was created. Stage
+4A2 PyMOL/GUI integration has not started; network retrieval, OPM, source comparison, and automatic
+alignment remain outside the completed Stage 4A1 core.
