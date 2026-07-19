@@ -170,7 +170,8 @@ The exact bundled Python environment demonstrated:
 Still required for Stage 4B1:
 
 - production `http.client` transport tests rather than the measurement probe;
-- direct and system-proxy behavior without credential leakage;
+- direct-only transport tests proving that environment, Windows/macOS system, WPAD, and PAC proxy
+  configuration is neither inspected nor honored, and that CONNECT/credentials are absent;
 - connect/read/total timeout and cooperative cancellation tests;
 - Windows lock, ACL, junction/reparse, concurrent process, and interrupted-write tests;
 - mandatory non-live fake/loopback CI, including a Windows runner or equivalent required gate.
@@ -205,5 +206,15 @@ implementation slice empirically viable, but its omission from the OpenAPI enum 
 unqualified stability claim.
 
 Stage 4B1 may begin only under the fixed allowlist, fail-closed response contract, no-live-network
-normal CI, blocking Windows/cache tests, and optional low-volume manual provider preflight defined
-in the design. No runtime retrieval, cache, GUI, or schema work has started in this PR.
+normal CI, blocking Windows/cache tests, and the mandatory low-volume manual provider preflight
+defined in the design. That manual gate runs immediately before Stage 4B1 implementation begins
+and again during Stage 4B4 exact-artifact acceptance. It remains outside ordinary PR CI, uses only
+the reviewed official endpoints and records, is non-bulk and non-scientific evidence, and stores
+raw material only below ignored `.local/`. A route, host, redirect, MIME, payload, or semantic
+contract change fails closed; a transient provider outage delays the manual gate without failing
+ordinary offline CI.
+
+No additional live request is required for this documentation correction. The evidence above may
+serve the immediate Stage 4B1 gate only if it remains current when implementation actually starts;
+otherwise the same bounded preflight must be repeated. No runtime retrieval, cache, GUI, or schema
+work has started in this PR.

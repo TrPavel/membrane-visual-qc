@@ -47,7 +47,10 @@ Stage 4B optional PDBTM network-retrieval and local-cache design is under draft 
 `1a0s`, with a conditional-go qualification because the official UI exposes the transformed-PDB
 route while the current OpenAPI format enum omits it. This work is documentation and empirical
 preflight only: no runtime retrieval or cache, report schema, GUI, scientific behavior, OPM work,
-or Stage 4C comparison has started.
+or Stage 4C comparison has started. Draft-review corrections define cancellation/commit
+linearization, a direct-HTTPS-only Stage 4B1 transport, domain-separated canonical cache
+identities, and mandatory bounded provider preflights immediately before Stage 4B1 implementation
+and during Stage 4B4 exact-artifact acceptance.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
