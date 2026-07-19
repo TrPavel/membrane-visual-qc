@@ -1,6 +1,6 @@
 # Stage 4 scope and implementation boundary
 
-Status: Stage 4A1 offline core is in development; Stage 4A2 integration has not started.
+Status: Stage 4A1 offline core is merged; Stage 4A2 offline PyMOL/GUI integration is in development.
 
 ## Goal and subdivision
 
@@ -148,7 +148,8 @@ semantics. Released 1.0, 1.1 and 1.2 remain immutable.
 
 Schema 1.3 is now a draft development schema in `0.4.0.dev0`. It is not released or immutable yet.
 Stage 4A1 provides only explicit-byte pure-Python import and report serialization; file dialogs,
-PyMOL commands, rendering, GUI controls, and network acquisition remain Stage 4A2 or later work.
+Offline PyMOL commands, rendering, and GUI controls are Stage 4A2 development work. Network
+acquisition remains Stage 4B or later work.
 
 ## Estimate
 

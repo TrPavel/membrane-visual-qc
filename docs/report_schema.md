@@ -1,6 +1,6 @@
 # Report schemas
 
-## Draft schema 1.3 (Stage 4A1 development)
+## Draft schema 1.3 (Stage 4A development)
 
 Development version `0.4.0.dev0` adds unreleased
 `schemas/mvqc-report-1.3.schema.json` for successfully resolved offline PDBTM orientations. It
@@ -18,6 +18,8 @@ schema-1.3 report therefore also passes the deterministic Stage 4 semantic valid
 Schema validation. That validator uses the shared domain tolerance `1e-9` and requires finite unit
 source/current normals, the reviewed positive-Z PDBTM source normal, symmetric source offsets, and
 numerical identity between current evidence geometry and the top-level resolved orientation.
+The same structural-then-semantic validation path runs before runtime export and for every retained
+example report; JSON Schema alone is not described as enforcing nonlinear vector invariants.
 
 Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
 exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.

@@ -3,11 +3,9 @@
 from pathlib import Path
 import sys
 
-ROOT = next(
-    Path(entry).resolve()
-    for entry in sys.path
-    if entry and (Path(entry) / "data" / "synthetic" / "local_context_review.pdb").is_file()
-)
+ROOT = Path.cwd()
+if not (ROOT / "data" / "synthetic" / "local_context_review.pdb").is_file():
+    raise RuntimeError("Run this smoke test from the repository root.")
 sys.path.insert(0, str(ROOT))
 
 from pymol import cmd  # noqa: E402

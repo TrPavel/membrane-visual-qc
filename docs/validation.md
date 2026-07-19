@@ -257,3 +257,27 @@ Schema hashes are 1.0
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
 The Python 3.10/3.11/3.12 and blocking Ubuntu FreeSASA results are recorded by the draft-PR
 workflow; GUI/PyMOL integration is not part of this validation phase.
+
+## Stage 4A2 offline PyMOL integration validation
+
+The Stage 4A2 branch adds real Incentive PyMOL 3.1.8 snapshot probes and headless workflows. A
+translated object proved that `cmd.get_pdbstr(object, state=1)` matches current coordinates from
+`get_model` and `get_coords`; the command layer therefore validates a single snapshot of the
+complete containing object. Synthetic identity/inverse imports, context OFF/ON, schema 1.3,
+current-frame slab rendering, repeated lifecycle, failure cleanup, and input preservation pass.
+
+Ignored local official payloads for `1pcr` and `1a0s` pass identity and analytical-inverse paths;
+wrong pairs and manually changed coordinate frames are rejected. Provider payloads remain outside
+Git. Exact development-ZIP graphical acceptance remains a separate required gate documented in
+`docs/stage4a2_graphical_acceptance.md`.
+
+The complete local suite passed Ruff check/format, 415 tests with eight optional FreeSASA skips,
+87% combined coverage, and 19 reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel and sdist built as
+`0.4.0.dev0`. Two Plugin ZIP builds were byte-identical: 69,255 bytes, SHA-256
+`446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`.
+
+Released schema hashes remain unchanged: schema 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, schema 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, and schema 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`. Draft schema 1.3 remains
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.

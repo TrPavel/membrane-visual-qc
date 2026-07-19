@@ -10,17 +10,20 @@ from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
 from .commands import (
     mvqc_check,
     mvqc_check_orientation,
+    mvqc_check_pdbtm,
     mvqc_color_hydropathy,
     mvqc_export,
     mvqc_ligand_shell,
     mvqc_slab,
     mvqc_slab_orientation,
+    mvqc_slab_pdbtm,
 )
 from .qc import format_summary
 
 _DIALOG = None
 LEGACY_MODE = "Legacy global-z"
 ORIENTATION_FILE_MODE = "Planar orientation file"
+PDBTM_MODE = "PDBTM offline pair"
 PLANAR_REVIEW_STATUS = "Running planar membrane review…"
 PLANAR_BOUNDARIES_STATUS = "Creating planar membrane boundaries…"
 
@@ -132,8 +135,13 @@ class MembraneVQCDialog:
 
         self.selection = QtWidgets.QLineEdit("all")
         self.orientation_mode = QtWidgets.QComboBox()
-        self.orientation_mode.addItems([LEGACY_MODE, ORIENTATION_FILE_MODE])
+        self.orientation_mode.addItems([LEGACY_MODE, ORIENTATION_FILE_MODE, PDBTM_MODE])
         self.orientation_file = QtWidgets.QLineEdit("")
+        self.pdbtm_json = QtWidgets.QLineEdit("")
+        self.transformed_pdb = QtWidgets.QLineEdit("")
+        self.biological_assembly = QtWidgets.QLineEdit("")
+        self.browse_pdbtm_json = QtWidgets.QPushButton("Browseâ€¦")
+        self.browse_transformed_pdb = QtWidgets.QPushButton("Browseâ€¦")
         self.orientation_source = QtWidgets.QLabel("manual_global_z")
         self.zmin = QtWidgets.QLineEdit(str(DEFAULT_ZMIN))
         self.zmax = QtWidgets.QLineEdit(str(DEFAULT_ZMAX))
@@ -162,6 +170,15 @@ class MembraneVQCDialog:
         layout.addRow("Selection", self.selection)
         layout.addRow("Orientation mode", self.orientation_mode)
         layout.addRow("Orientation JSON", self.orientation_file)
+        json_row = QtWidgets.QHBoxLayout()
+        json_row.addWidget(self.pdbtm_json)
+        json_row.addWidget(self.browse_pdbtm_json)
+        layout.addRow("PDBTM JSON", json_row)
+        pdb_row = QtWidgets.QHBoxLayout()
+        pdb_row.addWidget(self.transformed_pdb)
+        pdb_row.addWidget(self.browse_transformed_pdb)
+        layout.addRow("Transformed PDB", pdb_row)
+        layout.addRow("Current assembly (optional)", self.biological_assembly)
         layout.addRow("Orientation source", self.orientation_source)
         layout.addRow("zmin", self.zmin)
         layout.addRow("zmax", self.zmax)
@@ -188,6 +205,11 @@ class MembraneVQCDialog:
         layout.addRow(buttons)
         layout.addRow("Summary", self.summary)
 
+        self.orientation_mode.currentTextChanged.connect(self._update_orientation_mode)
+        self.browse_pdbtm_json.clicked.connect(self._browse_pdbtm_json)
+        self.browse_transformed_pdb.clicked.connect(self._browse_transformed_pdb)
+        self._update_orientation_mode()
+
     def show(self):
         self.window.show()
 
@@ -195,6 +217,31 @@ class MembraneVQCDialog:
         self.window.raise_()
 
     def run_qc(self):
+        if self.orientation_mode.currentText() == PDBTM_MODE:
+            values = self._parse_or_error(
+                parse_ligand_shell_inputs,
+                self.selection.text(),
+                self.ligand.text(),
+                self.cutoff.text(),
+            )
+            if values is None:
+                return
+            self.orientation_source.setText("unavailable")
+            self._execute(
+                "Resolving offline PDBTM orientationâ€¦",
+                lambda: mvqc_check_pdbtm(
+                    selection=values.selection,
+                    pdbtm_json=str(self.pdbtm_json.text()).strip(),
+                    transformed_pdb=str(self.transformed_pdb.text()).strip(),
+                    biological_assembly=str(self.biological_assembly.text()).strip(),
+                    ligand=values.ligand,
+                    cutoff=values.cutoff,
+                    quiet=1,
+                    **self._context_options(),
+                ),
+                self._render_pdbtm_report,
+            )
+            return
         if self.orientation_mode.currentText() == ORIENTATION_FILE_MODE:
             values = self._parse_or_error(
                 parse_ligand_shell_inputs,
@@ -238,6 +285,22 @@ class MembraneVQCDialog:
         )
 
     def show_slab(self):
+        if self.orientation_mode.currentText() == PDBTM_MODE:
+            selection = self._parse_or_error(parse_selection, self.selection.text())
+            if selection is None:
+                return
+            self.orientation_source.setText("unavailable")
+            self._execute(
+                "Resolving offline PDBTM boundariesâ€¦",
+                lambda: mvqc_slab_pdbtm(
+                    selection=selection,
+                    pdbtm_json=str(self.pdbtm_json.text()).strip(),
+                    transformed_pdb=str(self.transformed_pdb.text()).strip(),
+                    biological_assembly=str(self.biological_assembly.text()).strip(),
+                ),
+                self._render_pdbtm_slab,
+            )
+            return
         if self.orientation_mode.currentText() == ORIENTATION_FILE_MODE:
             selection = self._parse_or_error(parse_selection, self.selection.text())
             if selection is None:
@@ -334,6 +397,56 @@ class MembraneVQCDialog:
         self.orientation_source.setText(_orientation_source(membrane))
         return "Planar membrane boundaries updated."
 
+    def _render_pdbtm_report(self, report):
+        evidence = report.get("orientation", {}).get("evidence", {})
+        status, details = _pdbtm_status_and_details(evidence)
+        self.orientation_source.setText(status)
+        return format_summary(report) + "\n\n" + details
+
+    def _render_pdbtm_slab(self, imported):
+        evidence = imported.evidence.as_dict()
+        status, details = _pdbtm_status_and_details(evidence)
+        self.orientation_source.setText(status)
+        return "PDBTM membrane boundaries updated.\n\n" + details
+
+    def _update_orientation_mode(self, *_):
+        mode = self.orientation_mode.currentText()
+        legacy = mode == LEGACY_MODE
+        planar = mode == ORIENTATION_FILE_MODE
+        pdbtm = mode == PDBTM_MODE
+        self.zmin.setEnabled(legacy)
+        self.zmax.setEnabled(legacy)
+        self.orientation_file.setEnabled(planar)
+        for widget in (
+            self.pdbtm_json,
+            self.transformed_pdb,
+            self.biological_assembly,
+            self.browse_pdbtm_json,
+            self.browse_transformed_pdb,
+        ):
+            widget.setEnabled(pdbtm)
+        self.orientation_source.setText("manual_global_z" if legacy else "unavailable")
+
+    def _browse_pdbtm_json(self):
+        path, _ = self.QtWidgets.QFileDialog.getOpenFileName(
+            self.window,
+            "Select PDBTM JSON",
+            "",
+            "PDBTM JSON (*.json);;All files (*)",
+        )
+        if path:
+            self.pdbtm_json.setText(path)
+
+    def _browse_transformed_pdb(self):
+        path, _ = self.QtWidgets.QFileDialog.getOpenFileName(
+            self.window,
+            "Select transformed PDB",
+            "",
+            "Transformed PDB (*.pdb *.ent *.trpdb);;All files (*)",
+        )
+        if path:
+            self.transformed_pdb.setText(path)
+
     def _parse_or_error(self, parser, *values):
         try:
             return parser(*values)
@@ -375,3 +488,47 @@ def _orientation_source(value) -> str:
         if source:
             return source
     return "unavailable"
+
+
+def _pdbtm_status_and_details(evidence) -> tuple[str, str]:
+    if not isinstance(evidence, dict):
+        return "unavailable", "PDBTM evidence is unavailable."
+    source = evidence.get("source", {})
+    mapping = evidence.get("coordinate_mapping", {})
+    source_geometry = evidence.get("source_geometry", {})
+    record_id = str(source.get("record_id", "") or "unknown")
+    method = str(mapping.get("method", "") or "unknown")
+    confidence = str(evidence.get("geometric_confidence", "") or "unknown").replace("_", " ")
+    display_method = method.replace("_", " ")
+    status = f"PDBTM {record_id} Â· {display_method} Â· {confidence}"
+    metric_key = "runtime_identity" if method == "identity" else "runtime_inverse"
+    metrics = mapping.get("metrics", {}).get(metric_key, {})
+    matched = metrics.get("matched_atom_count", "unavailable")
+    rmsd = metrics.get("rmsd")
+    maximum = metrics.get("maximum_residual")
+    upper = source_geometry.get("upper_offset")
+    warnings = evidence.get("warnings", [])
+    warning_text = (
+        "; ".join(str(item.get("message", "")) for item in warnings if isinstance(item, dict))
+        or "none"
+    )
+    details = (
+        f"Record: {record_id}\n"
+        f"Mapping: {method}\n"
+        f"Matched atoms: {matched}\n"
+        f"RMSD: {_format_measure(rmsd)} Ã…\n"
+        f"Maximum residual: {_format_measure(maximum)} Ã…\n"
+        f"Half-thickness: {_format_measure(upper)} Ã…\n"
+        f"Provider resource/software: {source.get('resource_version') or 'unavailable'} / "
+        f"{source.get('software_version') or 'unavailable'}\n"
+        f"Warnings: {warning_text}\n"
+        "Geometric applicability is not a biological correctness verdict."
+    )
+    return status, details
+
+
+def _format_measure(value) -> str:
+    try:
+        return f"{float(value):.6g}"
+    except (TypeError, ValueError):
+        return "unavailable"

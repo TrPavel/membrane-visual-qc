@@ -41,10 +41,26 @@ The demo orientation belongs only to the documented rigid transform in the valid
 The GUI offers **Legacy global-z** and **Planar orientation file** modes. Advanced manual-plane
 fields and automatic external adapters are deferred.
 
+## Unreleased offline PDBTM workflow
+
+Development version `0.4.0.dev0` can apply one explicit matching local PDBTM API-v1 JSON and
+transformed-PDB companion to a complete single-state PyMOL object without fitting or modifying it:
+
+```pml
+mvqc_check_pdbtm selection=my_object, pdbtm_json=C:/payloads/1pcr.json, transformed_pdb=C:/payloads/1pcr.trpdb, ligand=
+mvqc_slab_pdbtm selection=my_object, pdbtm_json=C:/payloads/1pcr.json, transformed_pdb=C:/payloads/1pcr.trpdb
+```
+
+Select **PDBTM offline pair** in the GUI for the same workflow. The JSON and transformed-PDB must
+belong to the same provider record. The plugin performs no download, coordinate fitting, or
+automatic transform. See `docs/pdbtm_offline_import.md` for the exact object and provenance
+contract.
+
 ## GUI workflow
 
 Open **Plugin > Membrane Visual QC**, select the orientation mode, enter a non-empty selection and
-a positive cutoff. Legacy mode requires finite `zmin < zmax`; file mode requires valid local JSON.
+a positive cutoff. Legacy mode requires finite `zmin < zmax`; planar file mode requires valid
+local JSON; PDBTM mode requires two explicit matching local files.
 Ligand selection may be empty.
 
 See `docs/manual_gui_validation.md` for the release checklist.
