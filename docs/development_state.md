@@ -268,7 +268,7 @@ provider payloads remain outside Git.
 
 The development version remains `0.4.0.dev0`. No release or PyPI publication was created.
 
-## Stage 4A2 ready for final review — offline PyMOL and GUI integration
+## Stage 4A2 complete — offline PyMOL and GUI integration
 
 The implementation branch now exposes `mvqc_check_pdbtm` and `mvqc_slab_pdbtm`, plus the GUI
 **PDBTM offline pair** mode. It resolves one complete single-state current PyMOL object against one
@@ -293,8 +293,35 @@ OFF/ON, schema-1.3 export, current-frame slab rendering, failure cleanup, repeat
 preservation, and both legacy regressions. Detailed observations are recorded in
 `stage4a2_graphical_acceptance.md`.
 
-Stage 4A2 is ready for final code and acceptance review. Schema 1.3 remains draft and unreleased,
-the version remains `0.4.0.dev0`, and v0.3.0 remains the latest published release. No network
-retrieval, OPM integration, source comparison, fitting, or automatic alignment was added. Official
-provider payloads remain outside Git. No release or PyPI publication was created, and Stage 4B has
-not started.
+PR #10 final head `2b3e03eef68f583ecc50c20b882f65a8394113c8` passed
+[workflow 29696327755](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29696327755)
+and was squash-merged into `main` as `fd31ac89c8131060d8872ad50a77895253f93dcc`. The
+[post-merge workflow 29696377197](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29696377197)
+passed Python 3.10, 3.11, 3.12, and the blocking Ubuntu FreeSASA Python 3.11 job.
+
+The retained suite passed 418 tests with eight optional FreeSASA skips and 87% combined coverage.
+All 19 example reports validate: schema 1.1: 7, schema 1.2: 11, and schema 1.3: 1. Report schema
+SHA-256 values are:
+
+- schema 1.0: `5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`;
+- schema 1.1: `86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`;
+- schema 1.2: `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`;
+- draft schema 1.3: `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+Clean synchronized `main` rebuilt `MembraneVisualQC-0.4.0.dev0.zip` twice, byte-identically, at
+69,251 bytes with SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`.
+
+Exact-artifact graphical acceptance used Windows 10 build 26200, Incentive PyMOL 3.1.8, and bundled
+Python 3.10.20. Identity and analytical-inverse cases passed for `1pcr` and `1a0s`; 1pcr context
+OFF/ON, schema-1.3 export, repeated lifecycle, failure cleanup, `mvqc_clear`, global-z, and planar
+orientation-file regressions passed. The coordinate-frame mismatch check used a manually translated
+object (+4 Å, −3 Å, +2 Å), which was rejected without altering its translated coordinates. Slab
+planes were visible but relatively low contrast on a dark background; this is a non-blocking
+pre-v1.0 UI backlog item.
+
+Stage 4A2 PyMOL and GUI integration is complete and merged into `main`. Schema 1.3 remains draft
+and unreleased, the version remains `0.4.0.dev0`, and v0.3.0 remains the latest published release.
+Official provider payloads remain outside Git. No network retrieval, OPM integration, source
+comparison, fitting, automatic alignment, v0.4.0 release, or PyPI publication was created. Stage 4B
+has not started; the next gate is v0.4.0 prerelease preparation.
