@@ -11,6 +11,7 @@ from pymol import cmd  # noqa: E402
 from membrane_vqc import qc  # noqa: E402
 from membrane_vqc.commands import mvqc_check_pdbtm, mvqc_clear, mvqc_slab_pdbtm  # noqa: E402
 from membrane_vqc.pdbtm_pymol import PdbtmCommandError  # noqa: E402
+from membrane_vqc.pymol_adapter import MVQC_NAMES  # noqa: E402
 
 
 JSON_PATH = ROOT / "data" / "synthetic" / "pdbtm_api_v1_test.json"
@@ -25,6 +26,10 @@ def _coordinates(name):
 
 def _assert_slab_present():
     assert OWNED <= set(cmd.get_names("objects"))
+
+
+def _active_plugin_names():
+    return (set(cmd.get_names("objects")) | set(cmd.get_names("selections"))) & set(MVQC_NAMES)
 
 
 cmd.reinitialize()
@@ -57,6 +62,20 @@ assert _coordinates("pdbtm_identity") == identity_before
 
 mvqc_slab_pdbtm("pdbtm_identity", str(JSON_PATH), str(TRANSFORMED_PATH))
 _assert_slab_present()
+assert _active_plugin_names() == OWNED
+assert qc.LAST_REPORT is None
+assert _coordinates("pdbtm_identity") == identity_before
+
+# A failed slab import invalidates the preceding slab and cannot leave an exportable report.
+try:
+    mvqc_slab_pdbtm("pdbtm_identity", str(JSON_PATH), str(ORIGINAL_PATH))
+except PdbtmCommandError:
+    pass
+else:
+    raise AssertionError("Wrong transformed companion was unexpectedly accepted for slab display.")
+assert not _active_plugin_names()
+assert qc.LAST_REPORT is None
+assert _coordinates("pdbtm_identity") == identity_before
 
 cmd.load(str(ORIGINAL_PATH), "pdbtm_inverse")
 inverse_before = _coordinates("pdbtm_inverse")

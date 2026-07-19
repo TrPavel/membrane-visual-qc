@@ -24,8 +24,11 @@ _DIALOG = None
 LEGACY_MODE = "Legacy global-z"
 ORIENTATION_FILE_MODE = "Planar orientation file"
 PDBTM_MODE = "PDBTM offline pair"
-PLANAR_REVIEW_STATUS = "Running planar membrane review…"
-PLANAR_BOUNDARIES_STATUS = "Creating planar membrane boundaries…"
+PLANAR_REVIEW_STATUS = "Running planar membrane review\u2026"
+PLANAR_BOUNDARIES_STATUS = "Creating planar membrane boundaries\u2026"
+PDBTM_REVIEW_STATUS = "Resolving offline PDBTM orientation\u2026"
+PDBTM_BOUNDARIES_STATUS = "Resolving offline PDBTM boundaries\u2026"
+BROWSE_LABEL = "Browse\u2026"
 
 
 @dataclass(frozen=True)
@@ -140,8 +143,8 @@ class MembraneVQCDialog:
         self.pdbtm_json = QtWidgets.QLineEdit("")
         self.transformed_pdb = QtWidgets.QLineEdit("")
         self.biological_assembly = QtWidgets.QLineEdit("")
-        self.browse_pdbtm_json = QtWidgets.QPushButton("Browseâ€¦")
-        self.browse_transformed_pdb = QtWidgets.QPushButton("Browseâ€¦")
+        self.browse_pdbtm_json = QtWidgets.QPushButton(BROWSE_LABEL)
+        self.browse_transformed_pdb = QtWidgets.QPushButton(BROWSE_LABEL)
         self.orientation_source = QtWidgets.QLabel("manual_global_z")
         self.zmin = QtWidgets.QLineEdit(str(DEFAULT_ZMIN))
         self.zmax = QtWidgets.QLineEdit(str(DEFAULT_ZMAX))
@@ -228,7 +231,7 @@ class MembraneVQCDialog:
                 return
             self.orientation_source.setText("unavailable")
             self._execute(
-                "Resolving offline PDBTM orientationâ€¦",
+                PDBTM_REVIEW_STATUS,
                 lambda: mvqc_check_pdbtm(
                     selection=values.selection,
                     pdbtm_json=str(self.pdbtm_json.text()).strip(),
@@ -271,7 +274,7 @@ class MembraneVQCDialog:
             return
         self.orientation_source.setText("manual_global_z")
         self._execute(
-            "Running membrane review…",
+            "Running membrane review\u2026",
             lambda: mvqc_check(
                 selection=values.selection,
                 zmin=values.zmin,
@@ -291,7 +294,7 @@ class MembraneVQCDialog:
                 return
             self.orientation_source.setText("unavailable")
             self._execute(
-                "Resolving offline PDBTM boundariesâ€¦",
+                PDBTM_BOUNDARIES_STATUS,
                 lambda: mvqc_slab_pdbtm(
                     selection=selection,
                     pdbtm_json=str(self.pdbtm_json.text()).strip(),
@@ -320,7 +323,7 @@ class MembraneVQCDialog:
         )
         if values is not None:
             self._execute(
-                "Creating membrane boundaries…",
+                "Creating membrane boundaries\u2026",
                 lambda: mvqc_slab(values.zmin, values.zmax),
                 lambda _: "Membrane boundaries updated.",
             )
@@ -329,7 +332,7 @@ class MembraneVQCDialog:
         values = self._parse_or_error(parse_selection, self.selection.text())
         if values is not None:
             self._execute(
-                "Applying hydropathy colours…",
+                "Applying hydropathy colours\u2026",
                 lambda: mvqc_color_hydropathy(values),
                 lambda residues: f"Hydropathy coloured residues: {len(residues)}",
             )
@@ -343,7 +346,7 @@ class MembraneVQCDialog:
         )
         if values is not None:
             self._execute(
-                "Finding ligand neighbours…",
+                "Finding ligand neighbours\u2026",
                 lambda: mvqc_ligand_shell(
                     protein=values.selection,
                     ligand=values.ligand,
@@ -363,7 +366,7 @@ class MembraneVQCDialog:
             self._show_error(str(exc))
             return
         self._execute(
-            "Exporting report…",
+            "Exporting report\u2026",
             lambda: mvqc_export(str(path)),
             lambda written: "Exported: " + ", ".join(str(item) for item in written),
         )
@@ -500,7 +503,7 @@ def _pdbtm_status_and_details(evidence) -> tuple[str, str]:
     method = str(mapping.get("method", "") or "unknown")
     confidence = str(evidence.get("geometric_confidence", "") or "unknown").replace("_", " ")
     display_method = method.replace("_", " ")
-    status = f"PDBTM {record_id} Â· {display_method} Â· {confidence}"
+    status = f"PDBTM {record_id} \u00b7 {display_method} \u00b7 {confidence}"
     metric_key = "runtime_identity" if method == "identity" else "runtime_inverse"
     metrics = mapping.get("metrics", {}).get(metric_key, {})
     matched = metrics.get("matched_atom_count", "unavailable")
@@ -516,9 +519,9 @@ def _pdbtm_status_and_details(evidence) -> tuple[str, str]:
         f"Record: {record_id}\n"
         f"Mapping: {method}\n"
         f"Matched atoms: {matched}\n"
-        f"RMSD: {_format_measure(rmsd)} Ã…\n"
-        f"Maximum residual: {_format_measure(maximum)} Ã…\n"
-        f"Half-thickness: {_format_measure(upper)} Ã…\n"
+        f"RMSD: {_format_measure(rmsd)} \u00c5\n"
+        f"Maximum residual: {_format_measure(maximum)} \u00c5\n"
+        f"Half-thickness: {_format_measure(upper)} \u00c5\n"
         f"Provider resource/software: {source.get('resource_version') or 'unavailable'} / "
         f"{source.get('software_version') or 'unavailable'}\n"
         f"Warnings: {warning_text}\n"

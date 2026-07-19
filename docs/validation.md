@@ -271,10 +271,11 @@ wrong pairs and manually changed coordinate frames are rejected. Provider payloa
 Git. Exact development-ZIP graphical acceptance remains a separate required gate documented in
 `docs/stage4a2_graphical_acceptance.md`.
 
-The complete local suite passed Ruff check/format, 415 tests with eight optional FreeSASA skips,
+The corrected local suite passed Ruff check/format, 418 tests with eight optional FreeSASA skips,
 87% combined coverage, and 19 reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel and sdist built as
-`0.4.0.dev0`. Two Plugin ZIP builds were byte-identical: 69,255 bytes, SHA-256
-`446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`.
+`0.4.0.dev0`. Two corrected Plugin ZIP builds were byte-identical: 69,251 bytes, SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. The superseded
+pre-review artifact had SHA-256 `446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`.
 
 Released schema hashes remain unchanged: schema 1.0
 `5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, schema 1.1

@@ -33,6 +33,14 @@ The format follows Keep a Changelog style, and this project intends to use seman
   provenance at unverified; source geometry no longer claims an MVQC interface width.
 - Restricted offline PDBTM input to one primary `pdbtm_json` payload and zero or one
   `transformed_pdb` companion; unknown roles and duplicate companions are rejected.
+- Replaced corrupted PDBTM GUI literals with explicit Unicode escapes so ellipses, middle dots,
+  and angstrom symbols render correctly across source-loading environments.
+- Made PDBTM Show Slab invalidate every prior plugin visual and `LAST_REPORT` on both success and
+  failure; a slab-only orientation can no longer leave stale review/context evidence exportable.
+- Replaced corrupted PDBTM GUI literals with explicit Unicode escapes so ellipses, middle dots,
+  and angstrom symbols render correctly across source-loading environments.
+- Made PDBTM Show Slab invalidate every prior plugin visual and `LAST_REPORT` on both success and
+  failure; a slab-only orientation can no longer leave stale review/context evidence exportable.
 
 ## [0.3.0] - 2026-07-18
 

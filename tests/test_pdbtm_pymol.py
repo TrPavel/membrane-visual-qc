@@ -20,6 +20,7 @@ from membrane_vqc.pdbtm_pymol import (
     resolve_pdbtm_from_pymol,
     structure_context_from_pymol,
 )
+from membrane_vqc.pymol_adapter import MVQC_NAMES, MVQC_SLAB_NAMES
 from membrane_vqc.report import build_report, validate_stage4_report_semantics
 
 
@@ -292,22 +293,100 @@ def test_mvqc_check_pdbtm_builds_schema_1_3_without_local_provider_paths(monkeyp
     assert str(TRANSFORMED_PATH.resolve()) not in serialized
 
 
-def test_mvqc_slab_pdbtm_renders_resolved_membrane(monkeypatch):
+def _install_owned_state(monkeypatch, initial):
+    names = set(initial)
+    clears = []
+
+    def clear_owned():
+        clears.append(tuple(sorted(names & set(MVQC_NAMES))))
+        names.difference_update(MVQC_NAMES)
+
+    monkeypatch.setattr(commands, "clear_owned", clear_owned)
+    return names, clears
+
+
+def test_successful_qc_then_successful_pdbtm_slab_clears_all_prior_state(monkeypatch):
     imported = _resolved()
     rendered = []
-    monkeypatch.setattr(commands, "clear_slab", lambda: None)
+    names, clears = _install_owned_state(monkeypatch, {"protein", *MVQC_NAMES})
     monkeypatch.setattr(commands, "resolve_pdbtm_from_pymol", lambda **kwargs: imported)
     monkeypatch.setattr(commands, "protein_atoms", lambda selection: [object()])
-    monkeypatch.setattr(
-        commands,
-        "create_membrane_planes",
-        lambda membrane, atoms, selection: rendered.append((membrane, atoms, selection)),
-    )
+
+    def render(membrane, atoms, selection):
+        rendered.append((membrane, atoms, selection))
+        names.update(MVQC_SLAB_NAMES)
+
+    monkeypatch.setattr(commands, "create_membrane_planes", render)
+    qc.LAST_REPORT = {"stale": True}
 
     result = commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
 
     assert result is imported
     assert rendered[0][0] is imported.membrane
+    assert names == {"protein", *MVQC_SLAB_NAMES}
+    assert clears and qc.LAST_REPORT is None
+
+
+def test_successful_qc_then_failed_pdbtm_slab_clears_everything(monkeypatch):
+    names, clears = _install_owned_state(monkeypatch, {"protein", *MVQC_NAMES})
+    monkeypatch.setattr(
+        commands,
+        "resolve_pdbtm_from_pymol",
+        lambda **kwargs: (_ for _ in ()).throw(PdbtmCommandError("PAIR_MISMATCH", "wrong pair")),
+    )
+    qc.LAST_REPORT = {"stale": True}
+
+    with pytest.raises(PdbtmCommandError, match="PAIR_MISMATCH"):
+        commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
+
+    assert names == {"protein"}
+    assert len(clears) == 2
+    assert qc.LAST_REPORT is None
+
+
+def test_successful_pdbtm_slab_then_failed_slab_removes_previous_slab(monkeypatch):
+    imported = _resolved()
+    names, _ = _install_owned_state(monkeypatch, {"protein"})
+    monkeypatch.setattr(commands, "protein_atoms", lambda selection: [object()])
+    monkeypatch.setattr(
+        commands,
+        "create_membrane_planes",
+        lambda membrane, atoms, selection: names.update(MVQC_SLAB_NAMES),
+    )
+    monkeypatch.setattr(commands, "resolve_pdbtm_from_pymol", lambda **kwargs: imported)
+    commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
+    assert names == {"protein", *MVQC_SLAB_NAMES}
+
+    monkeypatch.setattr(
+        commands,
+        "resolve_pdbtm_from_pymol",
+        lambda **kwargs: (_ for _ in ()).throw(PdbtmCommandError("PAIR_MISMATCH", "wrong pair")),
+    )
+    with pytest.raises(PdbtmCommandError, match="PAIR_MISMATCH"):
+        commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
+
+    assert names == {"protein"}
+    assert qc.LAST_REPORT is None
+
+
+def test_successful_pdbtm_slab_makes_stale_report_unexportable(monkeypatch, tmp_path):
+    imported = _resolved()
+    names, _ = _install_owned_state(monkeypatch, {"protein", *MVQC_NAMES})
+    monkeypatch.setattr(commands, "resolve_pdbtm_from_pymol", lambda **kwargs: imported)
+    monkeypatch.setattr(commands, "protein_atoms", lambda selection: [object()])
+    monkeypatch.setattr(
+        commands,
+        "create_membrane_planes",
+        lambda membrane, atoms, selection: names.update(MVQC_SLAB_NAMES),
+    )
+    qc.LAST_REPORT = {"stale": True}
+
+    commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
+
+    with pytest.raises(RuntimeError, match="No QC report"):
+        commands.mvqc_export(str(tmp_path / "stale.json"))
+    assert not (tmp_path / "stale.json").exists()
+    assert names == {"protein", *MVQC_SLAB_NAMES}
 
 
 def test_pdbtm_command_failure_clears_state_and_report(monkeypatch):
@@ -325,21 +404,6 @@ def test_pdbtm_command_failure_clears_state_and_report(monkeypatch):
 
     assert cleared == ["clear", "clear"]
     assert qc.LAST_REPORT is None
-
-
-def test_pdbtm_slab_failure_clears_only_slab_state(monkeypatch):
-    cleared = []
-    monkeypatch.setattr(commands, "clear_slab", lambda: cleared.append("slab"))
-    monkeypatch.setattr(
-        commands,
-        "resolve_pdbtm_from_pymol",
-        lambda **kwargs: (_ for _ in ()).throw(PdbtmCommandError("PAIR_MISMATCH", "wrong pair")),
-    )
-
-    with pytest.raises(PdbtmCommandError, match="PAIR_MISMATCH"):
-        commands.mvqc_slab_pdbtm("protein", str(JSON_PATH), str(TRANSFORMED_PATH))
-
-    assert cleared == ["slab", "slab"]
 
 
 def test_register_commands_includes_pdbtm_workflow():

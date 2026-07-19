@@ -35,13 +35,18 @@ Official URLs, timestamps, and hashes remain the separately reviewed provenance 
 
 ## Exact development ZIP interactive checklist
 
-Candidate built from the current Stage 4A2 branch:
+The initial pre-review artifact is superseded and must not be used for final graphical acceptance:
 
-- file: `dist/MembraneVisualQC-0.4.0.dev0.zip`
 - size: 69,255 bytes
 - SHA-256: `446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`
 
-The two deterministic builds were byte-for-byte identical. These values identify the artifact
+Corrected pre-graphical candidate built after Unicode and complete slab-lifecycle fixes:
+
+- file: `dist/MembraneVisualQC-0.4.0.dev0.zip`
+- size: 69,251 bytes
+- SHA-256: `3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`
+
+The two corrected deterministic builds were byte-for-byte identical. These values identify the artifact
 that must be installed for interactive acceptance; they are not themselves graphical evidence.
 
 The following must be performed after the deterministic final ZIP is built and its exact filename,

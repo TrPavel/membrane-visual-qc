@@ -213,8 +213,13 @@ def test_pdbtm_gui_run_dispatches_paths_and_renders_source_details(monkeypatch):
             "exposure_backend": "Built-in",
         }
     ]
-    assert dialog.orientation_source.value == "PDBTM test Â· identity Â· coordinate verified"
+    assert dialog.orientation_source.value == (
+        "PDBTM test \u00b7 identity \u00b7 coordinate verified"
+    )
     assert "Matched atoms: 12" in dialog.summary.value
+    assert "RMSD: 0 \u00c5" in dialog.summary.value
+    assert "Maximum residual: 0 \u00c5" in dialog.summary.value
+    assert "Half-thickness: 15 \u00c5" in dialog.summary.value
     assert "not a biological correctness verdict" in dialog.summary.value
 
 

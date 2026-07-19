@@ -186,7 +186,8 @@ def mvqc_slab_pdbtm(
 ):
     """Render only the resolved current-frame slab from an offline PDBTM pair."""
 
-    clear_slab()
+    clear_owned()
+    qc.LAST_REPORT = None
     try:
         selection = _selection(selection)
         imported = resolve_pdbtm_from_pymol(
@@ -199,7 +200,8 @@ def mvqc_slab_pdbtm(
         create_membrane_planes(imported.membrane, atoms, selection)
         return imported
     except Exception:
-        clear_slab()
+        clear_owned()
+        qc.LAST_REPORT = None
         raise
 
 

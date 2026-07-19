@@ -276,11 +276,14 @@ explicit matching local JSON/transformed-PDB pair, renders the resolved current-
 and passes exact Stage 4 evidence to schema-1.3 QC. It never retrieves, fits, transforms, or
 renames the input object; failure cleanup removes stale plugin-owned state and `LAST_REPORT`.
 
-Local validation passed 415 tests with eight optional FreeSASA skips and 87% coverage. The retained
+The pre-graphical correction replaces mojibake-prone GUI literals with explicit Unicode escapes and
+makes PDBTM Show Slab clear all stale plugin/report state on success and failure. Local validation
+passed 418 tests with eight optional FreeSASA skips and 87% coverage. The retained
 headless PyMOL suite, synthetic Stage 4A2 lifecycle, official local `1pcr`/`1a0s` identity and
 inverse cases, 19 example reports, wheel/sdist build, ZIP validation, and deterministic double ZIP
-build passed. The exact candidate is `MembraneVisualQC-0.4.0.dev0.zip`, 69,255 bytes, SHA-256
-`446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`.
+build passed. The corrected candidate is `MembraneVisualQC-0.4.0.dev0.zip`, 69,251 bytes, SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. The earlier SHA-256
+`446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92` is superseded.
 
 Exact-artifact interactive graphical acceptance and draft-PR CI remain pending. Schema 1.3 remains
 draft, v0.3.0 remains the latest release, official provider payloads remain outside Git, and Stage

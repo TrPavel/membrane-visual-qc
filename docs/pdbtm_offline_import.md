@@ -28,6 +28,10 @@ infers assembly, structure identity, or scientific applicability from an object 
 `analyze_context`, `exposure_quality`, and `exposure_backend` parameters. `mvqc_slab_pdbtm`
 renders only the resolved boundaries and creates no report.
 
+Because Show Slab changes the displayed orientation without producing replacement QC evidence, it
+first invalidates all prior plugin-owned slab/review/ligand/context visuals and `LAST_REPORT`. On
+failure it repeats that complete cleanup. Input molecular objects are never included in cleanup.
+
 The analysis selection may be a chain or residue subset, but it must resolve to exactly one
 molecular object. Applicability is always checked against a single snapshot of the complete
 containing object. Stage 4A2 accepts one object, one state, and legacy-PDB-compatible current chain
