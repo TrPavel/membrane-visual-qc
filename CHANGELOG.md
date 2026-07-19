@@ -6,6 +6,11 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Changed
+
+- Reopened source development as `0.5.0.dev0` after publishing v0.4.0. This lifecycle reset does
+  not include Stage 4B functionality.
+
 ## [0.4.0] - 2026-07-19
 
 ### Added

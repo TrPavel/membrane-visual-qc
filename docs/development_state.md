@@ -3,8 +3,18 @@
 Snapshot date: 2026-07-20 (Europe/Moscow).
 
 Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
-latest published GitHub prerelease for limited public testing. PyPI is not used, and Stage 4B has
-not started.
+latest published GitHub prerelease for limited public testing. Active source development has
+reopened as `0.5.0.dev0`; Stage 4B has not started. Report schema 1.3 is released and immutable,
+and schemas 1.0 through 1.3 are unchanged. PyPI is not used.
+
+## Post-v0.4.0 development reset
+
+The active package and build identity is `0.5.0.dev0`. Current development artifacts are checked
+independently from frozen v0.4.0 release evidence; a third explicit validator mode is reserved for
+future release-candidate versions. The retained schema-1.3 report remains version `0.4.0`, and its
+provenance, the released schema hashes, and the recorded v0.4.0 asset evidence are verified without
+requiring them to match the active development version. This reset changes no runtime or scientific
+behaviour and contains no Stage 4B implementation.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head

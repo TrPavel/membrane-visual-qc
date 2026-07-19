@@ -42,6 +42,31 @@ FORBIDDEN_PROVIDER_NAMES = {
     "rcsb_assembly1.pdb.gz",
     "rcsb_deposited.pdb",
 }
+FROZEN_V040_VERSION = "0.4.0"
+FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
+FROZEN_V040_FILE_HASHES = {
+    FROZEN_V040_REPORT: "18874373d3792f70919b985162fd1982cd3d41595d5f589955069af37788bb0e",
+    "docs/v0.4.0_release_notes.md": (
+        "2bb7889301eeb30966f5a0e7360d5af6aa49f3db651922a3f3572d715211309c"
+    ),
+    "docs/v0.4.0_graphical_smoke.md": (
+        "4434c5d4689fcbae0be12395294cced9926875013715ab0d5832240df520ba55"
+    ),
+}
+FROZEN_V040_REPORT_PROVENANCE = {
+    "commit": "2f0247474c1b1a8da59c7307fa12fba8c009ca97",
+    "timestamp": "2026-07-19T20:48:41.424766+00:00",
+    "payloads": {
+        "pdbtm_json": {
+            "byte_size": 527,
+            "sha256": "7577a8135d0934ea39f118ad0b19b2475f48529dc105626b37a2437522272a7e",
+        },
+        "transformed_pdb": {
+            "byte_size": 1019,
+            "sha256": "2bf25ae63c52eae197de7d9bf1f963dca972ff687a2482282a19ef3900f59cb1",
+        },
+    },
+}
 
 
 class ReleaseArtifactError(ValueError):
@@ -59,7 +84,9 @@ def _assert_safe_archive_names(names: list[str]) -> None:
     for name in names:
         path = PurePosixPath(name)
         if (
-            any(part in FORBIDDEN_ARCHIVE_PARTS for part in path.parts)
+            "\\" in name
+            or bool(re.match(r"^[A-Za-z]:", name))
+            or any(part in FORBIDDEN_ARCHIVE_PARTS for part in path.parts)
             or path.suffix == ".pyc"
             or path.name in FORBIDDEN_PROVIDER_NAMES
             or path.name.startswith("stage4a2_")
@@ -79,59 +106,32 @@ def _contains_absolute_windows_path(value: object) -> bool:
     return False
 
 
-def validate_release_artifacts(
-    project_root: Path = ROOT, dist_dir: Path | None = None
-) -> dict[str, object]:
-    """Validate source versions, release reports, schemas, and all four release assets."""
-    project_root = project_root.resolve()
-    dist_dir = (dist_dir or project_root / "dist").resolve()
-    version = project_version(project_root)
+def _validate_version_agreement(project_root: Path, expected_version: str) -> None:
+    """Require the source, runtime constant, and package export to agree."""
+    source_version = project_version(project_root)
 
     from membrane_vqc import __version__
     from membrane_vqc.constants import VERSION
 
-    if version != VERSION or version != __version__:
+    if {source_version, VERSION, __version__} != {expected_version}:
         raise ReleaseArtifactError(
-            f"Version mismatch: pyproject={version}, constants={VERSION}, package={__version__}"
+            "Version mismatch: "
+            f"expected={expected_version}, pyproject={source_version}, "
+            f"constants={VERSION}, package={__version__}"
         )
 
-    active_surfaces = [
-        project_root / "pyproject.toml",
-        project_root / ".github" / "workflows" / "ci.yml",
-        project_root / "scripts" / "build_plugin_zip.py",
-        project_root / "scripts" / "validate_release_artifacts.py",
-        *sorted((project_root / "membrane_vqc").glob("*.py")),
-    ]
-    development_version = "0.4.0" + ".dev0"
-    for path in active_surfaces:
-        if development_version in path.read_text(encoding="utf-8"):
-            raise ReleaseArtifactError(f"Development version remains on active surface: {path}")
 
-    schema_results = {}
-    for schema_version, expected in SCHEMA_HASHES.items():
-        path = project_root / "schemas" / f"mvqc-report-{schema_version}.schema.json"
-        actual = hashlib.sha256(path.read_bytes()).hexdigest()
-        if actual != expected:
-            raise ReleaseArtifactError(f"Schema {schema_version} hash changed: {actual}")
-        schema_results[schema_version] = actual
+def _validate_artifact_set(
+    project_root: Path, dist_dir: Path, expected_version: str
+) -> dict[str, object]:
+    """Validate one exact four-file artifact set for an explicit version."""
+    project_root = project_root.resolve()
+    dist_dir = dist_dir.resolve()
+    _validate_version_agreement(project_root, expected_version)
 
-    release_reports = []
-    for path in sorted((project_root / "reports").glob("*_mvqc.json")):
-        report = json.loads(path.read_text(encoding="utf-8"))
-        if report.get("schema_version") != "1.3":
-            continue
-        report_versions = {report.get("version"), report.get("software", {}).get("version")}
-        if report_versions != {version}:
-            raise ReleaseArtifactError(f"Release report version mismatch: {path}")
-        if _contains_absolute_windows_path(report):
-            raise ReleaseArtifactError(f"Absolute local path in release report: {path}")
-        release_reports.append(path.name)
-    if not release_reports:
-        raise ReleaseArtifactError("No schema-1.3 release report was found")
-
-    wheel = dist_dir / f"membrane_vqc_pymol-{version}-py3-none-any.whl"
-    sdist = dist_dir / f"membrane_vqc_pymol-{version}.tar.gz"
-    plugin_zip = dist_dir / f"MembraneVisualQC-{version}.zip"
+    wheel = dist_dir / f"membrane_vqc_pymol-{expected_version}-py3-none-any.whl"
+    sdist = dist_dir / f"membrane_vqc_pymol-{expected_version}.tar.gz"
+    plugin_zip = dist_dir / f"MembraneVisualQC-{expected_version}.zip"
     sidecar = plugin_zip.with_suffix(".zip.sha256")
     for path in (wheel, sdist, plugin_zip, sidecar):
         if not path.is_file():
@@ -140,11 +140,11 @@ def validate_release_artifacts(
     with zipfile.ZipFile(wheel) as archive:
         wheel_names = archive.namelist()
         _assert_safe_archive_names(wheel_names)
-        metadata_names = [name for name in wheel_names if name.endswith(".dist-info/METADATA")]
-        if len(metadata_names) != 1:
-            raise ReleaseArtifactError("Wheel must contain exactly one METADATA file")
-        wheel_version = _metadata_version(archive.read(metadata_names[0]).decode("utf-8"))
-    if wheel_version != version:
+        metadata_name = f"membrane_vqc_pymol-{expected_version}.dist-info/METADATA"
+        if wheel_names.count(metadata_name) != 1:
+            raise ReleaseArtifactError(f"Wheel must contain exactly {metadata_name}")
+        wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
+    if wheel_version != expected_version:
         raise ReleaseArtifactError(f"Wheel metadata version mismatch: {wheel_version}")
 
     with tarfile.open(sdist, "r:gz") as archive:
@@ -160,8 +160,11 @@ def validate_release_artifacts(
             raise ReleaseArtifactError("Could not read sdist PKG-INFO")
         sdist_version = _metadata_version(metadata_file.read().decode("utf-8"))
         root = metadata_names[0].split("/", 1)[0]
+        expected_root = f"membrane_vqc_pymol-{expected_version}"
+        if root != expected_root:
+            raise ReleaseArtifactError(f"Sdist root mismatch: {root}")
         relative_names = {name.removeprefix(f"{root}/") for name in sdist_names}
-    if sdist_version != version:
+    if sdist_version != expected_version:
         raise ReleaseArtifactError(f"Sdist metadata version mismatch: {sdist_version}")
     required_sdist = {
         "membrane_vqc/__init__.py",
@@ -175,7 +178,7 @@ def validate_release_artifacts(
         raise ReleaseArtifactError(f"Sdist is missing: {', '.join(sorted(missing_sdist))}")
 
     manifest = validate_zip_layout(plugin_zip)
-    if manifest["plugin"]["version"] != version:
+    if manifest["plugin"]["version"] != expected_version:
         raise ReleaseArtifactError("Plugin ZIP manifest version mismatch")
     with zipfile.ZipFile(plugin_zip) as archive:
         _assert_safe_archive_names(archive.namelist())
@@ -188,9 +191,7 @@ def validate_release_artifacts(
         raise ReleaseArtifactError("Plugin ZIP checksum sidecar is inconsistent")
 
     return {
-        "version": version,
-        "reports": release_reports,
-        "schemas": schema_results,
+        "version": expected_version,
         "artifacts": {
             path.name: {"size": path.stat().st_size, "sha256": sha256_file(path)}
             for path in (plugin_zip, sidecar, wheel, sdist)
@@ -198,12 +199,114 @@ def validate_release_artifacts(
     }
 
 
+def validate_current_development_artifacts(
+    project_root: Path = ROOT, dist_dir: Path | None = None
+) -> dict[str, object]:
+    """Validate the active source version and its development artifacts."""
+    project_root = project_root.resolve()
+    version = project_version(project_root)
+    return _validate_artifact_set(
+        project_root, dist_dir or project_root / "dist", expected_version=version
+    )
+
+
+def validate_release_candidate_artifacts(
+    expected_version: str, project_root: Path = ROOT, dist_dir: Path | None = None
+) -> dict[str, object]:
+    """Validate artifacts for an explicitly selected future release candidate."""
+    if not expected_version:
+        raise ReleaseArtifactError("Release-candidate validation requires an explicit version")
+    project_root = project_root.resolve()
+    return _validate_artifact_set(
+        project_root, dist_dir or project_root / "dist", expected_version=expected_version
+    )
+
+
+def verify_frozen_v040_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify immutable v0.4.0 report, documentation, and released schema bytes."""
+    project_root = project_root.resolve()
+    file_results = {}
+    for relative, expected in FROZEN_V040_FILE_HASHES.items():
+        path = project_root / relative
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected:
+            raise ReleaseArtifactError(f"Frozen v0.4.0 evidence changed: {relative}: {actual}")
+        file_results[relative] = actual
+
+    schema_results = {}
+    for schema_version, expected in SCHEMA_HASHES.items():
+        path = project_root / "schemas" / f"mvqc-report-{schema_version}.schema.json"
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected:
+            raise ReleaseArtifactError(f"Schema {schema_version} hash changed: {actual}")
+        schema_results[schema_version] = actual
+
+    report_path = project_root / FROZEN_V040_REPORT
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    if report.get("schema_version") != "1.3":
+        raise ReleaseArtifactError("Frozen v0.4.0 report is not schema 1.3")
+    if {report.get("version"), report.get("software", {}).get("version")} != {FROZEN_V040_VERSION}:
+        raise ReleaseArtifactError("Frozen report no longer declares v0.4.0")
+    if report.get("software", {}).get("commit_status") != "recorded":
+        raise ReleaseArtifactError("Frozen report commit provenance is no longer recorded")
+    provenance = FROZEN_V040_REPORT_PROVENANCE
+    if report.get("software", {}).get("commit") != provenance["commit"]:
+        raise ReleaseArtifactError("Frozen report commit changed")
+    if report.get("generated_at") != provenance["timestamp"]:
+        raise ReleaseArtifactError("Frozen report timestamp changed")
+    if report.get("timestamp") != provenance["timestamp"]:
+        raise ReleaseArtifactError("Frozen report timestamp alias changed")
+    if _contains_absolute_windows_path(report):
+        raise ReleaseArtifactError("Absolute local path in frozen v0.4.0 report")
+
+    payloads = {
+        payload.get("role"): payload
+        for payload in report["orientation"]["evidence"]["source"]["raw_payloads"]
+    }
+    if set(payloads) != set(provenance["payloads"]):
+        raise ReleaseArtifactError("Frozen report payload roles changed")
+    for role, expected in provenance["payloads"].items():
+        payload = payloads[role]
+        if payload.get("source") is not None:
+            raise ReleaseArtifactError(f"Frozen report payload source changed: {role}")
+        if any(payload.get(key) != value for key, value in expected.items()):
+            raise ReleaseArtifactError(f"Frozen report payload provenance changed: {role}")
+
+    return {
+        "version": FROZEN_V040_VERSION,
+        "report": FROZEN_V040_REPORT,
+        "files": file_results,
+        "schemas": schema_results,
+    }
+
+
+# Backwards-compatible API name for callers that validate the active build.
+validate_release_artifacts = validate_current_development_artifacts
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--mode",
+        choices=("current-development", "frozen-v0.4.0", "release-candidate"),
+        default="current-development",
+    )
+    parser.add_argument("--version", default=None)
     parser.add_argument("--project-root", type=Path, default=ROOT)
     parser.add_argument("--dist", type=Path, default=None)
     args = parser.parse_args()
-    result = validate_release_artifacts(args.project_root, args.dist)
+    if args.mode == "current-development":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = validate_current_development_artifacts(args.project_root, args.dist)
+    elif args.mode == "frozen-v0.4.0":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v040_evidence(args.project_root)
+    else:
+        if args.version is None:
+            parser.error("--mode release-candidate requires --version")
+        result = validate_release_candidate_artifacts(args.version, args.project_root, args.dist)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 
