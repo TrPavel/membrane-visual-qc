@@ -297,8 +297,7 @@ The v0.4.0 release candidate promotes the active version to `0.4.0` and freezes 
 immutable release contract without changing its accepted bytes. Schema-1.3 validation remains
 structural plus semantic. Historical `0.4.0.dev0` acceptance evidence above remains unchanged.
 No network retrieval, OPM integration, source comparison, automatic alignment, tag, GitHub
-Release, or PyPI publication was added; Stage 4B has not started. Exact v0.4.0 release-artifact
-graphical smoke remains a separate post-review gate.
+Release, or PyPI publication was added; Stage 4B has not started.
 
 The local v0.4.0 release-candidate gate passed Ruff check and format check, 421 tests with eight
 optional FreeSASA skips, 87% combined coverage, and all 19 example reports (schema 1.1: 7, schema
@@ -312,14 +311,14 @@ SHA-256 `bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`.
 The standard setuptools wheel and sdist contain timestamps and therefore are not asserted to be
 byte-reproducible across separate builds; their version metadata and required contents pass the
 deterministic validator. The blocking Python matrix and Ubuntu FreeSASA job remain required in the
-draft PR workflow. Exact-artifact graphical smoke has not started.
+draft PR workflow.
 
-The future publication assets are frozen from workflow `29702735453`, artifact ID `8446942786`,
-archive digest `59884e5a6edc0f83ea3ca5ecb3e1ca0d8c092fc2fc9dc25f63c1798192bbb2fb`.
+The final publication assets are frozen from workflow `29703424337`, artifact ID `8447146429`,
+archive digest `ff7eab5b149452795d37d85059a938598fd6c16b4a6bb6d08f7c61495d08f5ed`.
 The authoritative wheel is 73,261 bytes with SHA-256
-`07a78e72d03a84c87f54dd1db64b65f2505b6663c75d0d912d0c38332d9e2ef1`; the authoritative
-sdist is 128,532 bytes with SHA-256
-`7cd22d8597e489876c6ac71202ef39499acbc7784b13df90771d803e2ed986f4`. Inspection confirmed
+`449e091743e5811da70c5309c86274abc5a4144cd8a842fc61f1723552b1b658`; the authoritative
+sdist is 128,782 bytes with SHA-256
+`8853b893e08a33feb742c9679241116628955c995ded12898a9ea407c38f1c07`. Inspection confirmed
 version `0.4.0`, wheel tag `py3-none-any`, schemas 1.0–1.3 in the sdist, and absence of `.local`,
 reports, manual Stage 4A2 exports, official provider payloads, and unsafe paths. Byte reproducibility
 is not claimed for wheel or sdist.
@@ -328,3 +327,12 @@ is not claimed for wheel or sdist.
 `2f0247474c1b1a8da59c7307fa12fba8c009ca97` at `2026-07-19T20:48:41.424766+00:00`. Its current
 payload digests and commit provenance are generated rather than hand-promoted; structural schema
 1.3 and mandatory Stage 4 semantic validation both pass.
+
+Exact v0.4.0 release-artifact graphical smoke passed on Windows 10 build 26200 with Incentive
+PyMOL 3.1.8 and bundled Python 3.10.20. The tested authoritative Plugin ZIP is 69,241 bytes with
+SHA-256 `bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5` and is
+byte-identical to the ZIP from corrected workflow `29703424337`. Identity and analytical-inverse
+1pcr cases, failure cleanup, `mvqc_clear`, legacy global-Z, planar orientation-file regression,
+version `0.4.0`, schema 1.3, Unicode rendering, and coordinate preservation passed. Relatively low
+slab contrast remains a non-blocking pre-v1.0 backlog item. The exact authoritative Plugin ZIP is
+approved for publication; `docs/v0.4.0_graphical_smoke.md` records the complete evidence.
