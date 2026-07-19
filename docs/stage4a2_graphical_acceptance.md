@@ -57,8 +57,8 @@ which used the same 9606 matched ATOM records.
 ## Failure and lifecycle acceptance
 
 - PASS — a wrong pair was rejected with `COMPANION_ID_MISMATCH`.
-- PASS — a manually rotated and translated object was rejected with `COORDINATE_FRAME_MISMATCH`;
-  its transformed coordinates remained transformed after rejection.
+- PASS — a manually translated object (+4 Å, −3 Å, +2 Å) was rejected with
+  `COORDINATE_FRAME_MISMATCH`; its translated coordinates remained unchanged after rejection.
 - PASS — no traceback, fallback, fitting, or automatic alignment occurred.
 - PASS — failed Run QC cleared plugin-owned state and `LAST_REPORT`; stale export was blocked.
 - PASS — failed Show Slab removed the prior slab and all other plugin-owned state.
