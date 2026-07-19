@@ -16,6 +16,30 @@ provenance, the released schema hashes, and the recorded v0.4.0 asset evidence a
 requiring them to match the active development version. This reset changes no runtime or scientific
 behaviour and contains no Stage 4B implementation.
 
+### Development-reset completion
+
+PR [#12](https://github.com/TrPavel/membrane-visual-qc/pull/12) final head
+`5e94b6d3ad544416e3bd0b3367e9bc967b40b5b0` passed
+[workflow 29706357716](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29706357716)
+and was squash-merged as `356f01062464dc888fa096ef20fee3e6edbebbe3`. The
+[post-merge workflow 29706523306](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29706523306)
+passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job. Retained validation
+reported 438 passed, 8 optional skips, 87% coverage, and 19 valid reports: seven schema 1.1,
+eleven schema 1.2, and one schema 1.3.
+
+The active version remains `0.5.0.dev0`. Version validation imports the package from an isolated
+child process and verifies that it belongs to the explicitly supplied `project_root`. The
+deterministic development artifact remains `MembraneVisualQC-0.5.0.dev0.zip`, 69,248 bytes,
+SHA-256 `6b53224e6b9690fae330f2ac04b7ccd9e3ae61dd8d4eeb1ece97abaf80b8c4d0`.
+Frozen v0.4.0 evidence remains immutable, and released schema hashes remain unchanged:
+
+- schema 1.0: `5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`;
+- schema 1.1: `86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`;
+- schema 1.2: `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`;
+- schema 1.3: `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+No tag, GitHub Release, or PyPI publication was created. Stage 4B has not started.
+
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
 `3740c4dd8bc3a1c6f69778c4715926a19480bbfa` passed
