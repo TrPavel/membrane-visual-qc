@@ -1,6 +1,16 @@
 """Membrane Visual QC PyMOL plugin package."""
 
 from .constants import VERSION
+from .orientation_sources import OrientationImportResult, StructureContext
+from .pdbtm_adapter import PdbtmApiV1Adapter, import_pdbtm_orientation
+
+__all__ = [
+    "OrientationImportResult",
+    "PdbtmApiV1Adapter",
+    "StructureContext",
+    "VERSION",
+    "import_pdbtm_orientation",
+]
 
 __version__ = VERSION
 _MENU_REGISTERED = False

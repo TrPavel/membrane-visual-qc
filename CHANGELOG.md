@@ -6,6 +6,27 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Added the Stage 4A1 pure-Python offline PDBTM domain model and API-v1 adapter with strict payload
+  limits, direct coordinate applicability, analytical inverse mapping, precision-derived bounds,
+  deterministic fingerprints, and no fitting or network dependency.
+- Added draft report schema 1.3 for resolved external-orientation provenance while preserving
+  schemas 1.0/1.1/1.2 and existing CSV columns.
+- Added strict PDBTM normal, chain/assembly, payload-role, geometry-identity, precision-bound,
+  spatial-witness, fingerprint, occupancy, and duplicate-ATOM validation for Stage 4A1 review.
+- Added mandatory schema-1.3 semantic validation for finite unit normals, reviewed source geometry,
+  symmetric PDBTM boundaries, and resolved/report geometry identity after structural validation.
+
+### Changed
+
+- Promoted the active development identity to `0.4.0.dev0`; v0.3.0 remains the latest published
+  prerelease. GUI/PyMOL integration, retrieval, OPM, comparison, and Stage 4A2 remain unstarted.
+- Made schema 1.3 normative for every new Stage 4 evidence object and fixed offline retrieval
+  provenance at unverified; source geometry no longer claims an MVQC interface width.
+- Restricted offline PDBTM input to one primary `pdbtm_json` payload and zero or one
+  `transformed_pdb` companion; unknown roles and duplicate companions are rejected.
+
 ## [0.3.0] - 2026-07-18
 
 ### Added

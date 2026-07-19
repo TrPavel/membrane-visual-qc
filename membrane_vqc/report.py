@@ -9,18 +9,28 @@ import os
 import platform
 import subprocess
 import tempfile
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
+import math
 from pathlib import Path
 from typing import Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
 from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
-from .errors import ReportError
+from .errors import OrientationError, ReportError
 from .orientation import PlanarMembrane, legacy_global_z, measure_point
+from .orientation_sources import (
+    GEOMETRY_MATCH_TOLERANCE,
+    OrientationEvidenceV1,
+    validate_membrane_geometry,
+)
 
 SCHEMA_VERSION = "1.1"
 CONTEXT_SCHEMA_VERSION = "1.2"
-SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION})
+ADAPTER_SCHEMA_VERSION = "1.3"
+SUPPORTED_SCHEMA_VERSIONS = frozenset(
+    {SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION, ADAPTER_SCHEMA_VERSION}
+)
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
 
@@ -47,6 +57,7 @@ def build_report(
     capabilities: dict[str, Any] | None = None,
     membrane: PlanarMembrane | None = None,
     orientation_import: Any | None = None,
+    orientation_evidence: OrientationEvidenceV1 | None = None,
     exposure_analysis: ExposureAnalysis | None = None,
     local_context_analysis: LocalContextAnalysis | None = None,
 ) -> dict[str, Any]:
@@ -71,6 +82,13 @@ def build_report(
     )
 
     membrane = membrane or legacy_global_z(zmin, zmax, DEFAULT_INTERFACE_WIDTH)
+    if orientation_evidence is not None:
+        try:
+            validate_membrane_geometry(membrane, orientation_evidence.current_geometry)
+        except OrientationError as exc:
+            raise ReportError(
+                f"orientation evidence does not match resolved membrane: {exc}"
+            ) from exc
     review_items = sorted(
         (_with_depth_fields(item, membrane) for item in flagged_residues), key=_residue_sort_key
     )
@@ -99,11 +117,17 @@ def build_report(
     import_record = _orientation_import_dict(orientation_import)
     if import_record is not None:
         orientation["import"] = import_record
+    if orientation_evidence is not None:
+        orientation["evidence"] = orientation_evidence.as_dict()
 
     report = {
-        "schema_version": CONTEXT_SCHEMA_VERSION
-        if exposure_analysis is not None or local_context_analysis is not None
-        else SCHEMA_VERSION,
+        "schema_version": (
+            ADAPTER_SCHEMA_VERSION
+            if orientation_evidence is not None
+            else CONTEXT_SCHEMA_VERSION
+            if exposure_analysis is not None or local_context_analysis is not None
+            else SCHEMA_VERSION
+        ),
         "report_type": REPORT_TYPE,
         "software": {
             "name": PLUGIN_NAME,
@@ -240,6 +264,9 @@ def validate_report(report: dict[str, Any]) -> None:
         raise ReportError("Orientation source is required.")
     if schema_version == CONTEXT_SCHEMA_VERSION and "context_analysis" not in report:
         raise ReportError("Schema 1.2 reports require context_analysis metadata.")
+    if schema_version == ADAPTER_SCHEMA_VERSION and "evidence" not in report["orientation"]:
+        raise ReportError("Schema 1.3 reports require adapter orientation evidence.")
+    has_context = "context_analysis" in report
     required_review_fields = {
         "model",
         "chain",
@@ -263,14 +290,135 @@ def validate_report(report: dict[str, Any]) -> None:
             raise ReportError(
                 f"Review item {index} is missing required fields: " + ", ".join(missing_fields)
             )
-        if schema_version == CONTEXT_SCHEMA_VERSION and "exposure" not in item:
+        if has_context and "exposure" not in item:
             raise ReportError(f"Review item {index} is missing required exposure evidence.")
         if (
-            schema_version == CONTEXT_SCHEMA_VERSION
+            has_context
             and report.get("context_analysis", {}).get("local_context") is not None
             and "local_context" not in item
         ):
             raise ReportError(f"Review item {index} is missing required local-context evidence.")
+    if schema_version == ADAPTER_SCHEMA_VERSION:
+        validate_stage4_report_semantics(report)
+
+
+def validate_stage4_report_semantics(report: Mapping[str, object]) -> None:
+    """Validate nonlinear scientific invariants for a schema-1.3 report."""
+
+    if report.get("schema_version") != ADAPTER_SCHEMA_VERSION:
+        return
+    try:
+        orientation = _semantic_mapping(report.get("orientation"), "orientation")
+        evidence = _semantic_mapping(orientation.get("evidence"), "orientation.evidence")
+        source = _semantic_mapping(
+            evidence.get("source_geometry"), "orientation.evidence.source_geometry"
+        )
+        current = _semantic_mapping(
+            evidence.get("current_geometry"), "orientation.evidence.current_geometry"
+        )
+
+        source_normal = _semantic_vector(
+            source.get("normal"), "orientation.evidence.source_geometry.normal"
+        )
+        current_normal = _semantic_vector(
+            current.get("normal"), "orientation.evidence.current_geometry.normal"
+        )
+        _require_unit_vector(source_normal, "orientation.evidence.source_geometry.normal")
+        _require_unit_vector(current_normal, "orientation.evidence.current_geometry.normal")
+        _require_vector_match(
+            source_normal,
+            (0.0, 0.0, 1.0),
+            "orientation.evidence.source_geometry.normal",
+        )
+
+        source_lower = _semantic_number(
+            source.get("lower_offset"), "orientation.evidence.source_geometry.lower_offset"
+        )
+        source_upper = _semantic_number(
+            source.get("upper_offset"), "orientation.evidence.source_geometry.upper_offset"
+        )
+        if not math.isclose(
+            source_lower,
+            -source_upper,
+            rel_tol=0.0,
+            abs_tol=GEOMETRY_MATCH_TOLERANCE,
+        ):
+            raise ReportError("Stage 4 source PDBTM offsets must be symmetric.")
+
+        _require_vector_match(
+            _semantic_vector(orientation.get("center"), "orientation.center"),
+            _semantic_vector(current.get("center"), "orientation.evidence.current_geometry.center"),
+            "orientation current geometry center",
+        )
+        _require_vector_match(
+            _semantic_vector(orientation.get("normal"), "orientation.normal"),
+            current_normal,
+            "orientation current geometry normal",
+        )
+        for field in ("lower_offset", "upper_offset", "interface_width"):
+            actual = _semantic_number(orientation.get(field), f"orientation.{field}")
+            expected = _semantic_number(
+                current.get(field), f"orientation.evidence.current_geometry.{field}"
+            )
+            if not math.isclose(
+                actual,
+                expected,
+                rel_tol=0.0,
+                abs_tol=GEOMETRY_MATCH_TOLERANCE,
+            ):
+                raise ReportError(
+                    f"Stage 4 orientation.{field} does not match current geometry evidence."
+                )
+    except ReportError:
+        raise
+    except (TypeError, ValueError) as exc:
+        raise ReportError(f"Invalid Stage 4 semantic evidence: {exc}") from exc
+
+
+def _semantic_mapping(value: object, path: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise ReportError(f"{path} must be an object for Stage 4 semantic validation.")
+    return value
+
+
+def _semantic_number(value: object, path: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ReportError(f"{path} must be a finite number.")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ReportError(f"{path} must be a finite number.")
+    return number
+
+
+def _semantic_vector(value: object, path: str) -> tuple[float, float, float]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence) or len(value) != 3:
+        raise ReportError(f"{path} must contain three finite numbers.")
+    return tuple(
+        _semantic_number(component, f"{path}[{index}]") for index, component in enumerate(value)
+    )  # type: ignore[return-value]
+
+
+def _require_unit_vector(vector: tuple[float, float, float], path: str) -> None:
+    norm = math.sqrt(sum(component * component for component in vector))
+    if not math.isclose(norm, 1.0, rel_tol=0.0, abs_tol=GEOMETRY_MATCH_TOLERANCE):
+        raise ReportError(f"{path} must be unit length within {GEOMETRY_MATCH_TOLERANCE:g}.")
+
+
+def _require_vector_match(
+    actual: tuple[float, float, float],
+    expected: tuple[float, float, float],
+    path: str,
+) -> None:
+    if any(
+        not math.isclose(
+            left,
+            right,
+            rel_tol=0.0,
+            abs_tol=GEOMETRY_MATCH_TOLERANCE,
+        )
+        for left, right in zip(actual, expected, strict=True)
+    ):
+        raise ReportError(f"{path} differs beyond {GEOMETRY_MATCH_TOLERANCE:g}.")
 
 
 def sha256_file(path: str | Path) -> str:
@@ -455,6 +603,8 @@ def _orientation_limitations(membrane: PlanarMembrane) -> list[str]:
         limitations[0] = "Manual global-z membrane orientation was used."
     elif membrane.source.startswith("manual"):
         limitations[0] = "Manual planar membrane orientation was used."
+    elif membrane.source == "pdbtm_offline":
+        limitations[0] = "Offline PDBTM orientation was verified by direct coordinate evidence."
     else:
         limitations[0] = (
             "Explicit planar orientation metadata was used and was not independently verified."

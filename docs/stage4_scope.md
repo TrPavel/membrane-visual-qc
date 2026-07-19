@@ -1,6 +1,6 @@
-# Stage 4 scope proposal
+# Stage 4 scope and implementation boundary
 
-Status: proposed; requires explicit review acceptance before Stage 4A coding.
+Status: Stage 4A1 offline core is in development; Stage 4A2 integration has not started.
 
 ## Goal and subdivision
 
@@ -40,6 +40,11 @@ PDB ID, chains and assembly metadata never establish applicability by themselves
 coordinates are compared directly with both the transformed companion and an analytically
 inverse-transformed copy. Identity or inverse-provider mapping is accepted only after the
 preflight-defined direct residual check. There is no structural alignment or fitted transform.
+
+PDBTM normal semantics require reviewed x/y serialization noise and positive-z half-thickness.
+Spatial sufficiency is a deterministic lower-bound witness, not a claimed exact diameter. Exact
+provider/current chain sets and `ent_cif_chain_map` are mandatory; Stage 4A1 has no subset mode.
+Caller-supplied offline payloads always serialize `retrieval_verified = false`.
 
 OPM is not included in the first implementation PR. It is a separate experimental follow-up after
 the PDBTM path is accepted.
@@ -141,7 +146,9 @@ semantics. Released 1.0, 1.1 and 1.2 remain immutable.
 - comparison is optional in 1.3 and absent when not requested;
 - existing CSV columns remain unchanged; rich provenance remains JSON-only.
 
-Schema 1.3 is not created on this research branch.
+Schema 1.3 is now a draft development schema in `0.4.0.dev0`. It is not released or immutable yet.
+Stage 4A1 provides only explicit-byte pure-Python import and report serialization; file dialogs,
+PyMOL commands, rendering, GUI controls, and network acquisition remain Stage 4A2 or later work.
 
 ## Estimate
 

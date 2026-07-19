@@ -1,5 +1,30 @@
 # Report schemas
 
+## Draft schema 1.3 (Stage 4A1 development)
+
+Development version `0.4.0.dev0` adds unreleased
+`schemas/mvqc-report-1.3.schema.json` for successfully resolved offline PDBTM orientations. It
+serializes source identity, separate exact-payload digests, adapter and provider versions, source
+and current scopes/geometries, the provider matrix and analytical inverse, direct identity/inverse
+match metrics, coordinate fingerprints, precision profile, thresholds, and stable warnings.
+Every Stage 4 evidence structure has exact required fields and rejects unexpected properties.
+Imported PDBTM evidence requires exactly one JSON and one transformed-PDB digest, both explicitly
+unverified for the public offline API. Provider source geometry uses a null interface width; the
+configured MVQC width is recorded only in resolved current geometry and analysis metadata.
+
+JSON Schema 1.3 defines the structural contract: required fields, types, closed objects, enums,
+and linear numeric bounds. It does not claim to calculate nonlinear Euclidean vector norms. Every
+schema-1.3 report therefore also passes the deterministic Stage 4 semantic validator after JSON
+Schema validation. That validator uses the shared domain tolerance `1e-9` and requires finite unit
+source/current normals, the reviewed positive-Z PDBTM source normal, symmetric source offsets, and
+numerical identity between current evidence geometry and the top-level resolved orientation.
+
+Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
+exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.
+Partial, rejected, and unsupported imports cannot create reports. CSV columns are unchanged and do
+not contain rich orientation provenance. Schema 1.3 is draft and unreleased; schemas 1.0, 1.1, and
+1.2 remain byte-identical.
+
 Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`; released v0.2.0 analysis uses
 additive schema 1.1. Both schemas are immutable, and validation dispatches by the declared version.
 

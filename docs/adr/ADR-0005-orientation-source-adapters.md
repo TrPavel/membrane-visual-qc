@@ -5,8 +5,8 @@
 - Depends on: ADR-0002 planar orientation convention
 
 Architecture acceptance is not implementation completion. The required PDBTM source-semantics
-preflight has passed, so Stage 4A production implementation is now unblocked. No Stage 4A
-production code has started.
+preflight passed and Stage 4A1 is now implemented only on draft PR #9 for review. It is not merged,
+released, or user-integrated; Stage 4A2 has not started.
 
 ## PDBTM source-semantics preflight result
 
@@ -26,9 +26,9 @@ and corresponding RCSB coordinates for `1pcr` (`Tm_Alpha`) and `1a0s` (`Tm_Beta`
 
 The machine-readable result is
 [`pdbtm_semantics_preflight_results.json`](../pdbtm_semantics_preflight_results.json). Raw official
-payloads were not committed. Stage 4A production implementation is unblocked but has not started;
-this ADR still does not authorize OPM, retrieval, comparison, automatic alignment, schema 1.3, or
-runtime changes outside a separately reviewed implementation PR.
+payloads were not committed. Stage 4A1 implementation remains a draft review candidate. This ADR
+still does not authorize OPM, retrieval, comparison, automatic alignment, or runtime integration
+outside a separately reviewed implementation PR.
 
 ## Context
 
@@ -66,6 +66,11 @@ class StructureScope:
     model_id: str | None
     biological_assembly: str | None
     chains: tuple[str, ...]
+    provider_chain_labels: tuple[str, ...]
+    legacy_chains: tuple[str, ...]
+    chain_mapping: Mapping[str, tuple[str, ...]]
+    selected_model: int
+    chain_namespace: str
     coordinate_frame: str
     coordinate_fingerprint: str | None
 
@@ -118,7 +123,9 @@ transformed-PDB companion. JSON provenance without its companion may be retained
 it cannot populate `current_geometry` or create a `PlanarMembrane`.
 
 `source_geometry` is exactly what the provider supplies or what its documented representation
-deterministically encodes. `mapping` records the exact transform applied by the adapter.
+deterministically encodes. PDBTM does not provide an MVQC interface width, so its source geometry
+uses `interface_width = None`; the resolved current geometry records the separately configured
+MVQC analysis width. `mapping` records the exact transform applied by the adapter.
 `current_geometry` is the only geometry converted to `PlanarMembrane`. Reports retain all three.
 
 The homogeneous matrix convention is fixed: column coordinate `p_current = M * p_source`, with a
@@ -181,7 +188,7 @@ Every parse:
   changed matrix semantics, non-rigid transforms, or precision outside the reviewed envelope return
   `unsupported`, with no historical fixed threshold silently reused;
 - uses angstroms internally and records any source-unit conversion;
-- normalizes a finite non-zero normal without losing the supplied vector in raw metadata;
+- enforces source-specific normal semantics without replacing an arbitrary vector direction;
 - produces ordered `lower_offset < upper_offset`; recoverable unlabeled reversal is reordered with
   `BOUNDARIES_REORDERED`, while ambiguous/labeled conflicts are rejected;
 - distinguishes malformed, unsupported, partial and scope-mismatch results;
@@ -237,9 +244,12 @@ other optimization is permitted.
 
 ### Coordinate and scope matching
 
-Chain labels are matched in the provider-declared namespace (`auth_asym_id`, `label_asym_id`, or
-legacy PDB chain) and the namespace is serialized. Assembly identity is exact, not inferred from
-chain equality. A provider record for a different assembly or chain set returns a scope mismatch.
+Chain labels are matched through the exact provider `ent_cif_chain_map`, not by raw equality.
+Evidence serializes provider JSON labels, transformed companion legacy chains, current legacy
+chains, the exact map, and the selected model. Transformed and current legacy chain sets must be
+identical; Stage 4A1 has no subset mode. Provider assembly, when supplied, and current assembly are
+serialized separately. Assembly identity is exact, not inferred from chain equality, and current
+assembly is never copied into source scope.
 
 The model is explicitly selected before matching. Canonical atom identity is:
 
@@ -249,14 +259,19 @@ The model is explicitly selected before matching. Canonical atom identity is:
 
 Altloc resolution uses one documented, versioned policy on both sides. The matched intersection is
 sorted by canonical atom identity. Matching requires at least 12 atoms across at least three
-residues, a maximum pairwise separation of at least 10 angstrom, and at least one matched point at
-least 2 angstrom from the line through the farthest pair. These are minimum applicability checks,
-not biological-quality thresholds.
+residues. Spatial sufficiency uses the deterministic
+`lexicographic_double_sweep_lower_bound_v1` witness: its endpoint separation must be at least 10
+angstrom and at least one matched point must be 2 angstrom from that witness line. The witness is
+a conservative lower bound, not a claimed maximum pairwise distance. It may reject a set whose
+true diameter is larger; it cannot fabricate evidence that the 10-angstrom threshold was met.
 
 Coordinates are compared directly. RMSD and maximum per-atom Euclidean residual are calculated for
 each candidate reference without fitting. The adapter derives decimal coordinate and matrix
-precision from every exact payload before comparison and computes precision-derived bounds for
-that payload; bounds cannot be chosen after examining implementation output.
+precision from every exact payload before comparison and computes
+`runtime_identity_theoretical_bound`, `provider_forward_theoretical_bound`, and
+`runtime_inverse_theoretical_bound`. If either runtime theoretical bound exceeds its fixed reviewed
+limit, the format is `unsupported / PRECISION_OUTSIDE_ENVELOPE` before coordinate-frame matching;
+bounds cannot be chosen after examining implementation output.
 
 The reviewed OpenAPI/API v1 field structure and numeric precision envelope define format
 compatibility. PDBTM resource `1017` is the tested data snapshot and provider software `3.2.134` is
@@ -270,18 +285,25 @@ The evidence serializes the selected model, chain namespace, altloc policy, matc
 RMSD, maximum residual, spatial-distribution measurements, selected reference, and both canonical
 coordinate fingerprints. The fingerprint contract is
 `mvqc_atom_identity_coordinates_sha256`, version `1`: canonical UTF-8 atom-identity records plus
-coordinates rounded only to the provider precision established by preflight. The unrounded
-residuals remain the matching evidence.
+coordinates quantized deterministically at the validated provider precision using round-half-even;
+signed zero is canonicalized to positive zero. The unrounded residuals remain the matching
+evidence.
 
 Any later atom-derived alignment requires a new ADR, atom mapping provenance, residual thresholds,
 and explicit user action.
 
 ### Boundary and normal semantics
 
-`lower` and `upper` retain ADR-0002 geometric meaning. Normal reversal is physically equivalent
-only with offset reversal and any source side labels updated. Adapters do not canonicalize the
-normal direction merely for display. Provider topology terms are evidence and remain separate from
-geometric lower/upper labels.
+For the reviewed PDBTM API-v1 planar representation, transformed physical normal direction is +Z.
+The serialized x/y components may contain only noise inside the reviewed precision envelope, z
+must be positive, and z itself is the symmetric half-thickness. Large x/y, negative z, zero z, or
+an arbitrary non-zero direction are not normalized into apparent support; they return a stable
+unsupported/rejected result. `lower` and `upper` retain ADR-0002 geometric meaning. Provider
+topology terms remain separate from geometric lower/upper labels.
+
+Offline Stage 4A1 bytes are caller-controlled. Their exact hashes and declared source metadata are
+retained, but `retrieval_verified` is always false. Verified retrieval is reserved for a future
+trusted Stage 4B transport path that cannot be constructed through the public offline API.
 
 ### Layering
 
@@ -300,6 +322,17 @@ normalized source identity, raw SHA-256, adapter name/version, source/current sc
 geometry, exact coordinate mapping, current geometry, confidence, and warnings. Optional
 `orientation_comparison` records thresholds, metrics, mismatch states and both evidence IDs.
 
+Schema 1.3 is the structural contract; JSON Schema does not enforce nonlinear Euclidean unit-vector
+semantics. After structural validation, every schema-1.3 report therefore runs the deterministic
+Stage 4 semantic validator with the shared domain tolerance `1e-9`. It requires finite unit source
+and current normals, reviewed positive-Z source direction, symmetric source offsets, and numerical
+agreement between evidence current geometry and the top-level resolved orientation.
+
+At the adapter boundary, the primary role is exactly `pdbtm_json`. Zero companions produces only
+partial provenance; exactly one `transformed_pdb` companion is the sole resolved-import shape.
+Unknown roles and duplicate transformed companions are rejected before scientific parsing. Thus an
+imported report always serializes exactly one digest for each of those two roles.
+
 Schema dispatch is fixed:
 
 - manual/global-Z or local orientation JSON with context disabled: schema 1.1;
@@ -310,7 +343,8 @@ Schema dispatch is fixed:
 
 Partial, rejected, unsupported or coordinate-mismatched imports produce no QC report and never
 fall back silently to manual geometry. Schemas 1.0, 1.1 and 1.2 are immutable; CSV columns remain
-unchanged. Schema 1.3 is not created in the research PR.
+unchanged. Schema 1.3 is implemented only in the Stage 4A1 draft implementation PR and remains
+unreleased.
 
 ## Consequences
 
