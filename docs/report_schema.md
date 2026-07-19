@@ -1,9 +1,9 @@
 # Report schemas
 
-## Draft schema 1.3 (Stage 4A development)
+## Released schema 1.3 (v0.4.0)
 
-Development version `0.4.0.dev0` adds unreleased
-`schemas/mvqc-report-1.3.schema.json` for successfully resolved offline PDBTM orientations. It
+Version `0.4.0` releases `schemas/mvqc-report-1.3.schema.json` for successfully resolved offline
+PDBTM orientations. It
 serializes source identity, separate exact-payload digests, adapter and provider versions, source
 and current scopes/geometries, the provider matrix and analytical inverse, direct identity/inverse
 match metrics, coordinate fingerprints, precision profile, thresholds, and stable warnings.
@@ -24,15 +24,19 @@ example report; JSON Schema alone is not described as enforcing nonlinear vector
 Schema dispatch remains additive: manual/local orientation without context is 1.1; Stage 3
 exposure/context is 1.2; a resolved adapter orientation is 1.3 with or without Stage 3 context.
 Partial, rejected, and unsupported imports cannot create reports. CSV columns are unchanged and do
-not contain rich orientation provenance. Schema 1.3 is draft and unreleased; schemas 1.0, 1.1, and
-1.2 remain byte-identical.
+not contain rich orientation provenance. Schemas 1.0–1.3 are immutable release contracts and
+remain byte-identical to their accepted hashes.
+
+The frozen schema retains its originally reviewed `$id` suffix `1.3-draft` because changing that
+identifier would change the accepted bytes. Release status is defined by the v0.4.0 contract and
+the immutable SHA-256, not by rewriting the historical identifier.
 
 Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`; released v0.2.0 analysis uses
 additive schema 1.1. Both schemas are immutable, and validation dispatches by the declared version.
 
 v0.3.0 opt-in exposure or local-context analysis uses `schemas/mvqc-report-1.2.schema.json`.
 Context-disabled calls continue to produce the v0.2-compatible schema 1.1 contract. Schema 1.2 is
-the v0.3.0 release schema and becomes immutable when v0.3.0 is published; its scientific meaning
+the immutable v0.3.0 release schema; its scientific meaning
 is frozen during release preparation.
 
 Schema 1.2 adds top-level `context_analysis` metadata and an `exposure` object on every

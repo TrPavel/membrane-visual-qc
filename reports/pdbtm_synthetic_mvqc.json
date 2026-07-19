@@ -390,7 +390,7 @@
     "commit": "3191c47e7b78ce2147d95a461c60e9e23b9d84ba",
     "commit_status": "recorded",
     "name": "membrane-vqc-pymol",
-    "version": "0.4.0.dev0"
+    "version": "0.4.0"
   },
   "summary": {
     "charged_core_residues": 0,
@@ -401,6 +401,6 @@
     "total_residues": 0
   },
   "timestamp": "2026-07-18T22:51:07.824311+00:00",
-  "version": "0.4.0.dev0",
+  "version": "0.4.0",
   "warnings": []
 }

@@ -293,7 +293,23 @@ Released schema hashes remain unchanged: schema 1.0
 `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`. Draft schema 1.3 remains
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
 
-Schema 1.3 remains draft and unreleased, the development version remains `0.4.0.dev0`, and v0.3.0
-remains the latest published release. Stage 4A2 is ready for final code and acceptance review. No
-network retrieval, OPM integration, source comparison, automatic alignment, release, or PyPI
-publication was added; Stage 4B has not started.
+The v0.4.0 release candidate promotes the active version to `0.4.0` and freezes schema 1.3 as an
+immutable release contract without changing its accepted bytes. Schema-1.3 validation remains
+structural plus semantic. Historical `0.4.0.dev0` acceptance evidence above remains unchanged.
+No network retrieval, OPM integration, source comparison, automatic alignment, tag, GitHub
+Release, or PyPI publication was added; Stage 4B has not started. Exact v0.4.0 release-artifact
+graphical smoke remains a separate post-review gate.
+
+The local v0.4.0 release-candidate gate passed Ruff check and format check, 421 tests with eight
+optional FreeSASA skips, 87% combined coverage, and all 19 example reports (schema 1.1: 7, schema
+1.2: 11, schema 1.3: 1). Wheel and sdist metadata report `0.4.0`; the sdist contains the package,
+immutable schemas, synthetic fixtures, and validation scripts without report exports. The release-artifact
+validator also confirms active schema-1.3 report identity, clean archive layouts, Plugin Manifest
+consistency, and the exact checksum sidecar.
+
+Two Plugin ZIP builds were byte-identical. `MembraneVisualQC-0.4.0.zip` is 69,241 bytes with
+SHA-256 `bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`.
+The standard setuptools wheel and sdist contain timestamps and therefore are not asserted to be
+byte-reproducible across separate builds; their version metadata and required contents pass the
+deterministic validator. The blocking Python matrix and Ubuntu FreeSASA job remain required in the
+draft PR workflow. Exact-artifact graphical smoke has not started.

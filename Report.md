@@ -516,3 +516,27 @@ is superseded and is not eligible for final graphical acceptance.
 Schemas 1.0–1.2 retain their released hashes; draft schema 1.3 remains
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Interactive graphical
 acceptance of the exact candidate ZIP remains pending and is not inferred from headless results.
+
+## v0.4.0 prerelease candidate
+
+The release branch promotes the active package, Plugin Manifest, generated schema-1.3 report,
+wheel, sdist, and Plugin ZIP identity to `0.4.0`. Schema 1.3 is now the immutable v0.4.0 structural
+contract and retains mandatory nonlinear semantic validation. Schemas 1.0–1.3 remain byte-identical
+to their accepted hashes.
+
+Local validation passed Ruff check and format check, 421 tests with eight optional FreeSASA skips,
+87% combined coverage, and all 19 example reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel and
+sdist package metadata report `0.4.0`, and the source archive contains the required runtime,
+schemas, synthetic fixtures, and validation scripts without report exports. The release-artifact validator
+enforces version consistency, archive layout, schema hashes, synthetic-only provenance, and the
+checksum sidecar in local and CI validation.
+
+Two Plugin ZIP builds were byte-for-byte identical. The candidate
+`MembraneVisualQC-0.4.0.zip` is 69,241 bytes with SHA-256
+`bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`. The standard setuptools
+wheel and sdist include archive timestamps, so their exact hashes are recorded for this build but
+are not claimed to reproduce across independent invocations; their metadata and contents validate.
+Official PDBTM/RCSB payloads remain outside Git.
+
+The exact v0.4.0 Plugin ZIP graphical smoke remains a separate post-review gate. No tag, GitHub
+Release, or PyPI publication exists, and Stage 4B has not started.

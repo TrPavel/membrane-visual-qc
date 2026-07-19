@@ -342,9 +342,9 @@ Schema dispatch is fixed:
   evidence.
 
 Partial, rejected, unsupported or coordinate-mismatched imports produce no QC report and never
-fall back silently to manual geometry. Schemas 1.0, 1.1 and 1.2 are immutable; CSV columns remain
-unchanged. Schema 1.3 is implemented only in the Stage 4A1 draft implementation PR and remains
-unreleased.
+fall back silently to manual geometry. Schemas 1.0–1.3 are immutable release contracts; CSV
+columns remain unchanged. Schema 1.3 is released with v0.4.0 and requires both JSON Schema
+structural validation and the mandatory Stage 4 semantic validator.
 
 ## Consequences
 

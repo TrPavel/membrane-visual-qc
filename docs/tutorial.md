@@ -23,7 +23,7 @@ The structure must already be in a meaningful coordinate frame. The plugin recor
 orientation and does not infer membrane alignment. Use `mvqc_clear` to remove all plugin-owned
 objects and temporary report state without touching user objects.
 
-## Unreleased planar-orientation workflow
+## Planar-orientation workflow
 
 Stage 2 accepts a strict local JSON document instead of fragile comma-separated vectors:
 
@@ -41,9 +41,9 @@ The demo orientation belongs only to the documented rigid transform in the valid
 The GUI offers **Legacy global-z** and **Planar orientation file** modes. Advanced manual-plane
 fields and automatic external adapters are deferred.
 
-## Unreleased offline PDBTM workflow
+## Offline PDBTM workflow
 
-Development version `0.4.0.dev0` can apply one explicit matching local PDBTM API-v1 JSON and
+Version `0.4.0` can apply one explicit matching local PDBTM API-v1 JSON and
 transformed-PDB companion to a complete single-state PyMOL object without fitting or modifying it:
 
 ```pml

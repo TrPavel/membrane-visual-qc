@@ -320,8 +320,34 @@ object (+4 Å, −3 Å, +2 Å), which was rejected without altering its translat
 planes were visible but relatively low contrast on a dark background; this is a non-blocking
 pre-v1.0 UI backlog item.
 
-Stage 4A2 PyMOL and GUI integration is complete and merged into `main`. Schema 1.3 remains draft
-and unreleased, the version remains `0.4.0.dev0`, and v0.3.0 remains the latest published release.
-Official provider payloads remain outside Git. No network retrieval, OPM integration, source
-comparison, fitting, automatic alignment, v0.4.0 release, or PyPI publication was created. Stage 4B
-has not started; the next gate is v0.4.0 prerelease preparation.
+Stage 4A2 PyMOL and GUI integration is complete and merged into `main`. Official provider payloads
+remain outside Git. No network retrieval, OPM integration, source comparison, fitting, automatic
+alignment, or Stage 4B work was added.
+
+## v0.4.0 prerelease preparation
+
+The `release/v0.4.0` candidate promotes the active identity to `0.4.0` and freezes schema 1.3 as
+the immutable v0.4.0 release contract alongside schemas 1.0–1.2. Schema-1.3 reports continue to
+require structural JSON Schema validation followed by the mandatory Stage 4 semantic validator.
+v0.3.0 remains the latest published release until this candidate completes automated review,
+exact-artifact graphical smoke, merge, tag, and publication gates.
+
+No v0.4.0 tag, GitHub Release, or PyPI publication has been created. The next gate after automated
+review is a short graphical smoke using the exact `MembraneVisualQC-0.4.0.zip`; Stage 4B has not
+started.
+
+Local release-candidate validation passed Ruff check and format check, 421 tests with eight
+optional FreeSASA skips, 87% combined coverage, and all 19 example reports (schema 1.1: 7, 1.2:
+11, 1.3: 1). Schema hashes remain 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`, and 1.3
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+The deterministic Plugin ZIP is `MembraneVisualQC-0.4.0.zip`, 69,241 bytes, SHA-256
+`bba1891a8fa84c0575442d17daccbb6a6ad3bc54e60ad626ac1000cc59a079b5`. Its checksum sidecar,
+wheel, and sdist pass the release-artifact validator; wheel/sdist metadata report version `0.4.0`
+and the sdist contains the runtime, schemas, synthetic fixtures, and validation scripts without
+report exports.
+Standard setuptools archive timestamps mean wheel/sdist byte hashes are candidate-build records,
+not reproducibility guarantees. Official provider payloads remain outside Git.

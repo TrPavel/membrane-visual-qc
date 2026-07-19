@@ -26,17 +26,20 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
 - OPM-aligned files are not required for the MVP and are not downloaded automatically.
 - The synthetic PDB is intentionally artificial and only tests deterministic warning behaviour.
 
-## Stage 4A development limitations
+## v0.4.0 offline PDBTM limitations
 
-- Offline PDBTM core and PyMOL/GUI integration are development-only in `0.4.0.dev0`; v0.3.0
-  remains the latest published release.
-- Stage 4A2 accepts explicit local files only. It does not download, cache, discover, extract, or
-  execute provider content.
+- Offline PDBTM import accepts explicit local files only. It does not download, cache, discover,
+  extract, or execute provider content.
 - There is no network retrieval, cache, OPM adapter, source comparison, or automatic alignment.
 - Only reviewed API-v1-compatible JSON plus a plain legacy transformed-PDB companion is supported.
 - Exactly one complete, single-state, legacy-PDB-compatible PyMOL object is supported. Object
   names and file names are not treated as structure or assembly provenance.
-- Schema 1.3 is draft/unreleased. Partial, rejected, or unsupported imports do not create reports.
+- Schema 1.3 is the immutable v0.4.0 release contract. Partial, rejected, or unsupported imports do
+  not create reports.
+- Provider Side1/Side2 labels are not converted into inside/outside biology, and geometric
+  applicability is not a biological-correctness verdict.
+- Slab planes may have relatively low contrast on a dark background; this is a non-blocking
+  pre-v1.0 UI backlog item.
 
 ## v0.3.0 exposure limitations
 
