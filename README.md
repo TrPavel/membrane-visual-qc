@@ -20,6 +20,9 @@ by a local orientation JSON file. Opt-in analysis adds deterministic SASA/RSA, m
 surface partitioning, and conservative local chemical-context evidence while preserving the
 original review severities.
 
+Development version `0.4.0.dev0` additionally integrates the reviewed offline PDBTM API-v1 pair
+contract with PyMOL and the GUI. It is unreleased: v0.3.0 remains the public prerelease.
+
 ## Installation
 
 v0.3.0 is published as a prerelease for limited public testing. Public users should download
@@ -67,6 +70,8 @@ software behaviour, not biology.
 - `mvqc_check selection=all, zmin=-15, zmax=15, ligand=organic, cutoff=5.0`
 - `mvqc_check_orientation selection=all, orientation_file=demo/rotated_1ubq_orientation.json`
 - `mvqc_slab_orientation selection=all, orientation_file=demo/rotated_1ubq_orientation.json`
+- `mvqc_check_pdbtm selection=all, pdbtm_json=C:/payloads/1pcr.json, transformed_pdb=C:/payloads/1pcr.trpdb`
+- `mvqc_slab_pdbtm selection=all, pdbtm_json=C:/payloads/1pcr.json, transformed_pdb=C:/payloads/1pcr.trpdb`
 - `mvqc_slab zmin=-15, zmax=15`
 - `mvqc_color_hydropathy selection=all`
 - `mvqc_ligand_shell protein=all, ligand=organic, cutoff=5.0`
@@ -77,6 +82,11 @@ software behaviour, not biology.
 clears partial plugin output so stale visuals do not appear current.
 Planar orientation commands own file parsing and cleanup: an invalid file clears stale QC state or
 slab boundaries, and the GUI reports the orientation source as `unavailable`.
+
+The unreleased offline PDBTM commands require an explicit matching local JSON/transformed-PDB
+pair and exactly one single-state PyMOL object. They never retrieve data, fit or transform the
+object, or serialize local paths into the report. See
+[docs/pdbtm_offline_import.md](docs/pdbtm_offline_import.md).
 
 ## Reports and interpretation
 
@@ -126,7 +136,7 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 
 ## Current limitations
 
-No automatic OPM/PPM/PDBTM/TmDet adapter, definitive chemical-interaction inference, lipid-facing
+No automatic OPM/PPM/PDBTM/TmDet retrieval, definitive chemical-interaction inference, lipid-facing
 surface classification, comparison workflow, batch CLI, or curved/multiple-membrane model is
 included in v0.3.0. See [docs/known_limitations.md](docs/known_limitations.md).
 

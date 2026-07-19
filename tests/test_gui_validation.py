@@ -3,8 +3,11 @@ from pathlib import Path
 import pytest
 
 from membrane_vqc.gui import (
+    BROWSE_LABEL,
     GUIInputs,
     LigandShellInputs,
+    PDBTM_BOUNDARIES_STATUS,
+    PDBTM_REVIEW_STATUS,
     PLANAR_BOUNDARIES_STATUS,
     PLANAR_REVIEW_STATUS,
     SlabInputs,
@@ -17,9 +20,20 @@ from membrane_vqc.gui import (
 
 
 def test_planar_status_messages_are_utf8_without_mojibake():
-    assert PLANAR_REVIEW_STATUS == "Running planar membrane review…"
-    assert PLANAR_BOUNDARIES_STATUS == "Creating planar membrane boundaries…"
-    assert "â" not in PLANAR_REVIEW_STATUS + PLANAR_BOUNDARIES_STATUS
+    assert PLANAR_REVIEW_STATUS == "Running planar membrane review\u2026"
+    assert PLANAR_BOUNDARIES_STATUS == "Creating planar membrane boundaries\u2026"
+
+
+def test_pdbtm_gui_strings_render_unicode_without_mojibake():
+    assert BROWSE_LABEL == "Browse\u2026"
+    assert PDBTM_REVIEW_STATUS == "Resolving offline PDBTM orientation\u2026"
+    assert PDBTM_BOUNDARIES_STATUS == "Resolving offline PDBTM boundaries\u2026"
+
+    source = Path(__import__("membrane_vqc.gui", fromlist=["__file__"]).__file__).read_text(
+        encoding="utf-8"
+    )
+    assert source.isascii()
+    assert not {"\u00c2", "\u00c3", "\u00e2"}.intersection(source)
 
 
 def test_parse_gui_inputs_strips_text_and_allows_empty_ligand():

@@ -5,8 +5,8 @@
 - Depends on: ADR-0002 planar orientation convention
 
 Architecture acceptance is not implementation completion. The required PDBTM source-semantics
-preflight passed and Stage 4A1 is now implemented only on draft PR #9 for review. It is not merged,
-released, or user-integrated; Stage 4A2 has not started.
+preflight passed and Stage 4A1 is merged. Stage 4A2 offline PyMOL/GUI integration is now in
+development; it does not expand the accepted provider contract or begin network retrieval.
 
 ## PDBTM source-semantics preflight result
 

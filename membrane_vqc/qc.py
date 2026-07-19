@@ -15,6 +15,7 @@ from .freesasa_backend import calculate_freesasa_exposure
 from .membrane import classify_residues_for_membrane, flag_core_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
 from .orientation import PlanarMembrane, legacy_global_z
+from .orientation_sources import OrientationEvidenceV1
 from .pymol_adapter import (
     color_hydropathy,
     create_membrane_planes,
@@ -78,6 +79,7 @@ def run_check_with_membrane(
     cmd_obj: Any | None = None,
     input_path: str = "",
     orientation_import: Any | None = None,
+    orientation_evidence: OrientationEvidenceV1 | None = None,
     exposure_config: ExposureConfig | None = None,
     exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
     local_context_config: LocalContextConfig | None = None,
@@ -182,6 +184,7 @@ def run_check_with_membrane(
         pymol_version=_pymol_version(cmd_obj),
         membrane=membrane,
         orientation_import=orientation_import,
+        orientation_evidence=orientation_evidence,
         exposure_analysis=exposure_analysis,
         local_context_analysis=local_context_analysis,
     )

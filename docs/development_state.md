@@ -39,12 +39,12 @@ and bounds are derived from every exact payload. Changed structure/semantics, no
 or precision outside the envelope return `unsupported` without reusing a historical fixed limit.
 Official payloads remain local-only and outside Git because redistribution permission is unresolved.
 
-PDBTM source-semantics preflight is complete and merged into main. Stage 4A1 offline core
-implementation is now in development on `feat/pdbtm-offline-import-core` with identity
-`0.4.0.dev0`. The branch adds immutable source models, a deterministic explicit-byte PDBTM API-v1
-adapter, direct identity/inverse applicability, precision/fingerprint evidence, and draft schema
-1.3 report dispatch. It does not add GUI/PyMOL integration, file dialogs, rendering, retrieval,
-OPM, source comparison, or automatic alignment. v0.3.0 remains the latest published release.
+PDBTM source-semantics preflight and Stage 4A1 are complete and merged into `main`. Stage 4A2
+offline PyMOL/GUI integration is in development on `feat/pdbtm-offline-import-pymol` with identity
+`0.4.0.dev0`. The branch connects the accepted core to explicit local file selection, a complete
+single-state current-object snapshot, current-frame slab rendering, QC/report lifecycle, and the
+third GUI orientation mode. It adds no retrieval, OPM, comparison, fitting, or automatic
+alignment. v0.3.0 remains the latest published release.
 
 Stage 1 is closed. Immutable tag `v0.1.0` points to
 `a8c7959fb1d53dd99771a184443aa16afd287aa6`; its prerelease remains unchanged. Release workflow
@@ -266,6 +266,35 @@ and unreleased with SHA-256
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Official PDBTM/RCSB
 provider payloads remain outside Git.
 
-The development version remains `0.4.0.dev0`. No release or PyPI publication was created. Stage
-4A2 PyMOL/GUI integration has not started; network retrieval, OPM, source comparison, and automatic
-alignment remain outside the completed Stage 4A1 core.
+The development version remains `0.4.0.dev0`. No release or PyPI publication was created.
+
+## Stage 4A2 ready for final review — offline PyMOL and GUI integration
+
+The implementation branch now exposes `mvqc_check_pdbtm` and `mvqc_slab_pdbtm`, plus the GUI
+**PDBTM offline pair** mode. It resolves one complete single-state current PyMOL object against one
+explicit matching local JSON/transformed-PDB pair, renders the resolved current-frame boundaries,
+and passes exact Stage 4 evidence to schema-1.3 QC. It never retrieves, fits, transforms, or
+renames the input object; failure cleanup removes stale plugin-owned state and `LAST_REPORT`.
+
+The pre-graphical correction replaces mojibake-prone GUI literals with explicit Unicode escapes and
+makes PDBTM Show Slab clear all stale plugin/report state on success and failure. Local validation
+passed 418 tests with eight optional FreeSASA skips and 87% coverage. The retained
+headless PyMOL suite, synthetic Stage 4A2 lifecycle, official local `1pcr`/`1a0s` identity and
+inverse cases, 19 example reports, wheel/sdist build, ZIP validation, and deterministic double ZIP
+build passed. The corrected candidate is `MembraneVisualQC-0.4.0.dev0.zip`, 69,251 bytes, SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. The earlier SHA-256
+`446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92` is superseded.
+
+Exact-artifact interactive graphical acceptance passed on Windows 10 build 26200 with Incentive
+PyMOL 3.1.8 and bundled Python 3.10.20. The accepted 69,251-byte ZIP has SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. Identity and analytical
+inverse imports for official local-only `1pcr` and `1a0s` payload pairs passed, including context
+OFF/ON, schema-1.3 export, current-frame slab rendering, failure cleanup, repeated lifecycle, input
+preservation, and both legacy regressions. Detailed observations are recorded in
+`stage4a2_graphical_acceptance.md`.
+
+Stage 4A2 is ready for final code and acceptance review. Schema 1.3 remains draft and unreleased,
+the version remains `0.4.0.dev0`, and v0.3.0 remains the latest published release. No network
+retrieval, OPM integration, source comparison, fitting, or automatic alignment was added. Official
+provider payloads remain outside Git. No release or PyPI publication was created, and Stage 4B has
+not started.

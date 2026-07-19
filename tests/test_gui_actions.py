@@ -10,6 +10,7 @@ from membrane_vqc.errors import OrientationError
 class FakeText:
     def __init__(self, value=""):
         self.value = value
+        self.enabled = True
 
     def text(self):
         return self.value
@@ -22,6 +23,9 @@ class FakeText:
 
     def currentText(self):
         return self.value
+
+    def setEnabled(self, enabled):
+        self.enabled = bool(enabled)
 
 
 class FakeCheck:
@@ -45,6 +49,38 @@ def planar_dialog():
     dialog.cutoff = FakeText("5")
     dialog.summary = FakeText()
     return dialog
+
+
+def pdbtm_dialog():
+    dialog = planar_dialog()
+    dialog.orientation_mode = FakeText(gui.PDBTM_MODE)
+    dialog.pdbtm_json = FakeText("provider.json")
+    dialog.transformed_pdb = FakeText("transformed.pdb")
+    dialog.biological_assembly = FakeText("1")
+    return dialog
+
+
+def _pdbtm_evidence():
+    return {
+        "source": {
+            "record_id": "test",
+            "resource_version": "1017",
+            "software_version": "3.2.134",
+        },
+        "source_geometry": {"upper_offset": 15.0},
+        "coordinate_mapping": {
+            "method": "identity",
+            "metrics": {
+                "runtime_identity": {
+                    "matched_atom_count": 12,
+                    "rmsd": 0.0,
+                    "maximum_residual": 0.0,
+                }
+            },
+        },
+        "geometric_confidence": "coordinate_verified",
+        "warnings": [],
+    }
 
 
 def test_export_before_analysis_raises_clear_error():
@@ -152,3 +188,112 @@ def test_failed_planar_gui_slab_replaces_previous_source(monkeypatch):
     assert dialog.orientation_source.value == "unavailable"
     assert "invalid orientation" in dialog.summary.value
     assert "Traceback" not in dialog.summary.value
+
+
+def test_pdbtm_gui_run_dispatches_paths_and_renders_source_details(monkeypatch):
+    dialog = pdbtm_dialog()
+    calls = []
+    report = {"orientation": {"evidence": _pdbtm_evidence()}, "summary": {}}
+    monkeypatch.setattr(gui, "mvqc_check_pdbtm", lambda **kwargs: calls.append(kwargs) or report)
+    monkeypatch.setattr(gui, "format_summary", lambda value: "PDBTM summary")
+
+    dialog.run_qc()
+
+    assert calls == [
+        {
+            "selection": "1UBQ_rotated",
+            "pdbtm_json": "provider.json",
+            "transformed_pdb": "transformed.pdb",
+            "biological_assembly": "1",
+            "ligand": "",
+            "cutoff": 5.0,
+            "quiet": 1,
+            "analyze_context": 0,
+            "exposure_quality": "Standard",
+            "exposure_backend": "Built-in",
+        }
+    ]
+    assert dialog.orientation_source.value == (
+        "PDBTM test \u00b7 identity \u00b7 coordinate verified"
+    )
+    assert "Matched atoms: 12" in dialog.summary.value
+    assert "RMSD: 0 \u00c5" in dialog.summary.value
+    assert "Maximum residual: 0 \u00c5" in dialog.summary.value
+    assert "Half-thickness: 15 \u00c5" in dialog.summary.value
+    assert "not a biological correctness verdict" in dialog.summary.value
+
+
+def test_failed_pdbtm_gui_run_resets_status_without_traceback(monkeypatch):
+    dialog = pdbtm_dialog()
+    monkeypatch.setattr(
+        gui,
+        "mvqc_check_pdbtm",
+        lambda **kwargs: (_ for _ in ()).throw(
+            RuntimeError("COORDINATE_FRAME_MISMATCH: current coordinates do not match")
+        ),
+    )
+
+    dialog.run_qc()
+
+    assert dialog.orientation_source.value == "unavailable"
+    assert "COORDINATE_FRAME_MISMATCH" in dialog.summary.value
+    assert "Traceback" not in dialog.summary.value
+
+
+def test_pdbtm_gui_slab_dispatches_and_renders_import_result(monkeypatch):
+    dialog = pdbtm_dialog()
+    evidence = SimpleNamespace(as_dict=_pdbtm_evidence)
+    imported = SimpleNamespace(evidence=evidence)
+    calls = []
+    monkeypatch.setattr(
+        gui,
+        "mvqc_slab_pdbtm",
+        lambda **kwargs: calls.append(kwargs) or imported,
+    )
+
+    dialog.show_slab()
+
+    assert calls[0]["pdbtm_json"] == "provider.json"
+    assert dialog.orientation_source.value.startswith("PDBTM test")
+    assert "boundaries updated" in dialog.summary.value
+
+
+def test_orientation_modes_enable_only_compatible_controls():
+    dialog = pdbtm_dialog()
+    dialog.zmin = FakeText()
+    dialog.zmax = FakeText()
+    dialog.browse_pdbtm_json = FakeText()
+    dialog.browse_transformed_pdb = FakeText()
+
+    for mode, expected in (
+        (gui.LEGACY_MODE, (True, False, False, "manual_global_z")),
+        (gui.ORIENTATION_FILE_MODE, (False, True, False, "unavailable")),
+        (gui.PDBTM_MODE, (False, False, True, "unavailable")),
+    ):
+        dialog.orientation_mode.value = mode
+        dialog._update_orientation_mode()
+        assert (
+            dialog.zmin.enabled,
+            dialog.orientation_file.enabled,
+            dialog.pdbtm_json.enabled,
+            dialog.orientation_source.value,
+        ) == expected
+
+
+def test_pdbtm_browse_buttons_assign_only_selected_local_paths():
+    paths = iter(
+        [
+            ("C:/payloads/entry.json", ""),
+            ("C:/payloads/entry.pdb", ""),
+        ]
+    )
+    dialog = pdbtm_dialog()
+    dialog.QtWidgets = SimpleNamespace(
+        QFileDialog=SimpleNamespace(getOpenFileName=lambda *args: next(paths))
+    )
+
+    dialog._browse_pdbtm_json()
+    dialog._browse_transformed_pdb()
+
+    assert dialog.pdbtm_json.value == "C:/payloads/entry.json"
+    assert dialog.transformed_pdb.value == "C:/payloads/entry.pdb"

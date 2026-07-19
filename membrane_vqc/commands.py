@@ -10,6 +10,7 @@ from . import qc
 from .membrane import aggregate_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
 from .orientation_io import load_orientation_file
+from .pdbtm_pymol import resolve_pdbtm_from_pymol
 from .pymol_adapter import (
     MVQC_NAMES,
     clear_owned,
@@ -130,6 +131,80 @@ def mvqc_slab_orientation(selection: str = "all", orientation_file: str = ""):
         raise
 
 
+def mvqc_check_pdbtm(
+    selection: str = "all",
+    pdbtm_json: str = "",
+    transformed_pdb: str = "",
+    biological_assembly: str = "",
+    ligand: str = "organic",
+    cutoff: float = DEFAULT_LIGAND_CUTOFF,
+    quiet: int = 1,
+    export_path: str = "",
+    input_path: str = "",
+    analyze_context: int = 0,
+    exposure_quality: str = "Standard",
+    exposure_backend: str = "Built-in",
+):
+    """Run QC using an explicit offline PDBTM JSON/transformed-PDB pair."""
+
+    clear_owned()
+    qc.LAST_REPORT = None
+    try:
+        selection = _selection(selection)
+        cutoff = _positive_float(cutoff, "cutoff")
+        imported = resolve_pdbtm_from_pymol(
+            selection=selection,
+            pdbtm_json_path=str(pdbtm_json).strip(),
+            transformed_pdb_path=str(transformed_pdb).strip(),
+            biological_assembly=str(biological_assembly).strip() or None,
+        )
+        exposure_config, context_config = _analysis_configs(analyze_context, exposure_quality)
+        return qc.run_check_with_membrane(
+            selection=selection,
+            membrane=imported.membrane,
+            orientation_evidence=imported.evidence,
+            ligand=str(ligand).strip(),
+            cutoff=cutoff,
+            quiet=int(quiet),
+            export_path=str(export_path).strip(),
+            input_path=str(input_path).strip(),
+            exposure_config=exposure_config,
+            local_context_config=context_config,
+            exposure_backend=exposure_backend,
+        )
+    except Exception:
+        clear_owned()
+        qc.LAST_REPORT = None
+        raise
+
+
+def mvqc_slab_pdbtm(
+    selection: str = "all",
+    pdbtm_json: str = "",
+    transformed_pdb: str = "",
+    biological_assembly: str = "",
+):
+    """Render only the resolved current-frame slab from an offline PDBTM pair."""
+
+    clear_owned()
+    qc.LAST_REPORT = None
+    try:
+        selection = _selection(selection)
+        imported = resolve_pdbtm_from_pymol(
+            selection=selection,
+            pdbtm_json_path=str(pdbtm_json).strip(),
+            transformed_pdb_path=str(transformed_pdb).strip(),
+            biological_assembly=str(biological_assembly).strip() or None,
+        )
+        atoms = protein_atoms(selection)
+        create_membrane_planes(imported.membrane, atoms, selection)
+        return imported
+    except Exception:
+        clear_owned()
+        qc.LAST_REPORT = None
+        raise
+
+
 def mvqc_color_hydropathy(selection: str = "all"):
     """Colour selected protein residues by a simple hydropathy scale."""
     selection = _selection(selection)
@@ -232,6 +307,8 @@ def register_commands(cmd_obj=None) -> None:
     cmd_obj.extend("mvqc_check", mvqc_check)
     cmd_obj.extend("mvqc_check_orientation", mvqc_check_orientation)
     cmd_obj.extend("mvqc_slab_orientation", mvqc_slab_orientation)
+    cmd_obj.extend("mvqc_check_pdbtm", mvqc_check_pdbtm)
+    cmd_obj.extend("mvqc_slab_pdbtm", mvqc_slab_pdbtm)
     cmd_obj.extend("mvqc_slab", mvqc_slab)
     cmd_obj.extend("mvqc_color_hydropathy", mvqc_color_hydropathy)
     cmd_obj.extend("mvqc_ligand_shell", mvqc_ligand_shell)

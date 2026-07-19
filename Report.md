@@ -491,3 +491,28 @@ Released schemas 1.0–1.2 remain byte-identical. Draft schema 1.3 has SHA-256
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Only synthetic provider
 fixtures are present; official PDBTM payloads remain outside Git. Cross-version Python and
 blocking FreeSASA results remain the required draft-PR checks.
+
+## Stage 4A2 offline PyMOL/GUI candidate
+
+Development version `0.4.0.dev0` now connects the accepted Stage 4A1 core to explicit local
+PDBTM JSON/transformed-PDB selection, complete single-state current-object snapshots, current-frame
+slab rendering, schema-1.3 QC reports, deterministic failure cleanup, and a third GUI orientation
+mode. It does not retrieve provider data, fit or transform coordinates, infer structure identity,
+or begin Stage 4B.
+
+A real Incentive PyMOL 3.1.8 probe verified that `get_pdbstr` serializes the current object matrix.
+Synthetic and ignored local official-payload headless tests cover identity and analytical inverse
+mapping, context OFF/ON, repeated execution, wrong-pair and transformed-object rejection,
+`LAST_REPORT` cleanup, and input preservation. The pre-graphical correction uses explicit Unicode
+escapes for every non-ASCII GUI symbol and makes PDBTM Show Slab invalidate all stale plugin and
+report state on success or failure. Official payloads remain outside Git. Local validation passed
+Ruff check/format, 418 tests with eight optional FreeSASA skips, 87% coverage,
+19 example reports, wheel/sdist build, all retained headless workflows, ZIP validation, and a
+byte-identical double ZIP build. The corrected `MembraneVisualQC-0.4.0.dev0.zip` is 69,251 bytes
+with SHA-256 `3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`.
+The prior SHA-256 `446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`
+is superseded and is not eligible for final graphical acceptance.
+
+Schemas 1.0–1.2 retain their released hashes; draft schema 1.3 remains
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`. Interactive graphical
+acceptance of the exact candidate ZIP remains pending and is not inferred from headless results.

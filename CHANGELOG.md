@@ -8,6 +8,12 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Added
 
+- Added Stage 4A2 offline PDBTM integration for a complete current PyMOL object: explicit local
+  JSON/transformed-PDB selection, identity or analytical-inverse applicability, current-frame slab
+  rendering, schema-1.3 QC reports, GUI controls, and deterministic lifecycle cleanup.
+- Added real PyMOL 3.1.8 snapshot-semantics probes plus synthetic and local-only official-payload
+  headless validation. Official provider payloads remain outside Git.
+
 - Added the Stage 4A1 pure-Python offline PDBTM domain model and API-v1 adapter with strict payload
   limits, direct coordinate applicability, analytical inverse mapping, precision-derived bounds,
   deterministic fingerprints, and no fitting or network dependency.
@@ -20,12 +26,17 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Promoted the active development identity to `0.4.0.dev0`; v0.3.0 remains the latest published
-  prerelease. GUI/PyMOL integration, retrieval, OPM, comparison, and Stage 4A2 remain unstarted.
+- The active development identity remains `0.4.0.dev0`; v0.3.0 remains the latest published
+  prerelease. Stage 4A2 adds only offline PyMOL/GUI integration; retrieval, OPM, comparison,
+  automatic alignment, and Stage 4B have not started.
 - Made schema 1.3 normative for every new Stage 4 evidence object and fixed offline retrieval
   provenance at unverified; source geometry no longer claims an MVQC interface width.
 - Restricted offline PDBTM input to one primary `pdbtm_json` payload and zero or one
   `transformed_pdb` companion; unknown roles and duplicate companions are rejected.
+- Replaced corrupted PDBTM GUI literals with explicit Unicode escapes so ellipses, middle dots,
+  and angstrom symbols render correctly across source-loading environments.
+- Made PDBTM Show Slab invalidate every prior plugin visual and `LAST_REPORT` on both success and
+  failure; a slab-only orientation can no longer leave stale review/context evidence exportable.
 
 ## [0.3.0] - 2026-07-18
 

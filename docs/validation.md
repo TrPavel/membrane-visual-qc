@@ -257,3 +257,43 @@ Schema hashes are 1.0
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
 The Python 3.10/3.11/3.12 and blocking Ubuntu FreeSASA results are recorded by the draft-PR
 workflow; GUI/PyMOL integration is not part of this validation phase.
+
+## Stage 4A2 offline PyMOL integration validation
+
+The Stage 4A2 branch adds real Incentive PyMOL 3.1.8 snapshot probes and headless workflows. A
+translated object proved that `cmd.get_pdbstr(object, state=1)` matches current coordinates from
+`get_model` and `get_coords`; the command layer therefore validates a single snapshot of the
+complete containing object. Synthetic identity/inverse imports, context OFF/ON, schema 1.3,
+current-frame slab rendering, repeated lifecycle, failure cleanup, and input preservation pass.
+
+Ignored local official payloads for `1pcr` and `1a0s` pass identity and analytical-inverse paths;
+wrong pairs and manually changed coordinate frames are rejected. Provider payloads remain outside
+Git.
+
+Exact-artifact graphical acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8
+and bundled Python 3.10.20. The installed `MembraneVisualQC-0.4.0.dev0.zip` was 69,251 bytes with
+SHA-256 `3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. Both file choosers and
+all three orientation modes passed with correctly rendered Unicode. The `1pcr` and `1a0s` identity
+and inverse-provider-transform cases passed with unchanged coordinates and schema 1.3; 1pcr
+context OFF/ON, JSON/CSV export, structural plus semantic validation, and absence of absolute local
+paths also passed. Wrong-pair and transformed-coordinate errors produced no traceback, fitting, or
+fallback and cleared stale plugin/report state. Repeated lifecycle, `mvqc_clear`, global-z, and
+planar orientation-file regressions passed. Full observations are recorded in
+`docs/stage4a2_graphical_acceptance.md`.
+
+The corrected local suite passed Ruff check/format, 418 tests with eight optional FreeSASA skips,
+87% combined coverage, and 19 reports (schema 1.1: 7, 1.2: 11, 1.3: 1). Wheel and sdist built as
+`0.4.0.dev0`. Two corrected Plugin ZIP builds were byte-identical: 69,251 bytes, SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. The superseded
+pre-review artifact had SHA-256 `446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92`.
+
+Released schema hashes remain unchanged: schema 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, schema 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, and schema 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`. Draft schema 1.3 remains
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+Schema 1.3 remains draft and unreleased, the development version remains `0.4.0.dev0`, and v0.3.0
+remains the latest published release. Stage 4A2 is ready for final code and acceptance review. No
+network retrieval, OPM integration, source comparison, automatic alignment, release, or PyPI
+publication was added; Stage 4B has not started.

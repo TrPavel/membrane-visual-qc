@@ -1,7 +1,7 @@
 # Stage 4 orientation adapter fixture plan
 
-Status: accepted design; Stage 4A1 synthetic cases are implemented in draft PR #9. Expected
-results remain defined independently of implementation. Stage 4A2 integration has not started.
+Status: accepted design; Stage 4A1 synthetic cases are merged and Stage 4A2 PyMOL integration
+fixtures are in development. Expected results remain defined independently of implementation.
 
 ## Fixture policy
 
