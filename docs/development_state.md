@@ -268,7 +268,7 @@ provider payloads remain outside Git.
 
 The development version remains `0.4.0.dev0`. No release or PyPI publication was created.
 
-## Stage 4A2 in development — offline PyMOL and GUI integration
+## Stage 4A2 ready for final review — offline PyMOL and GUI integration
 
 The implementation branch now exposes `mvqc_check_pdbtm` and `mvqc_slab_pdbtm`, plus the GUI
 **PDBTM offline pair** mode. It resolves one complete single-state current PyMOL object against one
@@ -285,6 +285,16 @@ build passed. The corrected candidate is `MembraneVisualQC-0.4.0.dev0.zip`, 69,2
 `3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. The earlier SHA-256
 `446f7af119508dd8f66396dfbc39b4444517a5b2dac9d46368f34ee07cbacb92` is superseded.
 
-Exact-artifact interactive graphical acceptance and draft-PR CI remain pending. Schema 1.3 remains
-draft, v0.3.0 remains the latest release, official provider payloads remain outside Git, and Stage
-4B has not started.
+Exact-artifact interactive graphical acceptance passed on Windows 10 build 26200 with Incentive
+PyMOL 3.1.8 and bundled Python 3.10.20. The accepted 69,251-byte ZIP has SHA-256
+`3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. Identity and analytical
+inverse imports for official local-only `1pcr` and `1a0s` payload pairs passed, including context
+OFF/ON, schema-1.3 export, current-frame slab rendering, failure cleanup, repeated lifecycle, input
+preservation, and both legacy regressions. Detailed observations are recorded in
+`stage4a2_graphical_acceptance.md`.
+
+Stage 4A2 is ready for final code and acceptance review. Schema 1.3 remains draft and unreleased,
+the version remains `0.4.0.dev0`, and v0.3.0 remains the latest published release. No network
+retrieval, OPM integration, source comparison, fitting, or automatic alignment was added. Official
+provider payloads remain outside Git. No release or PyPI publication was created, and Stage 4B has
+not started.

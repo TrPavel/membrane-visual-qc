@@ -268,7 +268,17 @@ current-frame slab rendering, repeated lifecycle, failure cleanup, and input pre
 
 Ignored local official payloads for `1pcr` and `1a0s` pass identity and analytical-inverse paths;
 wrong pairs and manually changed coordinate frames are rejected. Provider payloads remain outside
-Git. Exact development-ZIP graphical acceptance remains a separate required gate documented in
+Git.
+
+Exact-artifact graphical acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8
+and bundled Python 3.10.20. The installed `MembraneVisualQC-0.4.0.dev0.zip` was 69,251 bytes with
+SHA-256 `3c439a839dacf986b8e5d86016f20ec03b4d3f30ed46a911c9d54ba9a24cb7a4`. Both file choosers and
+all three orientation modes passed with correctly rendered Unicode. The `1pcr` and `1a0s` identity
+and inverse-provider-transform cases passed with unchanged coordinates and schema 1.3; 1pcr
+context OFF/ON, JSON/CSV export, structural plus semantic validation, and absence of absolute local
+paths also passed. Wrong-pair and transformed-coordinate errors produced no traceback, fitting, or
+fallback and cleared stale plugin/report state. Repeated lifecycle, `mvqc_clear`, global-z, and
+planar orientation-file regressions passed. Full observations are recorded in
 `docs/stage4a2_graphical_acceptance.md`.
 
 The corrected local suite passed Ruff check/format, 418 tests with eight optional FreeSASA skips,
@@ -282,3 +292,8 @@ Released schema hashes remain unchanged: schema 1.0
 `86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, and schema 1.2
 `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`. Draft schema 1.3 remains
 `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
+
+Schema 1.3 remains draft and unreleased, the development version remains `0.4.0.dev0`, and v0.3.0
+remains the latest published release. Stage 4A2 is ready for final code and acceptance review. No
+network retrieval, OPM integration, source comparison, automatic alignment, release, or PyPI
+publication was added; Stage 4B has not started.
