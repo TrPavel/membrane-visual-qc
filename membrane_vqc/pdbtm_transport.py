@@ -38,24 +38,15 @@ class TransportPolicy:
     connect_timeout: float = 5.0
     read_timeout: float = 15.0
     response_timeout: float = 30.0
-    pair_timeout: float = 60.0
     read_chunk_bytes: int = 64 * 1024
     max_response_bytes: int = 5 * 1024 * 1024
-    max_pair_bytes: int = 10 * 1024 * 1024
 
     def __post_init__(self) -> None:
-        numeric = (
-            self.connect_timeout,
-            self.read_timeout,
-            self.response_timeout,
-            self.pair_timeout,
-        )
+        numeric = (self.connect_timeout, self.read_timeout, self.response_timeout)
         if any(value <= 0 for value in numeric):
             raise ValueError("Transport deadlines must be positive.")
         if self.read_chunk_bytes <= 0 or self.max_response_bytes <= 0:
             raise ValueError("Transport byte limits must be positive.")
-        if self.max_pair_bytes < 2 * self.max_response_bytes:
-            raise ValueError("Pair byte limit must accommodate two maximum-size roles.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -284,7 +275,7 @@ class PdbtmHttpsTransport:
                 },
             )
             _raise_if_cancelled(cancellation)
-            self._check_deadline(deadline)
+            self._set_read_timeout(connection, deadline)
             response = connection.getresponse()
             _raise_if_cancelled(cancellation)
             self._check_deadline(deadline)
@@ -314,7 +305,7 @@ class PdbtmHttpsTransport:
 
             etag = _safe_optional_header(response, "ETag")
             last_modified = _safe_optional_header(response, "Last-Modified")
-            body = self._read_body(response, deadline, cancellation)
+            body = self._read_body(connection, response, deadline, cancellation)
             if declared_size is not None and len(body) != declared_size:
                 raise Stage4BError(Stage4BErrorCode.PROVIDER_RESPONSE_INVALID)
             completed_at = _format_utc(self._utc_now())
@@ -372,6 +363,7 @@ class PdbtmHttpsTransport:
 
     def _read_body(
         self,
+        connection: http.client.HTTPSConnection,
         response: http.client.HTTPResponse,
         deadline: float,
         cancellation: CancellationProbe | None,
@@ -380,7 +372,7 @@ class PdbtmHttpsTransport:
         total = 0
         while True:
             _raise_if_cancelled(cancellation)
-            self._check_deadline(deadline)
+            self._set_read_timeout(connection, deadline)
             chunk = response.read(self.policy.read_chunk_bytes)
             _raise_if_cancelled(cancellation)
             self._check_deadline(deadline)

@@ -326,6 +326,20 @@ def _require_optional_header(value: object, field: str) -> str | None:
     return text
 
 
+_MAX_PROVIDER_VERSION_BYTES = 256
+
+
+def _require_bounded_provider_field(value: object, field: str) -> str:
+    text = _require_unicode_scalar(value, field)
+    if not text:
+        _fail(f"{field} must not be empty")
+    if any(ord(character) < 0x20 or ord(character) > 0x7E for character in text):
+        _fail(f"{field} must contain safe printable ASCII only")
+    if len(text.encode("utf-8")) > _MAX_PROVIDER_VERSION_BYTES:
+        _fail(f"{field} must be at most {_MAX_PROVIDER_VERSION_BYTES} bytes")
+    return text
+
+
 @dataclass(frozen=True, slots=True)
 class ResponseHeaders:
     content_type: ContentTypeEvidence
@@ -491,9 +505,7 @@ class ProviderVersions:
             ("resource_version", self.resource_version),
             ("software_version", self.software_version),
         ):
-            text = _require_unicode_scalar(value, field)
-            if not text:
-                _fail(f"{field} must not be empty")
+            _require_bounded_provider_field(value, field)
 
     def to_dict(self) -> dict[str, object]:
         return {

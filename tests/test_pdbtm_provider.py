@@ -9,6 +9,7 @@ import pytest
 from membrane_vqc.pdbtm_errors import Stage4BError, Stage4BErrorCode
 from membrane_vqc.pdbtm_provider import (
     PAIR_ROLES,
+    PairPolicy,
     PdbtmProviderClient,
     canonicalize_record_id,
     validate_pdbtm_pair,
@@ -164,4 +165,34 @@ def test_provider_rejects_pair_size_evidence_without_parsing():
     with pytest.raises(Stage4BError) as caught:
         PdbtmProviderClient(transport).fetch("1abc")
     assert caught.value.code is Stage4BErrorCode.RESPONSE_TOO_LARGE
+    assert len(transport.calls) == 2
+
+
+def test_pair_policy_is_the_sole_authority_for_the_byte_ceiling():
+    small = b"x" * 10
+    transport = FakeTransport({"pdbtm_json": small, "transformed_pdb": small})
+
+    with pytest.raises(Stage4BError) as caught:
+        PdbtmProviderClient(transport, pair_policy=PairPolicy(max_pair_bytes=15)).fetch("1abc")
+    assert caught.value.code is Stage4BErrorCode.RESPONSE_TOO_LARGE
+
+    # The same 20-byte total comfortably fits the default 10 MiB ceiling, so a
+    # different (unrelated) failure surfaces once both roles are retrieved --
+    # proving the custom policy above, not some other limit, caused the raise.
+    transport = FakeTransport({"pdbtm_json": small, "transformed_pdb": small})
+    with pytest.raises(Stage4BError) as default_caught:
+        PdbtmProviderClient(transport).fetch("1abc")
+    assert default_caught.value.code is not Stage4BErrorCode.RESPONSE_TOO_LARGE
+
+
+def test_pair_policy_is_the_sole_authority_for_the_deadline():
+    moments = iter((0.0, 0.0, 0.0, 3.0))
+    transport = FakeTransport()
+    with pytest.raises(Stage4BError) as caught:
+        PdbtmProviderClient(
+            transport,
+            monotonic=lambda: next(moments),
+            pair_policy=PairPolicy(pair_timeout=2.0),
+        ).fetch("1abc")
+    assert caught.value.code is Stage4BErrorCode.NETWORK_TIMEOUT
     assert len(transport.calls) == 2

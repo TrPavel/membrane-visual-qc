@@ -400,3 +400,22 @@ def test_noncanonical_escaped_lone_surrogate_is_rejected():
     changed = encoded.replace(b'"provider":"pdbtm_api_v1"', b'"provider":"\\ud800"')
     with pytest.raises(CacheContractError, match="Unicode scalar"):
         parse_format_envelope(changed)
+
+
+@pytest.mark.parametrize("field", ["resource_version", "software_version"])
+def test_provider_version_fields_reject_empty_and_oversized_values(field):
+    other = "software_version" if field == "resource_version" else "resource_version"
+    with pytest.raises(CacheContractError):
+        ProviderVersions(**{field: "", other: "1"})
+    with pytest.raises(CacheContractError):
+        ProviderVersions(**{field: "x" * 257, other: "1"})
+    # Exactly 256 bytes remains accepted.
+    ProviderVersions(**{field: "x" * 256, other: "1"})
+
+
+@pytest.mark.parametrize("value", ["café", "bad\tvalue", "bad\r\nvalue", "\x7f"])
+def test_provider_version_fields_reject_non_printable_ascii(value):
+    with pytest.raises(CacheContractError):
+        ProviderVersions(resource_version=value, software_version="1")
+    with pytest.raises(CacheContractError):
+        ProviderVersions(resource_version="1", software_version=value)

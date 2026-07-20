@@ -113,6 +113,33 @@ class Token:
         return self.cancelled
 
 
+class FakeClock:
+    """A deterministic, manually advanced monotonic clock for deadline tests."""
+
+    def __init__(self, start: float = 0.0) -> None:
+        self.now = start
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, amount: float) -> None:
+        self.now += amount
+
+
+class ClockAdvancingConnection(FakeConnection):
+    """A FakeConnection whose getresponse() call consumes simulated wall time."""
+
+    def __init__(self, *args, clock=None, advance_on_getresponse=0.0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._clock = clock
+        self._advance_on_getresponse = advance_on_getresponse
+
+    def getresponse(self):
+        if self._clock is not None:
+            self._clock.advance(self._advance_on_getresponse)
+        return super().getresponse()
+
+
 def make_transport(connection, **kwargs):
     factory = Factory(connection)
     ssl_context_factory = kwargs.pop("ssl_context_factory", FakeContext)
@@ -351,7 +378,7 @@ def test_unsafe_optional_evidence_header_is_rejected(name, value):
 
 
 def test_declared_and_streamed_size_limits_are_enforced():
-    policy = TransportPolicy(read_chunk_bytes=2, max_response_bytes=3, max_pair_bytes=6)
+    policy = TransportPolicy(read_chunk_bytes=2, max_response_bytes=3)
     declared = FakeConnection(
         FakeResponse(b"", headers=[("Content-Type", "application/json"), ("Content-Length", "4")])
     )
@@ -440,7 +467,6 @@ def test_response_and_pair_deadlines_are_enforced():
             connect_timeout=1,
             read_timeout=1,
             response_timeout=1,
-            pair_timeout=2,
         ),
         monotonic=lambda: next(ticks),
     )
@@ -454,6 +480,58 @@ def test_response_and_pair_deadlines_are_enforced():
         transport.fetch("1pcr", "pdbtm_json", pair_deadline=9.0)
     assert captured.value.code is Stage4BErrorCode.NETWORK_TIMEOUT
     assert factory.calls == []
+
+
+def test_set_read_timeout_clamps_to_remaining_not_full_read_timeout():
+    """A phase beginning near the deadline must not receive the full inactivity timeout."""
+
+    clock = FakeClock(14.95)
+    policy = TransportPolicy(read_timeout=15)
+    transport, _ = make_transport(FakeConnection(), policy=policy, monotonic=clock)
+    connection = FakeConnection()
+
+    transport._set_read_timeout(connection, deadline=15.0)
+
+    assert connection.sock.timeouts == [pytest.approx(0.05)]
+
+
+def test_read_timeout_shrinks_before_getresponse_and_every_chunk_read():
+    clock = FakeClock(0.0)
+    policy = TransportPolicy(
+        connect_timeout=5,
+        read_timeout=15,
+        response_timeout=15,
+        read_chunk_bytes=4,
+        max_response_bytes=1024,
+    )
+    body = b"0123456789"
+
+    def on_read():
+        clock.advance(3.0)
+
+    response = FakeResponse(
+        body,
+        headers=[("Content-Type", "application/json"), ("Content-Length", str(len(body)))],
+        read_hook=on_read,
+    )
+    connection = ClockAdvancingConnection(response, clock=clock, advance_on_getresponse=2.0)
+    transport, _ = make_transport(connection, policy=policy, monotonic=clock)
+
+    result = transport.fetch("1pcr", "pdbtm_json")
+
+    assert result.body == body
+    timeouts = connection.sock.timeouts
+    # One shrink call before request, one before getresponse, and one before
+    # every response.read() call (three data chunks plus the terminating
+    # empty read) -- never a stale, once-computed value reused across phases.
+    assert len(timeouts) == 6
+    assert all(earlier >= later for earlier, later in zip(timeouts, timeouts[1:]))
+    # getresponse() alone consumed 2s, so the first read-loop timeout must
+    # already be smaller than the full configured read_timeout.
+    assert timeouts[2] < policy.read_timeout
+    # by the final chunk almost the entire response_timeout has elapsed, so
+    # the remaining budget is a small fraction of the nominal read_timeout.
+    assert timeouts[-1] < policy.read_timeout / 2
 
 
 def test_error_contract_is_stable_and_boolean():

@@ -95,7 +95,12 @@ class RetrievalOperation:
             if self._state is CommitState.OPEN:
                 self._state = CommitState.CANCELLED
                 return True
-            if self._state in {CommitState.COMMITTING, CommitState.COMMITTED}:
+            if self._state in {
+                CommitState.FAILED_PRE_COMMIT,
+                CommitState.COMMITTING,
+                CommitState.COMMITTED,
+                CommitState.COMMIT_FAILED,
+            }:
                 self._delivery = DeliveryDisposition.IGNORED_STALE
             return False
 

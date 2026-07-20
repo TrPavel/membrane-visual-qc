@@ -52,6 +52,34 @@ class FakeCandidate:
     provider_versions: FakeVersions = FakeVersions()
 
 
+_FIXTURE_ROOT = Path(__file__).resolve().parents[1] / "data" / "synthetic"
+_JSON_TEMPLATE = (_FIXTURE_ROOT / "pdbtm_api_v1_test.json").read_bytes()
+_PDB_TEMPLATE = (_FIXTURE_ROOT / "pdbtm_transformed_test.pdb").read_bytes()
+
+
+def _resource_version(marker: bytes) -> str:
+    return f"1017.{marker.decode('ascii')}"
+
+
+def _valid_pdbtm_bytes(record_id: str, marker: bytes) -> tuple[bytes, bytes]:
+    """Build a genuinely valid synthetic PDBTM pair so real semantic validation
+
+    (now required by ``commit_validated_pair``) actually accepts it. ``marker``
+    only varies the otherwise-unvalidated ``resource_version`` field, so
+    distinct markers still parse and validate identically while producing
+    distinguishable bytes/digests/snapshot ids for the same record.
+    """
+
+    json_bytes = _JSON_TEMPLATE.replace(b'"pdb_id":"test"', f'"pdb_id":"{record_id}"'.encode(), 1)
+    json_bytes = json_bytes.replace(
+        b'"resource_version":"1017"',
+        f'"resource_version":"{_resource_version(marker)}"'.encode(),
+        1,
+    )
+    pdb_bytes = _PDB_TEMPLATE.replace(b"TEST\n", (record_id.upper() + "\n").encode(), 1)
+    return json_bytes, pdb_bytes
+
+
 def _payload(record_id: str, role: str, body: bytes, second: int) -> FakePayload:
     suffix = "json" if role == "pdbtm_json" else "trpdb"
     url = f"https://pdbtm.unitmp.org/api/v1/entry/{record_id}.{suffix}"
@@ -77,12 +105,14 @@ def _payload(record_id: str, role: str, body: bytes, second: int) -> FakePayload
 
 
 def _candidate(record_id: str = "1pcr", marker: bytes = b"one") -> FakeCandidate:
+    json_bytes, pdb_bytes = _valid_pdbtm_bytes(record_id, marker)
     return FakeCandidate(
         record_id,
         (
-            _payload(record_id, "pdbtm_json", b'{"synthetic":"' + marker + b'"}', 0),
-            _payload(record_id, "transformed_pdb", b"HEADER    " + marker + b"\n", 2),
+            _payload(record_id, "pdbtm_json", json_bytes, 0),
+            _payload(record_id, "transformed_pdb", pdb_bytes, 2),
         ),
+        provider_versions=FakeVersions(resource_version=_resource_version(marker)),
     )
 
 
@@ -183,6 +213,112 @@ def test_commit_rejects_missing_or_false_tls_verification(tmp_path):
         repository.commit_validated_pair(unsafe, expected_record_generation=0)
     assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
     assert repository.capture_record_generation("1pcr") == 0
+
+
+def test_candidate_with_lying_provider_versions_cannot_replace_active_snapshot(tmp_path):
+    """A hand-constructed candidate cannot be trusted merely because it has the
+
+    right shape: ``commit_validated_pair`` must independently re-derive
+    provider_versions from the raw bytes and reject any disagreement before
+    the previous active snapshot is ever replaced.
+    """
+
+    repository = _repository(tmp_path)
+    original = repository.commit_validated_pair(
+        _candidate(marker=b"one"), expected_record_generation=0
+    )
+
+    lying = replace(
+        _candidate(marker=b"two"),
+        provider_versions=FakeVersions(resource_version="9999-not-really-embedded"),
+    )
+
+    with pytest.raises(Stage4BError) as caught:
+        repository.commit_validated_pair(
+            lying, expected_record_generation=repository.capture_record_generation("1pcr")
+        )
+    assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
+
+    assert repository.capture_record_generation("1pcr") == 1
+    assert repository.read_active("1pcr", validator=_accept).snapshot_id == original.snapshot_id
+
+
+def test_structurally_plausible_but_adapter_invalid_candidate_cannot_replace_active_snapshot(
+    tmp_path,
+):
+    repository = _repository(tmp_path)
+    original = repository.commit_validated_pair(
+        _candidate(marker=b"one"), expected_record_generation=0
+    )
+
+    bad_json = _JSON_TEMPLATE.replace(b'"pdb_id":"test"', b'"pdb_id":"1pcr"', 1)
+    # Break the identity-frame transformation matrix so the offline adapter's
+    # scientific pair validation fails, even though every structural/digest
+    # check the repository performs on its own would otherwise accept this.
+    bad_json = bad_json.replace(b'"y":-1.00000000', b'"y":-0.90000000', 1)
+    bad_pdb = _PDB_TEMPLATE.replace(b"TEST\n", b"1PCR\n", 1)
+    candidate = FakeCandidate(
+        "1pcr",
+        (
+            _payload("1pcr", "pdbtm_json", bad_json, 0),
+            _payload("1pcr", "transformed_pdb", bad_pdb, 2),
+        ),
+        provider_versions=FakeVersions(resource_version="1017"),
+    )
+
+    with pytest.raises(Stage4BError) as caught:
+        repository.commit_validated_pair(
+            candidate, expected_record_generation=repository.capture_record_generation("1pcr")
+        )
+    assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
+
+    assert repository.capture_record_generation("1pcr") == 1
+    assert repository.read_active("1pcr", validator=_accept).snapshot_id == original.snapshot_id
+
+
+def test_oversized_manifest_is_rejected_before_index_replacement(tmp_path, monkeypatch):
+    repository = _repository(tmp_path)
+    original = repository.commit_validated_pair(
+        _candidate(marker=b"one"), expected_record_generation=0
+    )
+
+    monkeypatch.setattr(cache_module, "_MANIFEST_LIMIT", 10)
+    try:
+        with pytest.raises(Stage4BError) as caught:
+            repository.commit_validated_pair(
+                _candidate(marker=b"two"),
+                expected_record_generation=repository.capture_record_generation("1pcr"),
+            )
+        assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
+        assert repository.capture_record_generation("1pcr") == 1
+    finally:
+        monkeypatch.setattr(cache_module, "_MANIFEST_LIMIT", 1024 * 1024)
+
+    assert repository.read_active("1pcr", validator=_accept).snapshot_id == original.snapshot_id
+
+
+def test_oversized_index_is_rejected_before_replacement(tmp_path, monkeypatch):
+    repository = _repository(tmp_path)
+    original = repository.commit_validated_pair(
+        _candidate(marker=b"one"), expected_record_generation=0
+    )
+    generation = repository.capture_record_generation("1pcr")
+    # Pin the limit just above the *current* (still-readable) index size, so
+    # only the larger index produced by adding a second snapshot is refused.
+    current_index_size = (repository.root / "index.json").stat().st_size
+
+    monkeypatch.setattr(cache_module, "_INDEX_LIMIT", current_index_size + 5)
+    try:
+        with pytest.raises(Stage4BError) as caught:
+            repository.commit_validated_pair(
+                _candidate(marker=b"two"), expected_record_generation=generation
+            )
+        assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
+        assert repository.capture_record_generation("1pcr") == 1
+    finally:
+        monkeypatch.setattr(cache_module, "_INDEX_LIMIT", 4 * 1024 * 1024)
+
+    assert repository.read_active("1pcr", validator=_accept).snapshot_id == original.snapshot_id
 
 
 def test_commit_read_and_list_validate_all_bytes(tmp_path):

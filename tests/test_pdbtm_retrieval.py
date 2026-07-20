@@ -105,6 +105,46 @@ def test_expected_provider_failure_is_failed_pre_commit():
     assert operation.error is error
 
 
+def test_late_cancel_after_precommit_failure_invalidates_delivery_but_keeps_error():
+    error = _error(Stage4BErrorCode.PAIR_VALIDATION_FAILED)
+    operation = RetrievalOperation()
+    with pytest.raises(Stage4BError):
+        retrieve_validate_and_commit(
+            "1abc",
+            provider=FakeProvider(error=error),
+            repository=FakeRepository(),
+            operation=operation,
+        )
+    assert operation.commit_state is CommitState.FAILED_PRE_COMMIT
+
+    assert operation.request_cancel() is False
+
+    snapshot = operation.snapshot()
+    assert snapshot.commit_state is CommitState.FAILED_PRE_COMMIT
+    assert snapshot.delivery_disposition is DeliveryDisposition.IGNORED_STALE
+    assert snapshot.error_code is Stage4BErrorCode.PAIR_VALIDATION_FAILED
+
+
+def test_late_cancel_after_commit_failure_invalidates_delivery_but_keeps_error():
+    error = _error(Stage4BErrorCode.CACHE_CONFLICT)
+    operation = RetrievalOperation()
+    with pytest.raises(Stage4BError):
+        retrieve_validate_and_commit(
+            "1abc",
+            provider=FakeProvider(),
+            repository=FakeRepository(error=error),
+            operation=operation,
+        )
+    assert operation.commit_state is CommitState.COMMIT_FAILED
+
+    assert operation.request_cancel() is False
+
+    snapshot = operation.snapshot()
+    assert snapshot.commit_state is CommitState.COMMIT_FAILED
+    assert snapshot.delivery_disposition is DeliveryDisposition.IGNORED_STALE
+    assert snapshot.error_code is Stage4BErrorCode.CACHE_CONFLICT
+
+
 def test_cancellation_wins_race_with_precommit_failure_recording():
     class RaceOperation(RetrievalOperation):
         def fail_pre_commit(self, error):

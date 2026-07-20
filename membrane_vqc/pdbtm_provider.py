@@ -21,10 +21,22 @@ from .pdbtm_errors import Stage4BError, Stage4BErrorCode
 PDBTM_JSON_ROLE = "pdbtm_json"
 TRANSFORMED_PDB_ROLE = "transformed_pdb"
 PAIR_ROLES = (PDBTM_JSON_ROLE, TRANSFORMED_PDB_ROLE)
-PAIR_MAX_BYTES = 10 * 1024 * 1024
-PAIR_DEADLINE_SECONDS = 60.0
 _RECORD_ID = re.compile(r"^[0-9][A-Za-z0-9]{3}$", flags=re.ASCII)
 _IDENTITY4 = tuple(tuple(1.0 if row == column else 0.0 for column in range(4)) for row in range(4))
+
+
+@dataclass(frozen=True, slots=True)
+class PairPolicy:
+    """Sole authoritative source of the combined-pair deadline and byte ceiling."""
+
+    pair_timeout: float = 60.0
+    max_pair_bytes: int = 10 * 1024 * 1024
+
+    def __post_init__(self) -> None:
+        if self.pair_timeout <= 0:
+            raise ValueError("pair_timeout must be positive")
+        if self.max_pair_bytes <= 0:
+            raise ValueError("max_pair_bytes must be positive")
 
 
 class CancellationView(Protocol):
@@ -328,13 +340,11 @@ class PdbtmProviderClient:
         transport: ProviderTransport,
         *,
         monotonic=time.monotonic,
-        pair_deadline_seconds: float = PAIR_DEADLINE_SECONDS,
+        pair_policy: PairPolicy | None = None,
     ) -> None:
-        if pair_deadline_seconds <= 0:
-            raise ValueError("pair_deadline_seconds must be positive")
         self._transport = transport
         self._monotonic = monotonic
-        self._pair_deadline_seconds = pair_deadline_seconds
+        self._pair_policy = pair_policy or PairPolicy()
 
     def fetch(
         self,
@@ -344,7 +354,7 @@ class PdbtmProviderClient:
     ) -> ValidatedPdbtmPair:
         canonical_id = canonicalize_record_id(record_id)
         _require_not_cancelled(cancellation)
-        deadline = self._monotonic() + self._pair_deadline_seconds
+        deadline = self._monotonic() + self._pair_policy.pair_timeout
         payloads: list[RetrievedPayload] = []
         byte_total = 0
         for role in PAIR_ROLES:
@@ -364,10 +374,10 @@ class PdbtmProviderClient:
             )
             body = _payload_body(payload, role)
             byte_total += len(body)
-            if byte_total > PAIR_MAX_BYTES:
+            if byte_total > self._pair_policy.max_pair_bytes:
                 _fail(
                     Stage4BErrorCode.RESPONSE_TOO_LARGE,
-                    "PDBTM provider pair exceeded the 10 MiB limit.",
+                    "PDBTM provider pair exceeded its configured byte limit.",
                     existing_cache_usable=True,
                 )
             payloads.append(payload)

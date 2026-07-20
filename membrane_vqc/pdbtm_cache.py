@@ -55,6 +55,7 @@ _FORMAT_LIMIT = 16 * 1024
 _INDEX_LIMIT = 4 * 1024 * 1024
 _MANIFEST_LIMIT = 1024 * 1024
 _BLOB_LIMIT = 5 * 1024 * 1024
+_PAIR_LIMIT = 10 * 1024 * 1024
 _DEFAULT_LOCK_TIMEOUT = 5.0
 _PROCESS_LOCKS_GUARD = threading.Lock()
 _PROCESS_LOCKS: dict[str, threading.Lock] = {}
@@ -297,11 +298,20 @@ class PdbtmCacheRepository:
                 elif index_path.exists() or self._has_materialized_state():
                     raise _error(Stage4BErrorCode.CACHE_FORMAT_UNSUPPORTED)
                 else:
-                    self._atomic_write(
-                        format_path,
-                        serialize_format_envelope(make_format_envelope(FormatCore())),
-                        "format",
-                    )
+                    envelope = make_format_envelope(FormatCore())
+                    data = serialize_format_envelope(envelope)
+                    if len(data) > _FORMAT_LIMIT:
+                        raise _error(Stage4BErrorCode.CACHE_OPEN_FAILED)
+                    self._atomic_write(format_path, data, "format")
+                    try:
+                        stored = self._read_regular(format_path, _FORMAT_LIMIT)
+                        if (
+                            stored != data
+                            or parse_format_envelope(stored).format_id != envelope.format_id
+                        ):
+                            raise ValueError("format read-back did not match the written document")
+                    except Exception as error:
+                        raise _error(Stage4BErrorCode.CACHE_OPEN_FAILED) from error
                 if index_path.exists():
                     self._read_index()
                 elif self._has_materialized_state():
@@ -406,6 +416,7 @@ class PdbtmCacheRepository:
         if type(expected_record_generation) is not int or expected_record_generation < 0:
             raise ValueError("expected_record_generation must be a non-negative integer")
         snapshot, bodies = self._prepare_candidate(candidate)
+        self._revalidate_before_commit(snapshot.snapshot_core, bodies)
         canonical = snapshot.snapshot_core.canonical_record_id
         self.initialize()
         try:
@@ -466,6 +477,29 @@ class PdbtmCacheRepository:
         except Exception as error:
             raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED) from error
 
+    def _revalidate_before_commit(self, core: SnapshotCore, bodies: tuple[bytes, bytes]) -> None:
+        """Independently re-derive identity from the exact raw bytes before commit.
+
+        The candidate's self-reported ``provider_versions`` must never be
+        trusted on its own: this repeats the scientific pair validator here,
+        outside the cache lock, and rejects any candidate whose claimed
+        version provenance disagrees with what the raw bytes actually contain.
+        """
+
+        from .pdbtm_provider import validate_pdbtm_pair
+
+        try:
+            _, versions, _ = validate_pdbtm_pair(core.canonical_record_id, *bodies)
+        except Stage4BError as error:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED) from error
+        except Exception as error:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED) from error
+        if (
+            versions.resource_version != core.provider_versions.resource_version
+            or versions.software_version != core.provider_versions.software_version
+        ):
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
+
     def _prepare_candidate_checked(
         self, candidate: object
     ) -> tuple[SnapshotEnvelope, tuple[bytes, bytes]]:
@@ -476,6 +510,7 @@ class PdbtmCacheRepository:
         acquisitions: list[AcquisitionPayload] = []
         bodies: list[bytes] = []
         identities: list[PayloadIdentity] = []
+        total_bytes = 0
         for expected_role, payload in zip(PAYLOAD_ROLES, raw_payloads, strict=True):
             role = getattr(payload, "role", None)
             body = getattr(payload, "body", None)
@@ -486,6 +521,9 @@ class PdbtmCacheRepository:
                 raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
             digest = hashlib.sha256(body).hexdigest()
             byte_size = len(body)
+            if byte_size > _BLOB_LIMIT:
+                raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
+            total_bytes += byte_size
             if (
                 getattr(evidence, "sha256", digest) != digest
                 or getattr(evidence, "byte_size", byte_size) != byte_size
@@ -515,6 +553,8 @@ class PdbtmCacheRepository:
             )
             identities.append(PayloadIdentity(role, digest, byte_size))
             bodies.append(body)
+        if total_bytes > _PAIR_LIMIT:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
         pair_id = compute_pair_id(PairCore(record_id, tuple(identities)))  # type: ignore[arg-type]
         versions = getattr(candidate, "provider_versions", None)
         validated_at = self._utc_now().astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -747,6 +787,8 @@ class PdbtmCacheRepository:
         return self._root / "blobs" / "sha256" / digest[:2] / digest
 
     def _materialize_blob(self, digest: str, body: bytes) -> None:
+        if len(body) > _BLOB_LIMIT:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
         path = self._blob_path(digest)
         self._ensure_cache_directory(path.parent)
         if path.exists():
@@ -760,21 +802,41 @@ class PdbtmCacheRepository:
             raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
 
     def _materialize_manifest(self, snapshot: SnapshotEnvelope) -> None:
+        data = serialize_snapshot_envelope(snapshot)
+        if len(data) > _MANIFEST_LIMIT:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
         directory = (
             self._root / "records" / snapshot.snapshot_core.canonical_record_id / "snapshots"
         )
         self._ensure_cache_directory(directory)
         path = directory / f"{snapshot.snapshot_id}.json"
-        data = serialize_snapshot_envelope(snapshot)
         if path.exists():
             if self._read_regular(path, _MANIFEST_LIMIT) != data:
                 raise _error(Stage4BErrorCode.CACHE_CORRUPT)
             return
         self._atomic_write(path, data, "manifest")
+        try:
+            stored = self._read_regular(path, _MANIFEST_LIMIT)
+            if (
+                stored != data
+                or parse_snapshot_envelope(stored).snapshot_id != snapshot.snapshot_id
+            ):
+                raise ValueError("manifest read-back did not match the written document")
+        except Exception as error:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED) from error
 
     def _write_index(self, core: IndexCore) -> None:
-        data = serialize_index_envelope(make_index_envelope(core))
+        envelope = make_index_envelope(core)
+        data = serialize_index_envelope(envelope)
+        if len(data) > _INDEX_LIMIT:
+            raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
         self._atomic_write(self._root / "index.json", data, "index")
+        try:
+            stored = self._read_regular(self._root / "index.json", _INDEX_LIMIT)
+            if stored != data or parse_index_envelope(stored).index_id != envelope.index_id:
+                raise ValueError("index read-back did not match the written document")
+        except Exception as error:
+            raise _error(Stage4BErrorCode.CACHE_DURABILITY_UNCERTAIN) from error
 
     def _atomic_write(self, destination: Path, data: bytes, kind: str) -> None:
         self._run_failpoint(f"before_{kind}_temp_write")
