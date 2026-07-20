@@ -3,9 +3,10 @@
 Snapshot date: 2026-07-20 (Europe/Moscow).
 
 Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
-latest published GitHub prerelease for limited public testing. Active source development has
-reopened as `0.5.0.dev0`; Stage 4B has not started. Report schema 1.3 is released and immutable,
-and schemas 1.0 through 1.3 are unchanged. PyPI is not used.
+latest published GitHub prerelease for limited public testing. Active source development is
+`0.5.0.dev0`; the Stage 4B1 pure-Python transport/cache core exists on a draft, unmerged branch.
+There is no GUI or PyMOL network workflow. Report schema 1.3 is released and immutable, schemas 1.0
+through 1.3 are unchanged, and schema 1.4 does not exist. PyPI is not used.
 
 ## Post-v0.4.0 development reset
 
@@ -60,10 +61,21 @@ eleven schema 1.2, and one schema 1.3. The deterministic development artifact re
 `MembraneVisualQC-0.5.0.dev0.zip`, 69,248 bytes, SHA-256
 `6b53224e6b9690fae330f2ac04b7ccd9e3ae61dd8d4eeb1ece97abaf80b8c4d0`.
 
-Stage 4B1 is direct HTTPS only; environment/system proxy discovery, PAC, CONNECT, proxy
-credentials, and proxy authentication are unsupported and deferred. Draft schema 1.4 remains
-conceptual and unimplemented. No runtime network retrieval or cache exists, schemas 1.0 through
-1.3 remain unchanged, and Stage 4C has not started.
+The mandatory Stage 4B1 entry preflight passed on 2026-07-20 with exactly four reviewed provider
+GETs. The implementation branch adds direct-HTTPS transport, offline pair validation, canonical
+cache identities, an atomic validated repository, cancellation/publication linearization and a
+blocking Windows core job. Environment/system proxy discovery, PAC, CONNECT, proxy credentials and
+proxy authentication are unsupported and deferred. Existing workflows still perform no network
+access because Stage 4B1 has no GUI or command entry point. Cached data are not integrated into
+reports. Draft schema 1.4 remains conceptual and unimplemented; Stage 4B2, Stage 4B3, Stage 4B4 and
+Stage 4C have not started.
+
+The current draft-branch retained validation reports 610 passed, 8 optional skips and 88% combined
+coverage. All 19 retained reports validate (schema 1.1: 7, schema 1.2: 11, schema 1.3: 1).
+Schemas 1.0–1.3 and frozen v0.4.0 evidence remain byte-identical. The deterministic development
+Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`, 95,289 bytes, SHA-256
+`9a27c24ab7b1be880db9be14fa8a7dfc8de4064d65e7177e4a11e3e9fff1c396`; two builds are
+byte-for-byte identical. These are draft Stage 4B1 results, not a release.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head

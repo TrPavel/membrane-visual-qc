@@ -9,7 +9,21 @@ The format follows Keep a Changelog style, and this project intends to use seman
 ### Changed
 
 - Reopened source development as `0.5.0.dev0` after publishing v0.4.0. This lifecycle reset does
-  not include Stage 4B functionality.
+  not change released reports or schemas.
+
+### Added
+
+- Added the Stage 4B1 pure-Python direct-HTTPS PDBTM transport, deterministic provider-pair
+  validation, canonical content-addressed cache, atomic generation-aware publication, explicit
+  clear, and cancellation/delivery state machine.
+- Added adversarial transport/cache tests, an ordinary-test non-loopback network guard, a blocking
+  Windows Python 3.10 core job, and artifact gates that exclude official provider and cache data.
+
+### Security
+
+- Restricted Stage 4B1 to the reviewed PDBTM host and routes with ordinary TLS verification,
+  bounded streaming, zero redirects/retries, no proxy discovery, redacted stable errors, and
+  symlink/junction/reparse-aware cache access.
 
 ## [0.4.0] - 2026-07-19
 
