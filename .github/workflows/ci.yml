@@ -84,10 +84,6 @@ jobs:
           HTTPS_PROXY: http://user:secret@proxy.invalid:8080
           ALL_PROXY: http://user:secret@proxy.invalid:8080
           NO_PROXY: credential-sentinel.invalid
-          http_proxy: http://user:secret@proxy.invalid:8080
-          https_proxy: http://user:secret@proxy.invalid:8080
-          all_proxy: http://user:secret@proxy.invalid:8080
-          no_proxy: credential-sentinel.invalid
           MVQC_CACHE_DIR: ${{ runner.temp }}\mvqc-stage4b1-cache
         run: >-
           pytest
