@@ -40,6 +40,18 @@ Frozen v0.4.0 evidence remains immutable, and released schema hashes remain unch
 
 No tag, GitHub Release, or PyPI publication was created. Stage 4B has not started.
 
+## Stage 4B design and provider preflight
+
+Stage 4B optional PDBTM network-retrieval and local-cache design is under draft review on branch
+`design/stage4b-network-cache`. The low-volume official-provider preflight passed for `1pcr` and
+`1a0s`, with a conditional-go qualification because the official UI exposes the transformed-PDB
+route while the current OpenAPI format enum omits it. This work is documentation and empirical
+preflight only: no runtime retrieval or cache, report schema, GUI, scientific behavior, OPM work,
+or Stage 4C comparison has started. Draft-review corrections define cancellation/commit
+linearization, a direct-HTTPS-only Stage 4B1 transport, domain-separated canonical cache
+identities, and mandatory bounded provider preflights immediately before Stage 4B1 implementation
+and during Stage 4B4 exact-artifact acceptance.
+
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
 `3740c4dd8bc3a1c6f69778c4715926a19480bbfa` passed
