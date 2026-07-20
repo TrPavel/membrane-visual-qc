@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.build_plugin_zip import (  # noqa: E402
+    FORBIDDEN_PROVIDER_PAYLOADS,
     MANIFEST_NAME,
     project_version,
     sha256_file,
@@ -45,6 +46,14 @@ FORBIDDEN_PROVIDER_NAMES = {
     "rcsb_deposited.pdb",
 }
 FROZEN_V040_VERSION = "0.4.0"
+STAGE4B1_RUNTIME_MODULES = {
+    "membrane_vqc/pdbtm_cache.py",
+    "membrane_vqc/pdbtm_cache_contract.py",
+    "membrane_vqc/pdbtm_errors.py",
+    "membrane_vqc/pdbtm_provider.py",
+    "membrane_vqc/pdbtm_retrieval.py",
+    "membrane_vqc/pdbtm_transport.py",
+}
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
     FROZEN_V040_REPORT: "18874373d3792f70919b985162fd1982cd3d41595d5f589955069af37788bb0e",
@@ -109,6 +118,12 @@ def _assert_safe_archive_names(names: list[str]) -> None:
             or ".." in path.parts
         ):
             raise ReleaseArtifactError(f"Forbidden release archive entry: {name}")
+
+
+def _assert_safe_archive_payload(name: str, data: bytes) -> None:
+    identity = (len(data), hashlib.sha256(data).hexdigest())
+    if identity in FORBIDDEN_PROVIDER_PAYLOADS:
+        raise ReleaseArtifactError(f"Official provider payload is forbidden: {name}")
 
 
 def _contains_absolute_windows_path(value: object) -> bool:
@@ -207,9 +222,15 @@ def _validate_artifact_set(
     with zipfile.ZipFile(wheel) as archive:
         wheel_names = archive.namelist()
         _assert_safe_archive_names(wheel_names)
+        for name in wheel_names:
+            if not name.endswith("/"):
+                _assert_safe_archive_payload(name, archive.read(name))
         metadata_name = f"membrane_vqc_pymol-{expected_version}.dist-info/METADATA"
         if wheel_names.count(metadata_name) != 1:
             raise ReleaseArtifactError(f"Wheel must contain exactly {metadata_name}")
+        missing_wheel = STAGE4B1_RUNTIME_MODULES - set(wheel_names)
+        if missing_wheel:
+            raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
     if wheel_version != expected_version:
         raise ReleaseArtifactError(f"Wheel metadata version mismatch: {wheel_version}")
@@ -217,6 +238,12 @@ def _validate_artifact_set(
     with tarfile.open(sdist, "r:gz") as archive:
         sdist_names = archive.getnames()
         _assert_safe_archive_names(sdist_names)
+        for member in archive.getmembers():
+            if member.isfile():
+                stream = archive.extractfile(member)
+                if stream is None:
+                    raise ReleaseArtifactError(f"Could not read sdist entry: {member.name}")
+                _assert_safe_archive_payload(member.name, stream.read())
         metadata_names = [
             name for name in sdist_names if name.count("/") == 1 and name.endswith("/PKG-INFO")
         ]
@@ -237,6 +264,7 @@ def _validate_artifact_set(
         "membrane_vqc/__init__.py",
         "membrane_vqc/commands.py",
         "membrane_vqc/pdbtm_pymol.py",
+        *STAGE4B1_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
     }

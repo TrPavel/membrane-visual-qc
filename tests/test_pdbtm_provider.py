@@ -149,6 +149,15 @@ def test_provider_enforces_pair_deadline_without_retry():
     assert len(transport.calls) == 2
 
 
+def test_provider_enforces_pair_deadline_after_scientific_validation():
+    moments = iter((0.0, 0.0, 0.0, 0.0, 61.0))
+    transport = FakeTransport()
+    with pytest.raises(Stage4BError) as caught:
+        PdbtmProviderClient(transport, monotonic=lambda: next(moments)).fetch("1abc")
+    assert caught.value.code is Stage4BErrorCode.NETWORK_TIMEOUT
+    assert len(transport.calls) == 2
+
+
 def test_provider_rejects_pair_size_evidence_without_parsing():
     huge = b"x" * (5 * 1024 * 1024 + 1)
     transport = FakeTransport({"pdbtm_json": huge, "transformed_pdb": huge})

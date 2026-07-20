@@ -243,6 +243,8 @@ def _require_payload_order(
     payloads: Sequence[PayloadIdentity | AcquisitionPayload], field: str
 ) -> None:
     _require_exact_type(payloads, tuple, field)
+    if any(type(item) not in {PayloadIdentity, AcquisitionPayload} for item in payloads):
+        _fail(f"{field} contains an invalid payload type")
     if len(payloads) != 2 or tuple(item.role for item in payloads) != PAYLOAD_ROLES:
         _fail(f"{field} must contain exactly pdbtm_json then transformed_pdb")
 

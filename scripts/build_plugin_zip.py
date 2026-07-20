@@ -23,6 +23,18 @@ REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/commands.py",
     f"{PACKAGE_NAME}/constants.py",
     f"{PACKAGE_NAME}/gui.py",
+    f"{PACKAGE_NAME}/pdbtm_cache.py",
+    f"{PACKAGE_NAME}/pdbtm_cache_contract.py",
+    f"{PACKAGE_NAME}/pdbtm_errors.py",
+    f"{PACKAGE_NAME}/pdbtm_provider.py",
+    f"{PACKAGE_NAME}/pdbtm_retrieval.py",
+    f"{PACKAGE_NAME}/pdbtm_transport.py",
+}
+FORBIDDEN_PROVIDER_PAYLOADS = {
+    (283_537, "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0"),
+    (628_434, "7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698"),
+    (425_370, "22b3985dc13b14520b5507b3ec022211d4c281bdf30f2cdef057073305294f62"),
+    (823_920, "f228413887e409312fba5ce76108836856fef62815b1bd8e4ffd97beb01f0b54"),
 }
 
 
@@ -42,6 +54,14 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def reject_official_provider_payload(name: str, data: bytes) -> None:
+    """Prevent accepted live-provider bodies from entering a public artifact."""
+
+    identity = (len(data), sha256_bytes(data))
+    if identity in FORBIDDEN_PROVIDER_PAYLOADS:
+        raise PluginZipError(f"Official provider payload is forbidden in artifacts: {name}")
 
 
 def project_version(project_root: Path) -> str:
@@ -147,6 +167,7 @@ def validate_zip_layout(zip_path: Path) -> dict[str, object]:
         for entry in manifest_files:
             name = entry["path"]
             data = archive.read(name)
+            reject_official_provider_payload(name, data)
             if entry.get("sha256") != sha256_bytes(data) or entry.get("size") != len(data):
                 raise PluginZipError(f"Manifest hash or size mismatch: {name}")
             checked_data.append((name, data))
@@ -173,6 +194,8 @@ def build_plugin_zip(project_root: Path, output: Path | None = None) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
 
     package_files = [(name, path.read_bytes()) for name, path in collect_plugin_files(project_root)]
+    for name, data in package_files:
+        reject_official_provider_payload(name, data)
     manifest_data = _manifest_bytes(version, package_files)
     checksums_data = _checksums_bytes([*package_files, (MANIFEST_NAME, manifest_data)])
     entries = sorted(

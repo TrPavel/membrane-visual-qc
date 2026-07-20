@@ -64,3 +64,37 @@ jobs:
         run: python -m pip install -e ".[exposure-reference]" pytest
       - name: Run FreeSASA availability and parity tests
         run: pytest tests/test_freesasa_backend.py
+
+  stage4b1-windows-core:
+    name: Stage 4B1 Windows core (Python 3.10)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - name: Install focused test tools
+        run: python -m pip install pytest pytest-cov
+      - name: Verify Windows runtime
+        run: python -c "import platform, struct; assert platform.python_version_tuple()[:2] == ('3', '10'); assert struct.calcsize('P') == 8"
+      - name: Run Stage 4B1 transport, cache, and retrieval gates
+        env:
+          HTTP_PROXY: http://user:secret@proxy.invalid:8080
+          HTTPS_PROXY: http://user:secret@proxy.invalid:8080
+          ALL_PROXY: http://user:secret@proxy.invalid:8080
+          NO_PROXY: credential-sentinel.invalid
+          http_proxy: http://user:secret@proxy.invalid:8080
+          https_proxy: http://user:secret@proxy.invalid:8080
+          all_proxy: http://user:secret@proxy.invalid:8080
+          no_proxy: credential-sentinel.invalid
+          MVQC_CACHE_DIR: ${{ runner.temp }}\mvqc-stage4b1-cache
+        run: >-
+          pytest
+          tests/test_pdbtm_transport.py
+          tests/test_pdbtm_cache_contract.py
+          tests/test_pdbtm_provider.py
+          tests/test_pdbtm_cache.py
+          tests/test_pdbtm_retrieval.py
+          tests/test_stage4b1_windows.py
+          tests/test_stage4b1_package_safety.py

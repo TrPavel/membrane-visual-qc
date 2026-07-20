@@ -258,6 +258,8 @@ class PdbtmHttpsTransport:
         connection: http.client.HTTPSConnection | None = None
         try:
             context = self._ssl_context_factory()
+            if context.check_hostname is not True or context.verify_mode != ssl.CERT_REQUIRED:
+                raise Stage4BError(Stage4BErrorCode.TLS_ERROR)
             connection = self._connection_factory(
                 PDBTM_HOST,
                 PDBTM_PORT,
@@ -351,7 +353,10 @@ class PdbtmHttpsTransport:
             raise Stage4BError(Stage4BErrorCode.NETWORK_UNAVAILABLE) from error
         finally:
             if connection is not None:
-                connection.close()
+                try:
+                    connection.close()
+                except (OSError, http.client.HTTPException):
+                    pass
 
     def _set_read_timeout(self, connection: http.client.HTTPSConnection, deadline: float) -> None:
         self._check_deadline(deadline)

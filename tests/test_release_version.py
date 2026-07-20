@@ -11,7 +11,9 @@ import pytest
 from scripts.build_plugin_zip import build_plugin_zip
 from scripts.validate_release_artifacts import (
     ReleaseArtifactError,
+    STAGE4B1_RUNTIME_MODULES,
     _assert_safe_archive_names,
+    _assert_safe_archive_payload,
     _validate_version_agreement,
     validate_current_development_artifacts,
     validate_release_candidate_artifacts,
@@ -20,6 +22,16 @@ from scripts.validate_release_artifacts import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_release_validator_rejects_known_provider_payload_content(monkeypatch):
+    payload = b"official-provider-body-for-release-test"
+    identity = (len(payload), hashlib.sha256(payload).hexdigest())
+    monkeypatch.setattr(
+        "scripts.validate_release_artifacts.FORBIDDEN_PROVIDER_PAYLOADS", {identity}
+    )
+    with pytest.raises(ReleaseArtifactError, match="Official provider payload"):
+        _assert_safe_archive_payload("renamed.bin", payload)
 
 
 def _copy_project_with_version(tmp_path, version):
@@ -113,6 +125,8 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
     wheel = dist / f"membrane_vqc_pymol-{version}-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr("membrane_vqc/__init__.py", "")
+        for module in sorted(STAGE4B1_RUNTIME_MODULES):
+            archive.writestr(module, "")
         archive.writestr(
             f"membrane_vqc_pymol-{version}.dist-info/METADATA",
             f"Metadata-Version: 2.4\nName: membrane-vqc-pymol\nVersion: {version}\n",
@@ -131,6 +145,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
         "schemas/mvqc-report-1.2.schema.json": "{}",
         "schemas/mvqc-report-1.3.schema.json": "{}",
     }
+    required.update({module: "" for module in STAGE4B1_RUNTIME_MODULES})
     with tarfile.open(sdist, "w:gz") as archive:
         for name, text in required.items():
             data = text.encode("utf-8")

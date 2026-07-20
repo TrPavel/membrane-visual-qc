@@ -105,6 +105,24 @@ def test_expected_provider_failure_is_failed_pre_commit():
     assert operation.error is error
 
 
+def test_cancellation_wins_race_with_precommit_failure_recording():
+    class RaceOperation(RetrievalOperation):
+        def fail_pre_commit(self, error):
+            self.request_cancel()
+            return super().fail_pre_commit(error)
+
+    operation = RaceOperation()
+    with pytest.raises(Stage4BError) as caught:
+        retrieve_validate_and_commit(
+            "1abc",
+            provider=FakeProvider(error=_error(Stage4BErrorCode.NETWORK_TIMEOUT)),
+            repository=FakeRepository(),
+            operation=operation,
+        )
+    assert caught.value.code is Stage4BErrorCode.RETRIEVAL_CANCELLED
+    assert operation.commit_state is CommitState.CANCELLED
+
+
 def test_repository_failure_after_authorization_is_commit_failed():
     error = _error(Stage4BErrorCode.CACHE_CONFLICT)
     operation = RetrievalOperation()
@@ -205,6 +223,24 @@ def test_explicit_stale_delivery_after_commit_is_informational_not_exception():
     snapshot = operation.snapshot()
     assert snapshot.commit_state is CommitState.COMMITTED
     assert snapshot.internal_outcome is InternalOutcome.COMMITTED_RESULT_IGNORED
+
+
+def test_failure_after_repository_publication_keeps_committed_state():
+    operation = RetrievalOperation()
+
+    def fail_after_publication():
+        raise RuntimeError("delivery callback failed")
+
+    with pytest.raises(RuntimeError, match="delivery callback failed"):
+        retrieve_validate_and_commit(
+            "1abc",
+            provider=FakeProvider(),
+            repository=FakeRepository(result="published"),
+            operation=operation,
+            hooks=RetrievalHooks(after_repository_commit=fail_after_publication),
+        )
+    assert operation.commit_state is CommitState.COMMITTED
+    assert operation.result == "published"
 
 
 def test_invalid_transition_is_not_silently_suppressed():

@@ -262,6 +262,11 @@ def test_payload_order_is_semantic_and_never_sorted():
         PairCore(core.canonical_record_id, tuple(reversed(core.payloads)))  # type: ignore[arg-type]
 
 
+def test_malformed_payload_constructor_type_is_rejected_deterministically():
+    with pytest.raises(CacheContractError, match="invalid payload type"):
+        PairCore("1pcr", (object(), object()))  # type: ignore[arg-type]
+
+
 def test_bool_is_not_accepted_for_integer_fields():
     with pytest.raises(CacheContractError, match="exact type int"):
         PayloadIdentity("pdbtm_json", JSON_SHA, True)  # type: ignore[arg-type]

@@ -163,10 +163,97 @@ def _reject_link_or_special(path: Path, *, directory: bool | None = None) -> os.
     return details
 
 
+def _reject_existing_parent_links(path: Path) -> None:
+    """Reject links/reparse points in every already-existing path component."""
+
+    absolute = path.absolute()
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current = current / component
+        if os.path.lexists(current):
+            _reject_link_or_special(current, directory=True)
+
+
 def _process_lock(path: Path) -> threading.Lock:
     key = os.path.normcase(os.path.abspath(path))
     with _PROCESS_LOCKS_GUARD:
         return _PROCESS_LOCKS.setdefault(key, threading.Lock())
+
+
+def _open_existing_regular(path: Path, flags: int, error_code: Stage4BErrorCode) -> int:
+    """Open an existing regular file without following a Windows reparse point."""
+
+    binary_flags = flags | getattr(os, "O_BINARY", 0)
+    if os.name != "nt":
+        return os.open(path, binary_flags | getattr(os, "O_NOFOLLOW", 0))
+
+    import ctypes
+    from ctypes import wintypes
+    import msvcrt
+
+    generic_read = 0x80000000
+    generic_write = 0x40000000
+    desired_access = generic_read | (generic_write if flags & os.O_RDWR else 0)
+    share_all = 0x00000001 | 0x00000002 | 0x00000004
+    open_existing = 3
+    file_attribute_normal = 0x00000080
+    file_flag_open_reparse_point = 0x00200000
+    file_attribute_reparse_point = 0x00000400
+    file_attribute_tag_info = 9
+    invalid_handle = ctypes.c_void_p(-1).value
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = (
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    )
+    create_file.restype = wintypes.HANDLE
+    handle = create_file(
+        str(path),
+        desired_access,
+        share_all,
+        None,
+        open_existing,
+        file_attribute_normal | file_flag_open_reparse_point,
+        None,
+    )
+    if handle == invalid_handle:
+        raise _error(error_code)
+
+    class FileAttributeTagInfo(ctypes.Structure):
+        _fields_ = (("file_attributes", wintypes.DWORD), ("reparse_tag", wintypes.DWORD))
+
+    information = FileAttributeTagInfo()
+    get_information = kernel32.GetFileInformationByHandleEx
+    get_information.argtypes = (
+        wintypes.HANDLE,
+        ctypes.c_int,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+    )
+    get_information.restype = wintypes.BOOL
+    try:
+        if (
+            not get_information(
+                handle,
+                file_attribute_tag_info,
+                ctypes.byref(information),
+                ctypes.sizeof(information),
+            )
+            or information.file_attributes & file_attribute_reparse_point
+        ):
+            raise _error(error_code)
+        descriptor = msvcrt.open_osfhandle(handle, binary_flags)
+    except BaseException:
+        kernel32.CloseHandle(handle)
+        raise
+    return descriptor
 
 
 class PdbtmCacheRepository:
@@ -297,8 +384,18 @@ class PdbtmCacheRepository:
             record = index.records.get(canonical)
             if record is None or snapshot_id not in record.snapshot_ids:
                 raise _error(Stage4BErrorCode.CACHE_MISS)
+            generation = record.generation
             copied = self._copy_snapshot_locked(canonical, snapshot_id)
-        return self._semantic_check(copied, validator)
+        checked = self._semantic_check(copied, validator)
+        with self._locked():
+            current = self._read_index().index_core.records.get(canonical)
+            if (
+                current is None
+                or current.generation != generation
+                or snapshot_id not in current.snapshot_ids
+            ):
+                raise _error(Stage4BErrorCode.CACHE_CONFLICT)
+        return checked
 
     def commit_validated_pair(
         self,
@@ -385,6 +482,8 @@ class PdbtmCacheRepository:
             evidence = getattr(payload, "evidence", payload)
             if role != expected_role or type(body) is not bytes:
                 raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
+            if getattr(evidence, "tls_verified", False) is not True:
+                raise _error(Stage4BErrorCode.CACHE_WRITE_FAILED)
             digest = hashlib.sha256(body).hexdigest()
             byte_size = len(body)
             if (
@@ -454,6 +553,7 @@ class PdbtmCacheRepository:
         )
 
     def _create_layout(self) -> None:
+        _reject_existing_parent_links(self._root.parent)
         if self._root.exists():
             _reject_link_or_special(self._root, directory=True)
         else:
@@ -461,6 +561,7 @@ class PdbtmCacheRepository:
                 self._root.mkdir(parents=True, mode=0o700)
             except FileExistsError:
                 _reject_link_or_special(self._root, directory=True)
+        _reject_existing_parent_links(self._root)
         for relative in (
             ("locks",),
             ("blobs", "sha256"),
@@ -507,6 +608,7 @@ class PdbtmCacheRepository:
     @contextmanager
     def _locked(self) -> Iterator[None]:
         lock_path = self._root / "locks" / "cache.lock"
+        self._assert_cache_directory_chain(lock_path.parent)
         _reject_link_or_special(lock_path, directory=False)
         process_lock = _process_lock(lock_path)
         deadline = self._monotonic() + self._lock_timeout
@@ -516,8 +618,10 @@ class PdbtmCacheRepository:
             time.sleep(0.01)
         stream: BinaryIO | None = None
         try:
-            flags = os.O_RDWR | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
-            descriptor = os.open(lock_path, flags)
+            descriptor = _open_existing_regular(
+                lock_path, os.O_RDWR, Stage4BErrorCode.CACHE_OPEN_FAILED
+            )
+            self._assert_cache_directory_chain(lock_path.parent)
             stream = os.fdopen(descriptor, "r+b", buffering=0)
             if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
                 raise _error(Stage4BErrorCode.CACHE_OPEN_FAILED)
@@ -567,8 +671,6 @@ class PdbtmCacheRepository:
             return parse_format_envelope(
                 self._read_regular(self._root / "format.json", _FORMAT_LIMIT)
             )
-        except Stage4BError:
-            raise
         except Exception as error:
             raise _error(Stage4BErrorCode.CACHE_FORMAT_UNSUPPORTED) from error
 
@@ -581,17 +683,24 @@ class PdbtmCacheRepository:
             raise _error(Stage4BErrorCode.CACHE_CORRUPT) from error
 
     def _read_regular(self, path: Path, maximum: int) -> bytes:
-        details = _reject_link_or_special(path, directory=False)
+        try:
+            self._assert_cache_directory_chain(path.parent)
+            details = _reject_link_or_special(path, directory=False)
+        except Stage4BError as error:
+            raise _error(Stage4BErrorCode.CACHE_CORRUPT) from error
         if details.st_size > maximum:
             raise _error(Stage4BErrorCode.CACHE_CORRUPT)
-        flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
-        if hasattr(os, "O_NOFOLLOW"):
-            flags |= os.O_NOFOLLOW
         try:
-            descriptor = os.open(path, flags)
+            descriptor = _open_existing_regular(path, os.O_RDONLY, Stage4BErrorCode.CACHE_CORRUPT)
             try:
+                self._assert_cache_directory_chain(path.parent)
                 opened = os.fstat(descriptor)
-                if not stat.S_ISREG(opened.st_mode) or opened.st_size > maximum:
+                opened_attributes = getattr(opened, "st_file_attributes", 0)
+                if (
+                    not stat.S_ISREG(opened.st_mode)
+                    or opened.st_size > maximum
+                    or opened_attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+                ):
                     raise _error(Stage4BErrorCode.CACHE_CORRUPT)
                 chunks: list[bytes] = []
                 total = 0
@@ -672,8 +781,10 @@ class PdbtmCacheRepository:
         temporary = self._root / "tmp" / f"{uuid4().hex}.part"
         descriptor = -1
         try:
+            self._assert_cache_directory_chain(temporary.parent)
             flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_BINARY", 0)
             descriptor = os.open(temporary, flags, 0o600)
+            self._assert_cache_directory_chain(temporary.parent)
             view = memoryview(data)
             while view:
                 written = os.write(descriptor, view)
@@ -684,9 +795,16 @@ class PdbtmCacheRepository:
             os.close(descriptor)
             descriptor = -1
             self._run_failpoint(f"before_{kind}_replace")
+            self._assert_cache_directory_chain(destination.parent)
             os.replace(temporary, destination)
-            self._run_failpoint(f"after_{kind}_replace")
-            self._fsync_directory(destination.parent)
+            self._assert_cache_directory_chain(destination.parent)
+            try:
+                self._run_failpoint(f"after_{kind}_replace")
+                self._fsync_directory(destination.parent)
+            except Exception as error:
+                if kind == "index":
+                    raise _error(Stage4BErrorCode.CACHE_DURABILITY_UNCERTAIN) from error
+                raise
         finally:
             if descriptor >= 0:
                 os.close(descriptor)

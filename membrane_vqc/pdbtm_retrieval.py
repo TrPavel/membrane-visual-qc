@@ -64,7 +64,6 @@ class RetrievalOperation:
         self._error: Stage4BError | None = None
         self._result: object | None = None
 
-    @property
     def is_cancelled(self) -> bool:
         with self._mutex:
             return self._state is CommitState.CANCELLED
@@ -201,18 +200,19 @@ def retrieve_validate_and_commit(
         canonical_id = canonicalize_record_id(record_id)
         generation = repository.capture_record_generation(canonical_id)
         _run(hooks.after_generation_capture)
-        if operation.is_cancelled:
+        if operation.is_cancelled():
             raise _cancelled_error()
         candidate = provider.fetch(canonical_id, cancellation=operation)
         _run(hooks.after_pair_validation)
-        if operation.is_cancelled:
+        if operation.is_cancelled():
             raise _cancelled_error()
         _run(hooks.before_commit_authorization)
         operation.authorize_commit()
     except Stage4BError as error:
-        if operation.is_cancelled:
+        if operation.is_cancelled():
             raise _cancelled_error() from error
-        operation.fail_pre_commit(error)
+        if not operation.fail_pre_commit(error) and operation.is_cancelled():
+            raise _cancelled_error() from error
         raise
 
     _run(hooks.after_commit_authorization)
@@ -221,9 +221,9 @@ def retrieve_validate_and_commit(
             candidate,
             expected_record_generation=generation,
         )
-        _run(hooks.after_repository_commit)
     except Stage4BError as error:
         operation.commit_failed(error)
         raise
     operation.commit_succeeded(committed)
+    _run(hooks.after_repository_commit)
     return committed

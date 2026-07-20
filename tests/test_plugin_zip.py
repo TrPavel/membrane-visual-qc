@@ -1,3 +1,4 @@
+import hashlib
 import json
 import zipfile
 
@@ -8,6 +9,7 @@ from scripts.build_plugin_zip import (
     FIXED_ZIP_TIMESTAMP,
     MANIFEST_NAME,
     PluginZipError,
+    REQUIRED_PACKAGE_FILES,
     build_plugin_zip,
     sha256_file,
     validate_zip_layout,
@@ -16,7 +18,8 @@ from scripts.build_plugin_zip import (
 
 def make_project(tmp_path):
     (tmp_path / "membrane_vqc").mkdir()
-    for name in ("__init__.py", "commands.py", "constants.py", "gui.py", "core.py"):
+    required = {name.removeprefix("membrane_vqc/") for name in REQUIRED_PACKAGE_FILES}
+    for name in (*sorted(required), "core.py"):
         (tmp_path / "membrane_vqc" / name).write_text(f"# {name}\n", encoding="utf-8")
     (tmp_path / "membrane_vqc" / "__pycache__").mkdir()
     (tmp_path / "membrane_vqc" / "__pycache__" / "core.pyc").write_bytes(b"cache")
@@ -26,6 +29,17 @@ def make_project(tmp_path):
         '[project]\nname = "example"\nversion = "1.2.3"\n', encoding="utf-8"
     )
     return tmp_path
+
+
+def test_builder_rejects_known_provider_payload_content(tmp_path, monkeypatch):
+    root = make_project(tmp_path)
+    payload = b"official-provider-body-for-test"
+    identity = (len(payload), hashlib.sha256(payload).hexdigest())
+    monkeypatch.setattr("scripts.build_plugin_zip.FORBIDDEN_PROVIDER_PAYLOADS", {identity})
+    (root / "membrane_vqc" / "renamed.json").write_bytes(payload)
+
+    with pytest.raises(PluginZipError, match="Official provider payload"):
+        build_plugin_zip(root)
 
 
 def test_builder_produces_expected_minimal_layout_and_hashes(tmp_path):
@@ -100,10 +114,6 @@ def test_manifest_is_stable_json_and_lists_only_package_files(tmp_path):
     with zipfile.ZipFile(output) as archive:
         manifest = json.loads(archive.read(MANIFEST_NAME))
 
-    assert [entry["path"] for entry in manifest["files"]] == [
-        "membrane_vqc/__init__.py",
-        "membrane_vqc/commands.py",
-        "membrane_vqc/constants.py",
-        "membrane_vqc/core.py",
-        "membrane_vqc/gui.py",
-    ]
+    assert [entry["path"] for entry in manifest["files"]] == sorted(
+        [*REQUIRED_PACKAGE_FILES, "membrane_vqc/core.py"]
+    )

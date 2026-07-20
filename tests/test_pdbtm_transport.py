@@ -60,11 +60,17 @@ class FakeSocket:
         self.timeouts.append(value)
 
 
+class FakeContext:
+    check_hostname = True
+    verify_mode = ssl.CERT_REQUIRED
+
+
 class FakeConnection:
-    def __init__(self, response=None, *, connect_error=None, response_error=None):
+    def __init__(self, response=None, *, connect_error=None, response_error=None, close_error=None):
         self.response = response or FakeResponse()
         self.connect_error = connect_error
         self.response_error = response_error
+        self.close_error = close_error
         self.sock = FakeSocket()
         self.connected = False
         self.closed = False
@@ -85,6 +91,8 @@ class FakeConnection:
 
     def close(self):
         self.closed = True
+        if self.close_error is not None:
+            raise self.close_error
 
 
 class Factory:
@@ -107,13 +115,35 @@ class Token:
 
 def make_transport(connection, **kwargs):
     factory = Factory(connection)
+    ssl_context_factory = kwargs.pop("ssl_context_factory", FakeContext)
     transport = PdbtmHttpsTransport(
         connection_factory=factory,
-        ssl_context_factory=lambda: object(),
+        ssl_context_factory=ssl_context_factory,
         utc_now=lambda: datetime(2026, 7, 20, 12, 34, 56, 123456, tzinfo=timezone.utc),
         **kwargs,
     )
     return transport, factory
+
+
+def test_unsafe_injected_tls_context_is_rejected_before_connect():
+    connection = FakeConnection()
+    unsafe = FakeContext()
+    unsafe.check_hostname = False
+    transport, _ = make_transport(connection, ssl_context_factory=lambda: unsafe)
+
+    with pytest.raises(Stage4BError) as caught:
+        transport.fetch("1pcr", "pdbtm_json")
+    assert caught.value.code is Stage4BErrorCode.TLS_ERROR
+    assert not connection.connected
+
+
+def test_close_failure_does_not_replace_successful_result():
+    connection = FakeConnection(close_error=OSError("unsafe local diagnostic"))
+    transport, _ = make_transport(connection)
+
+    result = transport.fetch("1pcr", "pdbtm_json")
+    assert result.body == b"{}"
+    assert connection.closed
 
 
 @pytest.mark.parametrize("value", ["1PCR", "1pCr", "9abc"])

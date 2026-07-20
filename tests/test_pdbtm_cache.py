@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 import hashlib
+import os
 from pathlib import Path
+import subprocess
 import threading
 
 import pytest
 
+import membrane_vqc.pdbtm_cache as cache_module
 from membrane_vqc.pdbtm_cache import CacheRepository, select_cache_root
 from membrane_vqc.pdbtm_errors import Stage4BError, Stage4BErrorCode
 
@@ -26,6 +29,7 @@ class FakeEvidence:
     completed_at: str
     byte_size: int
     sha256: str
+    tls_verified: bool = True
 
 
 @dataclass(frozen=True)
@@ -167,6 +171,20 @@ def test_identical_snapshot_is_deduplicated_but_publication_advances_generation(
     assert repository.capture_record_generation("1pcr") == first_generation + 1
 
 
+def test_commit_rejects_missing_or_false_tls_verification(tmp_path):
+    repository = _repository(tmp_path)
+    candidate = _candidate()
+    unsafe_first = replace(
+        candidate.payloads[0], evidence=replace(candidate.payloads[0].evidence, tls_verified=False)
+    )
+    unsafe = replace(candidate, payloads=(unsafe_first, candidate.payloads[1]))
+
+    with pytest.raises(Stage4BError) as caught:
+        repository.commit_validated_pair(unsafe, expected_record_generation=0)
+    assert caught.value.code is Stage4BErrorCode.CACHE_WRITE_FAILED
+    assert repository.capture_record_generation("1pcr") == 0
+
+
 def test_commit_read_and_list_validate_all_bytes(tmp_path):
     repository = _repository(tmp_path)
     generation = repository.capture_record_generation("1pcr")
@@ -199,6 +217,18 @@ def test_corrupt_active_blob_fails_without_fallback(tmp_path):
     digest = committed.snapshot_core.payloads[0].sha256
     blob = repository.root / "blobs" / "sha256" / digest[:2] / digest
     blob.write_bytes(b"corrupt")
+
+    with pytest.raises(Stage4BError) as caught:
+        repository.read_active("1pcr", validator=_accept)
+    assert caught.value.code is Stage4BErrorCode.CACHE_CORRUPT
+
+
+def test_missing_active_blob_is_cache_corruption(tmp_path):
+    repository = _repository(tmp_path)
+    committed = repository.commit_validated_pair(_candidate(), expected_record_generation=0)
+    digest = committed.snapshot_core.payloads[0].sha256
+    blob = repository.root / "blobs" / "sha256" / digest[:2] / digest
+    blob.unlink()
 
     with pytest.raises(Stage4BError) as caught:
         repository.read_active("1pcr", validator=_accept)
@@ -276,6 +306,25 @@ def test_refresh_failure_before_index_preserves_previous_active_snapshot(tmp_pat
     assert base.read_active("1pcr", validator=_accept).snapshot_id == original.snapshot_id
 
 
+def test_post_index_replace_failure_reports_uncertain_durability(tmp_path):
+    replacements = 0
+
+    def failpoint(name: str) -> None:
+        nonlocal replacements
+        if name == "after_index_replace":
+            replacements += 1
+        if replacements == 2 and name == "after_index_replace":
+            raise OSError("injected")
+
+    repository = _repository(tmp_path, failpoint=failpoint)
+    with pytest.raises(Stage4BError) as caught:
+        repository.commit_validated_pair(_candidate(), expected_record_generation=0)
+    assert caught.value.code is Stage4BErrorCode.CACHE_DURABILITY_UNCERTAIN
+
+    reopened = CacheRepository(repository.root)
+    assert reopened.read_active("1pcr", validator=_accept).canonical_record_id == "1pcr"
+
+
 def test_two_writers_from_one_generation_have_one_winner(tmp_path):
     repository = _repository(tmp_path)
     expected = repository.capture_record_generation("1pcr")
@@ -317,17 +366,42 @@ def test_active_read_rechecks_generation_after_semantic_validation(tmp_path):
     assert caught.value.code is Stage4BErrorCode.CACHE_CONFLICT
 
 
-def test_symlinked_cache_owned_directory_is_rejected(tmp_path):
+def test_explicit_snapshot_rechecks_membership_after_semantic_validation(tmp_path):
+    repository = _repository(tmp_path)
+    committed = repository.commit_validated_pair(_candidate(), expected_record_generation=0)
+
+    def clearing_validator(record_id: str, first: bytes, second: bytes):
+        repository.clear(record_id)
+        return first, second
+
+    with pytest.raises(Stage4BError) as caught:
+        repository.read_snapshot("1pcr", committed.snapshot_id, validator=clearing_validator)
+    assert caught.value.code is Stage4BErrorCode.CACHE_CONFLICT
+
+
+def test_symlinked_or_reparse_cache_owned_directory_is_rejected(tmp_path, monkeypatch):
     repository = _repository(tmp_path)
     repository.initialize()
     blobs = repository.root / "blobs"
     target = tmp_path / "outside"
     target.mkdir()
-    blobs.rename(repository.root / "real-blobs")
-    try:
+    real_blobs = repository.root / "real-blobs"
+    blobs.rename(real_blobs)
+    if os.name == "nt":
+        completed = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(blobs), str(target)],
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            real_blobs.rename(blobs)
+            monkeypatch.setattr(
+                cache_module,
+                "_is_reparse_point",
+                lambda path: Path(path) == blobs,
+            )
+    else:
         blobs.symlink_to(target, target_is_directory=True)
-    except OSError:
-        pytest.skip("symlink creation is unavailable")
 
     with pytest.raises(Stage4BError) as caught:
         repository.capture_record_generation("1pcr")

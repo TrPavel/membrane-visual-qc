@@ -383,6 +383,13 @@ class PdbtmProviderClient:
         json_body = _payload_body(payloads[0], PDBTM_JSON_ROLE)
         pdb_body = _payload_body(payloads[1], TRANSFORMED_PDB_ROLE)
         result, versions, validation = validate_pdbtm_pair(canonical_id, json_body, pdb_body)
+        if self._monotonic() >= deadline:
+            _fail(
+                Stage4BErrorCode.NETWORK_TIMEOUT,
+                "PDBTM pair retrieval and validation exceeded its total deadline.",
+                retryable=True,
+                existing_cache_usable=True,
+            )
         _require_not_cancelled(cancellation)
         return ValidatedPdbtmPair(
             canonical_id,

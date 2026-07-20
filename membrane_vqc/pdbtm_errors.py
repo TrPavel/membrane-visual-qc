@@ -14,6 +14,7 @@ class Stage4BErrorCode(str, Enum):
     CACHE_MISS = "CACHE_MISS"
     CACHE_CORRUPT = "CACHE_CORRUPT"
     CACHE_WRITE_FAILED = "CACHE_WRITE_FAILED"
+    CACHE_DURABILITY_UNCERTAIN = "CACHE_DURABILITY_UNCERTAIN"
     CACHE_CONFLICT = "CACHE_CONFLICT"
     CACHE_FORMAT_UNSUPPORTED = "CACHE_FORMAT_UNSUPPORTED"
     CACHE_CLEAR_FAILED = "CACHE_CLEAR_FAILED"
@@ -53,6 +54,12 @@ _ERROR_METADATA: dict[Stage4BErrorCode, tuple[str, bool, bool]] = {
         "The validated pair could not be saved; the previous cache remains active.",
         True,
         True,
+    ),
+    Stage4BErrorCode.CACHE_DURABILITY_UNCERTAIN: (
+        "The cache index was replaced, but durable storage confirmation failed; inspect the "
+        "cache before retrying.",
+        False,
+        False,
     ),
     Stage4BErrorCode.CACHE_CONFLICT: (
         "The cached record changed during retrieval; refresh again if needed.",
