@@ -38,19 +38,32 @@ Frozen v0.4.0 evidence remains immutable, and released schema hashes remain unch
 - schema 1.2: `96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`;
 - schema 1.3: `6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`.
 
-No tag, GitHub Release, or PyPI publication was created. Stage 4B has not started.
+No tag, GitHub Release, or PyPI publication was created. Stage 4B runtime implementation has not
+started.
 
 ## Stage 4B design and provider preflight
 
-Stage 4B optional PDBTM network-retrieval and local-cache design is under draft review on branch
-`design/stage4b-network-cache`. The low-volume official-provider preflight passed for `1pcr` and
-`1a0s`, with a conditional-go qualification because the official UI exposes the transformed-PDB
-route while the current OpenAPI format enum omits it. This work is documentation and empirical
-preflight only: no runtime retrieval or cache, report schema, GUI, scientific behavior, OPM work,
-or Stage 4C comparison has started. Draft-review corrections define cancellation/commit
-linearization, a direct-HTTPS-only Stage 4B1 transport, domain-separated canonical cache
-identities, and mandatory bounded provider preflights immediately before Stage 4B1 implementation
-and during Stage 4B4 exact-artifact acceptance.
+Stage 4B optional PDBTM network-retrieval and local-cache design and provider preflight are
+accepted and merged. Design status is **GO**. Stage 4B1 implementation status is **CONDITIONAL
+GO**: the transformed-PDB `.trpdb` route remains official-UI-backed but absent from the reviewed
+OpenAPI format enum. A mandatory low-volume provider preflight is required immediately before
+Stage 4B1 begins, and the blocking Windows transport/cache/security gates remain.
+
+PR [#13](https://github.com/TrPavel/membrane-visual-qc/pull/13) final head
+`0237860727b30aeb1e42eeb689a07586f233b2be` passed
+[workflow 29708246684](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29708246684)
+and was squash-merged as `2e2e7ecfe70ec2b3fc16e2d278bf7651d409c913`. The
+[post-merge workflow 29733472921](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29733472921)
+passed Python 3.10, 3.11, 3.12, and the blocking Python 3.11 FreeSASA job. Retained validation
+reported 438 passed, 8 optional skips, 87% coverage, and 19 valid reports: seven schema 1.1,
+eleven schema 1.2, and one schema 1.3. The deterministic development artifact remains
+`MembraneVisualQC-0.5.0.dev0.zip`, 69,248 bytes, SHA-256
+`6b53224e6b9690fae330f2ac04b7ccd9e3ae61dd8d4eeb1ece97abaf80b8c4d0`.
+
+Stage 4B1 is direct HTTPS only; environment/system proxy discovery, PAC, CONNECT, proxy
+credentials, and proxy authentication are unsupported and deferred. Draft schema 1.4 remains
+conceptual and unimplemented. No runtime network retrieval or cache exists, schemas 1.0 through
+1.3 remain unchanged, and Stage 4C has not started.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
