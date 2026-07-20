@@ -51,6 +51,15 @@ class FakeResponse:
         self._position += len(chunk)
         return chunk
 
+    def isclosed(self):
+        """Mirror http.client.HTTPResponse.isclosed(): true once every byte
+        of the fake body has been delivered, matching real behavior where
+        the terminal chunk/declared length closes the response during the
+        read call that consumes the last byte -- no separate empty read is
+        needed to detect it."""
+
+        return self._position >= len(self._body)
+
 
 class FakeSocket:
     def __init__(self):
@@ -93,6 +102,27 @@ class FakeConnection:
         self.closed = True
         if self.close_error is not None:
             raise self.close_error
+
+
+class NoSocketAfterConnectConnection(FakeConnection):
+    """Simulates connect() completing without ever populating .sock."""
+
+    def connect(self):
+        super().connect()
+        self.sock = None
+
+
+class OwnershipTransferConnection(FakeConnection):
+    """Models real http.client.HTTPConnection.getresponse() behavior for a
+    will-close response: connection.sock is nulled and ownership of the
+    still-live socket is effectively handed to the response, exactly like
+    CPython's stdlib does whenever Connection: close applies (which this
+    transport always sends)."""
+
+    def getresponse(self):
+        response = super().getresponse()
+        self.sock = None
+        return response
 
 
 class Factory:
@@ -490,7 +520,7 @@ def test_set_read_timeout_clamps_to_remaining_not_full_read_timeout():
     transport, _ = make_transport(FakeConnection(), policy=policy, monotonic=clock)
     connection = FakeConnection()
 
-    transport._set_read_timeout(connection, deadline=15.0)
+    transport._set_read_timeout(connection.sock, deadline=15.0)
 
     assert connection.sock.timeouts == [pytest.approx(0.05)]
 
@@ -522,9 +552,13 @@ def test_read_timeout_shrinks_before_getresponse_and_every_chunk_read():
     assert result.body == body
     timeouts = connection.sock.timeouts
     # One shrink call before request, one before getresponse, and one before
-    # every response.read() call (three data chunks plus the terminating
-    # empty read) -- never a stale, once-computed value reused across phases.
-    assert len(timeouts) == 6
+    # each of the three data-chunk reads -- never a stale, once-computed
+    # value reused across phases. No fourth "detect EOF" call is made: once
+    # the last chunk is consumed, response.isclosed() is already true, so
+    # the loop breaks without touching the socket again (see the regression
+    # this guards: touching a will-close connection's socket after the body
+    # is fully drained is not guaranteed safe).
+    assert len(timeouts) == 5
     assert all(earlier >= later for earlier, later in zip(timeouts, timeouts[1:]))
     # getresponse() alone consumed 2s, so the first read-loop timeout must
     # already be smaller than the full configured read_timeout.
@@ -551,3 +585,116 @@ def test_transport_does_not_consult_proxy_environment(monkeypatch):
     connection = FakeConnection()
     transport, _ = make_transport(connection)
     transport.fetch("1pcr", "pdbtm_json")
+
+
+def test_socket_absent_immediately_after_connect_is_network_unavailable():
+    connection = NoSocketAfterConnectConnection()
+    transport, factory = make_transport(connection)
+
+    with pytest.raises(Stage4BError) as captured:
+        transport.fetch("1pcr", "pdbtm_json")
+
+    assert captured.value.code is Stage4BErrorCode.NETWORK_UNAVAILABLE
+    assert connection.connected
+    assert connection.requests == []
+
+
+def test_connection_close_ownership_transfer_still_reads_full_body():
+    """Regression test for the confirmed Stage 4B1 defect: the request always
+    sends Connection: close, so real http.client.HTTPConnection.getresponse()
+    nulls connection.sock and hands the still-live socket to the response
+    before the body is read. The transport must use the socket it captured
+    right after connect(), not re-read connection.sock, or every real fetch
+    would fail with a spurious NETWORK_UNAVAILABLE despite a fully valid,
+    fully readable HTTP response."""
+
+    body = b'{"id":"1pcr"}'
+    headers = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
+    connection = OwnershipTransferConnection(FakeResponse(body, headers=headers))
+    transport, _ = make_transport(connection)
+
+    result = transport.fetch("1pcr", "pdbtm_json")
+
+    assert result.body == body
+    assert result.byte_size == len(body)
+    assert result.sha256 == hashlib.sha256(body).hexdigest()
+    # Confirms the fake genuinely exercised the ownership-transfer scenario.
+    assert connection.sock is None
+
+
+def test_shrinking_timeout_is_applied_to_the_captured_socket_after_ownership_transfer():
+    policy = TransportPolicy(read_chunk_bytes=4, max_response_bytes=1024)
+    body = b"0123456789"
+    headers = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
+    connection = OwnershipTransferConnection(FakeResponse(body, headers=headers))
+    captured_before_fetch = connection.sock  # same object production code will capture
+    transport, _ = make_transport(connection, policy=policy)
+
+    result = transport.fetch("1pcr", "pdbtm_json")
+
+    assert result.body == body
+    assert connection.sock is None
+    # before request, before getresponse, and one per real chunk (4, 4, 2
+    # bytes) -- no extra call after the body is fully drained.
+    assert len(captured_before_fetch.timeouts) == 5
+
+
+def test_timeout_during_body_read_after_ownership_transfer_maps_to_network_timeout():
+    def raise_timeout():
+        raise socket.timeout("private detail")
+
+    body = b"0123456789"
+    headers = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
+    response = FakeResponse(body, headers=headers, read_hook=raise_timeout)
+    connection = OwnershipTransferConnection(response)
+    transport, _ = make_transport(connection)
+
+    with pytest.raises(Stage4BError) as captured:
+        transport.fetch("1pcr", "pdbtm_json")
+
+    assert captured.value.code is Stage4BErrorCode.NETWORK_TIMEOUT
+    assert "private" not in str(captured.value)
+
+
+def test_cancellation_still_wins_after_ownership_transfer():
+    token = Token()
+
+    def cancel_on_read():
+        token.cancelled = True
+
+    body = b"0123456789"
+    headers = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
+    response = FakeResponse(body, headers=headers, read_hook=cancel_on_read)
+    connection = OwnershipTransferConnection(response)
+    transport, _ = make_transport(connection)
+
+    with pytest.raises(Stage4BError) as captured:
+        transport.fetch("1pcr", "pdbtm_json", cancellation=token)
+
+    assert captured.value.code is Stage4BErrorCode.RETRIEVAL_CANCELLED
+
+
+def test_streamed_size_limit_still_enforced_after_ownership_transfer():
+    policy = TransportPolicy(read_chunk_bytes=2, max_response_bytes=3)
+    response = FakeResponse(b"1234", headers=[("Content-Type", "application/json")])
+    connection = OwnershipTransferConnection(response)
+    transport, _ = make_transport(connection, policy=policy)
+
+    with pytest.raises(Stage4BError) as captured:
+        transport.fetch("1pcr", "pdbtm_json")
+
+    assert captured.value.code is Stage4BErrorCode.RESPONSE_TOO_LARGE
+
+
+def test_declared_size_limit_still_enforced_after_ownership_transfer():
+    policy = TransportPolicy(max_response_bytes=3)
+    response = FakeResponse(
+        b"", headers=[("Content-Type", "application/json"), ("Content-Length", "4")]
+    )
+    connection = OwnershipTransferConnection(response)
+    transport, _ = make_transport(connection, policy=policy)
+
+    with pytest.raises(Stage4BError) as captured:
+        transport.fetch("1pcr", "pdbtm_json")
+
+    assert captured.value.code is Stage4BErrorCode.RESPONSE_TOO_LARGE

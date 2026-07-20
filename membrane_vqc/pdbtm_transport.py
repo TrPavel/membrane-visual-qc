@@ -258,8 +258,19 @@ class PdbtmHttpsTransport:
                 context=context,
             )
             connection.connect()
+            # Capture the connected socket now, once. http.client.HTTPConnection
+            # always sends Connection: close (below), and CPython's own
+            # getresponse() nulls connection.sock and hands the still-live
+            # socket to the response the moment it parses a will-close
+            # response -- before the body is ever read. Re-reading
+            # connection.sock after that point is unreliable; the captured
+            # reference below is the single source of truth for the rest of
+            # this fetch.
+            sock = connection.sock
+            if sock is None:
+                raise Stage4BError(Stage4BErrorCode.NETWORK_UNAVAILABLE)
             _raise_if_cancelled(cancellation)
-            self._set_read_timeout(connection, deadline)
+            self._set_read_timeout(sock, deadline)
             connection.request(
                 "GET",
                 path,
@@ -275,7 +286,7 @@ class PdbtmHttpsTransport:
                 },
             )
             _raise_if_cancelled(cancellation)
-            self._set_read_timeout(connection, deadline)
+            self._set_read_timeout(sock, deadline)
             response = connection.getresponse()
             _raise_if_cancelled(cancellation)
             self._check_deadline(deadline)
@@ -305,7 +316,7 @@ class PdbtmHttpsTransport:
 
             etag = _safe_optional_header(response, "ETag")
             last_modified = _safe_optional_header(response, "Last-Modified")
-            body = self._read_body(connection, response, deadline, cancellation)
+            body = self._read_body(sock, response, deadline, cancellation)
             if declared_size is not None and len(body) != declared_size:
                 raise Stage4BError(Stage4BErrorCode.PROVIDER_RESPONSE_INVALID)
             completed_at = _format_utc(self._utc_now())
@@ -349,12 +360,9 @@ class PdbtmHttpsTransport:
                 except (OSError, http.client.HTTPException):
                     pass
 
-    def _set_read_timeout(self, connection: http.client.HTTPSConnection, deadline: float) -> None:
+    def _set_read_timeout(self, sock: ssl.SSLSocket, deadline: float) -> None:
         self._check_deadline(deadline)
         remaining = deadline - self._monotonic()
-        sock = connection.sock
-        if sock is None:
-            raise Stage4BError(Stage4BErrorCode.NETWORK_UNAVAILABLE)
         sock.settimeout(min(self.policy.read_timeout, remaining))
 
     def _check_deadline(self, deadline: float) -> None:
@@ -363,7 +371,7 @@ class PdbtmHttpsTransport:
 
     def _read_body(
         self,
-        connection: http.client.HTTPSConnection,
+        sock: ssl.SSLSocket,
         response: http.client.HTTPResponse,
         deadline: float,
         cancellation: CancellationProbe | None,
@@ -372,7 +380,15 @@ class PdbtmHttpsTransport:
         total = 0
         while True:
             _raise_if_cancelled(cancellation)
-            self._set_read_timeout(connection, deadline)
+            if response.isclosed():
+                # The body has already been fully delivered (http.client
+                # detected the final chunk/declared length during the
+                # previous read). Re-arming a timeout on the captured socket
+                # here is both unnecessary and unsafe: once will-close
+                # ownership has been transferred and the body fully drained,
+                # the socket is no longer guaranteed usable.
+                break
+            self._set_read_timeout(sock, deadline)
             chunk = response.read(self.policy.read_chunk_bytes)
             _raise_if_cancelled(cancellation)
             self._check_deadline(deadline)
