@@ -1,12 +1,14 @@
 # Development state
 
-Snapshot date: 2026-07-20 (Europe/Moscow).
+Snapshot date: 2026-07-21 (Europe/Moscow).
 
 Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
 latest published GitHub prerelease for limited public testing. Active source development is
-`0.5.0.dev0`; the Stage 4B1 pure-Python transport/cache core exists on a draft, unmerged branch.
-There is no GUI or PyMOL network workflow. Report schema 1.3 is released and immutable, schemas 1.0
-through 1.3 are unchanged, and schema 1.4 does not exist. PyPI is not used.
+`0.5.0.dev0`. Stage 4B1, the pure-Python PDBTM network transport/cache core, is merged into `main`
+and complete; see "Stage 4B1 completion" below. There is still no GUI or PyMOL network workflow, and
+cached provider data are not report inputs. Report schema 1.3 is released and immutable, schemas 1.0
+through 1.3 are unchanged, and schema 1.4 does not exist. Stage 4B2, Stage 4B3, Stage 4B4, and
+Stage 4C have not started. No Stage 4B1 release or PyPI publication was made; PyPI is not used.
 
 ## Post-v0.4.0 development reset
 
@@ -76,6 +78,49 @@ Schemas 1.0–1.3 and frozen v0.4.0 evidence remain byte-identical. The determin
 Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`, 95,289 bytes, SHA-256
 `9a27c24ab7b1be880db9be14fa8a7dfc8de4064d65e7177e4a11e3e9fff1c396`; two builds are
 byte-for-byte identical. These are draft Stage 4B1 results, not a release.
+
+**Historical/superseded:** the figures in this paragraph reflect the draft Stage 4B1 branch before
+its final correction round and merge. See "Stage 4B1 completion" immediately below for the final
+merged head, test counts, coverage, and Plugin ZIP identity.
+
+## Stage 4B1 completion
+
+Stage 4B1 is merged into `main` and complete. The active package version remains `0.5.0.dev0`.
+There is still no GUI or PyMOL network action; cached provider data are not report inputs; draft
+schema 1.4 does not exist. Stage 4B2, Stage 4B3, Stage 4B4, and Stage 4C have not started. No
+Stage 4B1 release or PyPI publication was made.
+
+PR [#14](https://github.com/TrPavel/membrane-visual-qc/pull/14) final feature head
+`d0321f50105dc8c1c5758b4813bb5665c2d2afc9` passed both final PR workflows —
+[push run 29778771322](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29778771322) and
+[pull_request run 29778774875](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29778774875)
+— and was squash-merged into `main` as
+`dc1122e662a13190d52f26b547dd153d8e008487`. The
+[post-merge workflow 29784587968](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29784587968)
+passed all five jobs: Python 3.10, Python 3.11, Python 3.12, the blocking FreeSASA reference Python
+3.11 job, and the blocking Stage 4B1 Windows core Python 3.10 job.
+
+Focused transport tests passed 73; full validation passed 634 tests with 8 optional skips and 88%
+combined coverage. The final deterministic development Plugin ZIP is
+`MembraneVisualQC-0.5.0.dev0.zip`, 96,356 bytes, SHA-256
+`35b6cf32100ce3ca029cfb28487bf3cb59f85bbab2814722d42586b702a83351`.
+
+Exact live-provider acceptance passed on Windows 10 build 26200 with Incentive PyMOL 3.1.8 and
+bundled CPython 3.10.20: exactly two direct HTTPS requests were issued for `1pcr` (`pdbtm_json` then
+`transformed_pdb`), with no proxy, redirect, or retry. The JSON payload was 283,537 bytes with
+SHA-256 `38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0`; the transformed PDB
+payload was 628,434 bytes with SHA-256
+`7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698`. Adapter validation, cache
+commit, active read, forced-offline read, and clear all passed.
+
+A late correction round fixed a real transport defect found only once the provider was genuinely
+reachable: because every request sends `Connection: close`, CPython's `http.client` transfers
+response ownership and sets `connection.sock` to `None` before the body is read, and the transport
+incorrectly re-read `connection.sock` before each chunk, failing every real fetch with
+`NETWORK_UNAVAILABLE` despite a fully valid response. The fix captures the connected socket once
+after `connect()` and uses it for shrinking read timeouts until `response.isclosed()` indicates the
+body is fully drained. This correction, its regression tests, and the live acceptance above are all
+on the final merged head.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head

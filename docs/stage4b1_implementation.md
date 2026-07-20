@@ -1,6 +1,6 @@
 # Stage 4B1 transport and cache core
 
-Status: implemented on the draft Stage 4B1 branch; not exposed through PyMOL or the GUI.
+Status: merged into main and accepted; not exposed through PyMOL or the GUI.
 
 ## Scope and boundaries
 
@@ -92,9 +92,30 @@ cancellation races. CI retains the three Ubuntu Python jobs and blocking FreeSAS
 blocking Windows Python 3.10 Stage 4B1 core job. Artifact validation requires every runtime module
 and rejects cache/preflight paths and the exact accepted official provider bodies even if renamed.
 
-The exact bundled-Python core smoke is a manual gate after green draft-PR CI. Its two live requests
-are restricted to the accepted `1pcr` pair; all raw bytes and sanitized evidence remain under
-ignored `.local/` storage.
+The exact bundled-Python core smoke ran after green PR CI and before merge, on Windows 10 build
+26200 with Incentive PyMOL 3.1.8 bundled CPython 3.10.20, using the actual production transport,
+provider client, and cache repository. Its two live requests, restricted to the accepted `1pcr`
+pair, completed successfully: exactly two direct HTTPS GETs (`pdbtm_json` then `transformed_pdb`),
+no proxy/redirect/retry, adapter validation, cache commit, active read, forced-offline read, and
+clear all passed, with both payloads matching the accepted sizes and SHA-256 digests. All raw bytes
+and sanitized evidence remained under ignored `.local/` storage and were not committed.
+
+## Final acceptance
+
+Stage 4B1 was accepted and squash-merged on PR
+[#14](https://github.com/TrPavel/membrane-visual-qc/pull/14), final feature head
+`d0321f50105dc8c1c5758b4813bb5665c2d2afc9`, squash-merged into `main` as
+`dc1122e662a13190d52f26b547dd153d8e008487`. The
+[post-merge workflow 29784587968](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29784587968)
+passed all five jobs (Python 3.10, 3.11, 3.12, FreeSASA reference Python 3.11, and Stage 4B1 Windows
+core Python 3.10).
+
+Retained validation on the merged head: 634 passed, 8 optional skips, 88% combined coverage. The
+final deterministic development Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`, 96,356 bytes,
+SHA-256 `35b6cf32100ce3ca029cfb28487bf3cb59f85bbab2814722d42586b702a83351`.
+
+The two-request live-provider acceptance for `1pcr` (described above) is the same acceptance
+retained on this final merged head; it was not re-derived or re-run after merge.
 
 ## Deferred work
 
