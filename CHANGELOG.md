@@ -18,12 +18,21 @@ The format follows Keep a Changelog style, and this project intends to use seman
   clear, and cancellation/delivery state machine.
 - Added adversarial transport/cache tests, an ordinary-test non-loopback network guard, a blocking
   Windows Python 3.10 core job, and artifact gates that exclude official provider and cache data.
+- Added report schema 1.4 (draft) and `membrane_vqc.pdbtm_report_provenance`: a pure, I/O-free
+  conversion from an already-validated Stage 4B1 cache read result to a typed, immutable
+  `orientation.acquisition` provenance block (provider identity, pair/snapshot IDs, per-payload
+  acquisition evidence, and pair self-consistency), plus a `build_report(pdbtm_acquisition=...)`
+  parameter that selects schema 1.4 explicitly. Schemas 1.0-1.3 and existing report-generation
+  call sites are unaffected; schema 1.4 is never selected implicitly.
 
 ### Security
 
 - Restricted Stage 4B1 to the reviewed PDBTM host and routes with ordinary TLS verification,
   bounded streaming, zero redirects/retries, no proxy discovery, redacted stable errors, and
   symlink/junction/reparse-aware cache access.
+- Schema 1.4's acquisition provenance is closed and strict (no additional properties, bounded/
+  allow-listed strings, exact enums) and always states that PDBTM cache acquisition does not by
+  itself establish that any loaded structure matches the cached pair.
 
 ## [0.4.0] - 2026-07-19
 

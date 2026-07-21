@@ -12,6 +12,7 @@ from scripts.build_plugin_zip import build_plugin_zip
 from scripts.validate_release_artifacts import (
     ReleaseArtifactError,
     STAGE4B1_RUNTIME_MODULES,
+    STAGE4B2_RUNTIME_MODULES,
     _assert_safe_archive_names,
     _assert_safe_archive_payload,
     _validate_version_agreement,
@@ -125,7 +126,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
     wheel = dist / f"membrane_vqc_pymol-{version}-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr("membrane_vqc/__init__.py", "")
-        for module in sorted(STAGE4B1_RUNTIME_MODULES):
+        for module in sorted(STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES):
             archive.writestr(module, "")
         archive.writestr(
             f"membrane_vqc_pymol-{version}.dist-info/METADATA",
@@ -144,8 +145,9 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
         "schemas/mvqc-report-1.1.schema.json": "{}",
         "schemas/mvqc-report-1.2.schema.json": "{}",
         "schemas/mvqc-report-1.3.schema.json": "{}",
+        "schemas/mvqc-report-1.4.schema.json": "{}",
     }
-    required.update({module: "" for module in STAGE4B1_RUNTIME_MODULES})
+    required.update({module: "" for module in STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES})
     with tarfile.open(sdist, "w:gz") as archive:
         for name, text in required.items():
             data = text.encode("utf-8")
@@ -172,7 +174,7 @@ def test_frozen_v040_evidence_is_verified_independently():
 
     assert result["version"] == "0.4.0"
     assert result["report"] == "reports/pdbtm_synthetic_mvqc.json"
-    assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3"}
+    assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4"}
 
 
 def test_frozen_v040_evidence_rejects_byte_changes(tmp_path):

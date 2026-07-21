@@ -26,6 +26,7 @@ import membrane_vqc.pdbtm_provider
 import membrane_vqc.pdbtm_retrieval
 import membrane_vqc.pdbtm_transport
 import membrane_vqc.pdbtm_cache
+import membrane_vqc.pdbtm_report_provenance
 
 for forbidden in ("pymol", "PyQt5", "PySide2", "PySide6", "membrane_vqc.gui", "membrane_vqc.commands", "membrane_vqc.report", "membrane_vqc.pdbtm_pymol"):
     assert forbidden not in sys.modules, forbidden

@@ -5,10 +5,15 @@ Snapshot date: 2026-07-21 (Europe/Moscow).
 Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
 latest published GitHub prerelease for limited public testing. Active source development is
 `0.5.0.dev0`. Stage 4B1, the pure-Python PDBTM network transport/cache core, is merged into `main`
-and complete; see "Stage 4B1 completion" below. There is still no GUI or PyMOL network workflow, and
-cached provider data are not report inputs. Report schema 1.3 is released and immutable, schemas 1.0
-through 1.3 are unchanged, and schema 1.4 does not exist. Stage 4B2, Stage 4B3, Stage 4B4, and
-Stage 4C have not started. No Stage 4B1 release or PyPI publication was made; PyPI is not used.
+and complete; see "Stage 4B1 completion" below. Stage 4B2, a pure schema/report-provenance
+integration adding draft report schema 1.4 and a network/cache-free conversion from a validated
+Stage 4B1 cache result to report provenance, is merged into `main` and complete; see "Stage 4B2
+completion" below. There is still no GUI or PyMOL network workflow, and cached provider data still
+reach a report only through the explicit, typed `pdbtm_acquisition` input added by Stage 4B2 -- no
+report generation call performs network or cache I/O itself. Report schemas 1.0 through 1.3 remain
+released and immutable; schema 1.4 is a new, separate draft contract. Stage 4B3, Stage 4B4, and
+Stage 4C have not started. No Stage 4B1 or Stage 4B2 release or PyPI publication was made; PyPI is
+not used.
 
 ## Post-v0.4.0 development reset
 
