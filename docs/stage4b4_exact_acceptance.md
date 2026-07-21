@@ -11,20 +11,26 @@ rather than fabricated.
 - OS: Windows 10 build 26200
 - PyMOL: Incentive PyMOL 3.1.8, installed at `%LOCALAPPDATA%\Schrodinger\PyMOL2`; bundled CPython
   3.10.20 (`python.exe` at the install root)
-- Final PR head: `9ae38be6b6e5ffe89c40981b6a4cc277d3ad13bf`
-- CI artifact (push workflow run [29853518696](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853518696)):
-  artifact ID `8504333680`, outer archive digest
-  `sha256:1f62a0be998475d9a0612e1c8329e9c26bd661a215a7a6fc90a959ae03ed1f75`, 428,758 bytes
-- CI artifact (pull_request workflow run [29853522061](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853522061)):
-  artifact ID `8504336725`, outer archive digest
-  `sha256:998ef17c4835578148ba9e4838baaa5d6d45d6c791e0bafed2bbf5fd304f8e2e`, 428,773 bytes
-- Both outer artifacts were downloaded directly via the GitHub API (not `gh run download`'s
+- Final PR head: `d004f2b8db6bdcf84bbe443a5733b81221618ed0` (docs-only on top of the code head
+  `9ae38be6b6e5ffe89c40981b6a4cc277d3ad13bf` that the live-fetch/cached-offline/Qt smoke below was
+  actually executed against)
+- CI artifact, code head `9ae38be` (push workflow run [29853518696](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853518696)):
+  artifact ID `8504333680`, outer digest `sha256:1f62a0be998475d9a0612e1c8329e9c26bd661a215a7a6fc90a959ae03ed1f75`
+- CI artifact, code head `9ae38be` (pull_request workflow run [29853522061](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853522061)):
+  artifact ID `8504336725`, outer digest `sha256:998ef17c4835578148ba9e4838baaa5d6d45d6c791e0bafed2bbf5fd304f8e2e`
+- CI artifact, final head `d004f2b` (push workflow run [29854106871](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29854106871)):
+  artifact ID `8504570493`, outer digest `sha256:bbef62021c75375d413c6fd00a48377bd211c86be701dbbbcb3ffe354d17fbb7`
+- All three outer artifacts were downloaded directly via the GitHub API (not `gh run download`'s
   auto-extraction) and their SHA-256 independently recomputed to match the API-reported digest
-  exactly, for both runs.
-- Inner Plugin ZIP, extracted from **both** independent CI runs: `MembraneVisualQC-0.5.0.dev0.zip`,
-  **110,358 bytes**, SHA-256 **`5ad626ef12e72be4807ad15ef34f39595ca76b1addc1c19c6c2f8e5487c400c1`**
-  -- byte-identical across the two independently-built CI artifacts, confirming genuine
-  cross-run determinism of the exact artifact tested below (not merely a local rebuild).
+  exactly.
+- Inner Plugin ZIP, extracted from **all three** independent CI runs across **both** heads:
+  `MembraneVisualQC-0.5.0.dev0.zip`, **110,358 bytes**, SHA-256
+  **`5ad626ef12e72be4807ad15ef34f39595ca76b1addc1c19c6c2f8e5487c400c1`** -- byte-identical in every
+  case, proving both genuine cross-run determinism and that the intervening docs-only commit
+  (`9ae38be` -> `d004f2b`) did not change the packaged artifact at all. The live-fetch, cached-
+  offline, and headless Qt smoke below were run once, directly against this exact, byte-verified
+  package (extracted from the `9ae38be` artifact); since `d004f2b`'s independently-rebuilt package
+  is proven byte-identical, those results stand unchanged for the final head.
 
 ## Capability boundary
 
