@@ -129,13 +129,17 @@ identity, and the pair self-consistency block, and validates against schema 1.4.
 ## Final acceptance
 
 Implemented and validated on PR [#16](https://github.com/TrPavel/membrane-visual-qc/pull/16),
-implementation head `47156bb6467320d2dbebea575e31ec0d8ecf86a7`. Focused provenance tests passed
-15; full validation passed 666 tests with 8 optional skips and 88% combined coverage (674 total,
-zero failures) on Python 3.12 and the bundled Incentive PyMOL 3.1.8 CPython 3.10.20. The
-deterministic development Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`, 100,752 bytes, SHA-256
-`020994ab3b74a513a7eecd0c6f8020b973912c98a61ee487d1ca8526535221d5`. The synthetic schema-1.4
-example passed two-request-equivalent end-to-end validation through the real Stage 4B1 cache and
-Stage 4B2 conversion (see "Synthetic example" above). See `docs/development_state.md`'s "Stage 4B2
+implementation head `f28247a1963c67cf4f6b7e97b2194dbefcac65a5`, after a six-agent parallel
+adversarial-review round whose reproduced findings (including a real, independently-confirmed gap
+where the Stage-4 semantic validator skipped a schema-1.4 report carrying `orientation.evidence`,
+and several unguarded attribute accesses in the conversion function) were fixed on this branch.
+Focused provenance tests passed 21; full validation passed 677 tests with 8 optional skips and 88%
+combined coverage (685 total, zero failures) on Python 3.12 and the bundled Incentive PyMOL 3.1.8
+CPython 3.10.20. The deterministic development Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`,
+101,428 bytes, SHA-256 `b952b9d4305932fb1a2254023cef5be2797b5dccb3fcd7ab165be78b83027b4b`. The
+synthetic schema-1.4 example passed two-request-equivalent end-to-end validation through the real
+Stage 4B1 cache and Stage 4B2 conversion (see "Synthetic example" above). See
+`docs/development_state.md`'s "Stage 4B2
 completion" section for the full CI/coverage/artifact record.
 
 ## Deferred work

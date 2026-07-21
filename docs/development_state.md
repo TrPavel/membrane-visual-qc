@@ -133,7 +133,14 @@ on the final merged head.
 
 Stage 4B2, a pure schema/report-provenance integration stage, is implemented and validated on PR
 [#16](https://github.com/TrPavel/membrane-visual-qc/pull/16), implementation head
-`47156bb6467320d2dbebea575e31ec0d8ecf86a7`. It adds draft report schema 1.4
+`f28247a1963c67cf4f6b7e97b2194dbefcac65a5`. Six parallel adversarial-review agents (schema
+correctness, backward compatibility, provenance truthfulness, cache/network side effects,
+malformed-input handling, packaging/release-boundary safety) reviewed the initial implementation;
+every reproduced finding was fixed on this branch, including a real gap two agents independently
+found (the Stage-4 geometric semantic validator was gated on an exact `schema_version == "1.3"`
+check and silently skipped a schema-1.4 report carrying `orientation.evidence`) and several
+malformed-input paths in the conversion function that could raise a raw `AttributeError`/
+`TypeError` instead of `ProvenanceConversionError`. It adds draft report schema 1.4
 (`schemas/mvqc-report-1.4.schema.json`) and `membrane_vqc.pdbtm_report_provenance`, a pure,
 network- and cache-free conversion from an already-validated Stage 4B1 `CachedSnapshot` to a
 typed, immutable `orientation.acquisition` provenance block, plus one new opt-in
@@ -151,14 +158,15 @@ caching a pair is never represented as confirming any loaded structure matches i
 real applicability remains the existing Stage 4A2 offline-adapter path; wiring PDBTM cache results
 into it through the GUI is Stage 4B3 work and has not started.
 
-Focused provenance tests passed 15; full validation passed 666 tests with 8 optional skips and 88%
-combined coverage (674 total, zero failures), on both Python 3.12 and the bundled Incentive PyMOL
+Focused provenance tests passed 21; full validation passed 677 tests with 8 optional skips and 88%
+combined coverage (685 total, zero failures), on both Python 3.12 and the bundled Incentive PyMOL
 3.1.8 CPython 3.10.20. The deterministic development Plugin ZIP is
-`MembraneVisualQC-0.5.0.dev0.zip`, 100,752 bytes, SHA-256
-`020994ab3b74a513a7eecd0c6f8020b973912c98a61ee487d1ca8526535221d5`, built twice byte-identically.
-`current-development`, `frozen-v0.4.0`, and `release-candidate --version 0.5.0.dev0` artifact
-validators all passed; schema 1.4's own hash is
-`b3a8b5c724a5c87f8edf895332d983d28426cdbfb61c4057db07af0a63682982`.
+`MembraneVisualQC-0.5.0.dev0.zip`, 101,428 bytes, SHA-256
+`b952b9d4305932fb1a2254023cef5be2797b5dccb3fcd7ab165be78b83027b4b`, built twice byte-identically.
+`current-development`, `frozen-v0.4.0` (correctly excluding the still-draft schema 1.4 after the
+review-round fix above), and `release-candidate --version 0.5.0.dev0` artifact validators all
+passed; schema 1.4's own hash is
+`7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`.
 
 One deterministic synthetic example, `reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
 SHA-256 `73ad22e1d4ef13bab72f7440b8407295360abd63c51bbc9348cc565173a257bf`), was built end to end
