@@ -32,7 +32,15 @@ SCHEMA_HASHES = {
     "1.1": "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf",
     "1.2": "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430",
     "1.3": "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc",
+    "1.4": "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530",
 }
+# Schemas that actually existed, frozen, at the v0.4.0 tag. 1.4 postdates that
+# release and is still an editable draft (see its own $id suffix and
+# tests/test_report_schema.py's hash test docstring) -- it must NOT be
+# required to stay byte-identical by the frozen-v0.4.0 evidence gate below,
+# even though it is (correctly) required to be present/pinned via the full
+# SCHEMA_HASHES table used by the current-development artifact checks.
+FROZEN_V040_SCHEMA_VERSIONS = {"1.0", "1.1", "1.2", "1.3"}
 FORBIDDEN_ARCHIVE_PARTS = {
     ".local",
     ".pytest_cache",
@@ -53,6 +61,9 @@ STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_provider.py",
     "membrane_vqc/pdbtm_retrieval.py",
     "membrane_vqc/pdbtm_transport.py",
+}
+STAGE4B2_RUNTIME_MODULES = {
+    "membrane_vqc/pdbtm_report_provenance.py",
 }
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
@@ -228,7 +239,7 @@ def _validate_artifact_set(
         metadata_name = f"membrane_vqc_pymol-{expected_version}.dist-info/METADATA"
         if wheel_names.count(metadata_name) != 1:
             raise ReleaseArtifactError(f"Wheel must contain exactly {metadata_name}")
-        missing_wheel = STAGE4B1_RUNTIME_MODULES - set(wheel_names)
+        missing_wheel = (STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
@@ -265,6 +276,7 @@ def _validate_artifact_set(
         "membrane_vqc/commands.py",
         "membrane_vqc/pdbtm_pymol.py",
         *STAGE4B1_RUNTIME_MODULES,
+        *STAGE4B2_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
     }
@@ -329,7 +341,8 @@ def verify_frozen_v040_evidence(project_root: Path = ROOT) -> dict[str, object]:
         file_results[relative] = actual
 
     schema_results = {}
-    for schema_version, expected in SCHEMA_HASHES.items():
+    for schema_version in FROZEN_V040_SCHEMA_VERSIONS:
+        expected = SCHEMA_HASHES[schema_version]
         path = project_root / "schemas" / f"mvqc-report-{schema_version}.schema.json"
         actual = hashlib.sha256(path.read_bytes()).hexdigest()
         if actual != expected:

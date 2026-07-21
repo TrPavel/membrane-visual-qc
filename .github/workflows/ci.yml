@@ -92,5 +92,6 @@ jobs:
           tests/test_pdbtm_provider.py
           tests/test_pdbtm_cache.py
           tests/test_pdbtm_retrieval.py
+          tests/test_pdbtm_report_provenance.py
           tests/test_stage4b1_windows.py
           tests/test_stage4b1_package_safety.py

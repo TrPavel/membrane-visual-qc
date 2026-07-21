@@ -5,10 +5,15 @@ Snapshot date: 2026-07-21 (Europe/Moscow).
 Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
 latest published GitHub prerelease for limited public testing. Active source development is
 `0.5.0.dev0`. Stage 4B1, the pure-Python PDBTM network transport/cache core, is merged into `main`
-and complete; see "Stage 4B1 completion" below. There is still no GUI or PyMOL network workflow, and
-cached provider data are not report inputs. Report schema 1.3 is released and immutable, schemas 1.0
-through 1.3 are unchanged, and schema 1.4 does not exist. Stage 4B2, Stage 4B3, Stage 4B4, and
-Stage 4C have not started. No Stage 4B1 release or PyPI publication was made; PyPI is not used.
+and complete; see "Stage 4B1 completion" below. Stage 4B2, a pure schema/report-provenance
+integration adding draft report schema 1.4 and a network/cache-free conversion from a validated
+Stage 4B1 cache result to report provenance, is merged into `main` and complete; see "Stage 4B2
+completion" below. There is still no GUI or PyMOL network workflow, and cached provider data still
+reach a report only through the explicit, typed `pdbtm_acquisition` input added by Stage 4B2 -- no
+report generation call performs network or cache I/O itself. Report schemas 1.0 through 1.3 remain
+released and immutable; schema 1.4 is a new, separate draft contract. Stage 4B3, Stage 4B4, and
+Stage 4C have not started. No Stage 4B1 or Stage 4B2 release or PyPI publication was made; PyPI is
+not used.
 
 ## Post-v0.4.0 development reset
 
@@ -86,9 +91,11 @@ merged head, test counts, coverage, and Plugin ZIP identity.
 ## Stage 4B1 completion
 
 Stage 4B1 is merged into `main` and complete. The active package version remains `0.5.0.dev0`.
-There is still no GUI or PyMOL network action; cached provider data are not report inputs; draft
-schema 1.4 does not exist. Stage 4B2, Stage 4B3, Stage 4B4, and Stage 4C have not started. No
-Stage 4B1 release or PyPI publication was made.
+There is still no GUI or PyMOL network action. No Stage 4B1 release or PyPI publication was made.
+
+**Superseded:** at Stage 4B1's merge, cached provider data were not report inputs and draft schema
+1.4 did not exist. Both have since changed — see "Stage 4B2 completion" after this section. Stage
+4B3, Stage 4B4, and Stage 4C remain unstarted.
 
 PR [#14](https://github.com/TrPavel/membrane-visual-qc/pull/14) final feature head
 `d0321f50105dc8c1c5758b4813bb5665c2d2afc9` passed both final PR workflows —
@@ -121,6 +128,54 @@ incorrectly re-read `connection.sock` before each chunk, failing every real fetc
 after `connect()` and uses it for shrinking read timeouts until `response.isclosed()` indicates the
 body is fully drained. This correction, its regression tests, and the live acceptance above are all
 on the final merged head.
+
+## Stage 4B2 completion
+
+Stage 4B2, a pure schema/report-provenance integration stage, is implemented and validated on PR
+[#16](https://github.com/TrPavel/membrane-visual-qc/pull/16), implementation head
+`f28247a1963c67cf4f6b7e97b2194dbefcac65a5`. Six parallel adversarial-review agents (schema
+correctness, backward compatibility, provenance truthfulness, cache/network side effects,
+malformed-input handling, packaging/release-boundary safety) reviewed the initial implementation;
+every reproduced finding was fixed on this branch, including a real gap two agents independently
+found (the Stage-4 geometric semantic validator was gated on an exact `schema_version == "1.3"`
+check and silently skipped a schema-1.4 report carrying `orientation.evidence`) and several
+malformed-input paths in the conversion function that could raise a raw `AttributeError`/
+`TypeError` instead of `ProvenanceConversionError`. It adds draft report schema 1.4
+(`schemas/mvqc-report-1.4.schema.json`) and `membrane_vqc.pdbtm_report_provenance`, a pure,
+network- and cache-free conversion from an already-validated Stage 4B1 `CachedSnapshot` to a
+typed, immutable `orientation.acquisition` provenance block, plus one new opt-in
+`build_report(pdbtm_acquisition=...)` parameter. Schemas 1.0-1.3 are unchanged (hashes verified
+byte-identical); every existing report-generation call site is unaffected, since the parameter
+defaults to `None` and schema 1.4 is only ever selected explicitly.
+
+The report layer still performs no I/O of its own: it never opens or discovers the Stage 4B1
+cache, never fetches a provider entry, never calls PyMOL or Qt, and `report.py` only imports the
+provenance type under `TYPE_CHECKING` so importing it does not pull in the cache subsystem.
+Because `validate_pdbtm_pair()` (the validator behind every cached pair) only ever checks the two
+acquired PDBTM payloads against each other and never against a loaded PyMOL object, schema 1.4's
+`object_applicability` is always `{"established": false, "scope": "not_evaluated"}` — acquiring or
+caching a pair is never represented as confirming any loaded structure matches it. Establishing
+real applicability remains the existing Stage 4A2 offline-adapter path; wiring PDBTM cache results
+into it through the GUI is Stage 4B3 work and has not started.
+
+Focused provenance tests passed 21; full validation passed 677 tests with 8 optional skips and 88%
+combined coverage (685 total, zero failures), on both Python 3.12 and the bundled Incentive PyMOL
+3.1.8 CPython 3.10.20. The deterministic development Plugin ZIP is
+`MembraneVisualQC-0.5.0.dev0.zip`, 101,428 bytes, SHA-256
+`b952b9d4305932fb1a2254023cef5be2797b5dccb3fcd7ab165be78b83027b4b`, built twice byte-identically.
+`current-development`, `frozen-v0.4.0` (correctly excluding the still-draft schema 1.4 after the
+review-round fix above), and `release-candidate --version 0.5.0.dev0` artifact validators all
+passed; schema 1.4's own hash is
+`7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`.
+
+One deterministic synthetic example, `reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
+SHA-256 `73ad22e1d4ef13bab72f7440b8407295360abd63c51bbc9348cc565173a257bf`), was built end to end
+through the real Stage 4B1 cache and Stage 4B2 conversion using the existing synthetic fixtures
+under `data/synthetic/` with an obviously fake record ID (`9zzz`); no official PDBTM/RCSB payload
+was committed. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
+smoke was not rerun, since this is a pure schema/report stage validated entirely with synthetic
+data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3, Stage 4B4, and Stage 4C
+have not started.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head

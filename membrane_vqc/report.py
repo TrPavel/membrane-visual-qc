@@ -13,7 +13,7 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 import math
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .constants import DEFAULT_INTERFACE_WIDTH, LIMITATIONS, PLUGIN_NAME, VERSION
 from .context_models import CONTEXT_STATE_PRIORITY, ExposureAnalysis, LocalContextAnalysis
@@ -25,11 +25,19 @@ from .orientation_sources import (
     validate_membrane_geometry,
 )
 
+if TYPE_CHECKING:
+    # Deferred: report.py must not force-load the Stage 4B1 cache subsystem
+    # merely to type-hint this parameter. build_report() only ever calls
+    # .as_dict() on it (duck-typed), matching how orientation_import is
+    # already handled below.
+    from .pdbtm_report_provenance import PdbtmAcquisitionProvenance
+
 SCHEMA_VERSION = "1.1"
 CONTEXT_SCHEMA_VERSION = "1.2"
 ADAPTER_SCHEMA_VERSION = "1.3"
+ACQUISITION_SCHEMA_VERSION = "1.4"
 SUPPORTED_SCHEMA_VERSIONS = frozenset(
-    {SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION, ADAPTER_SCHEMA_VERSION}
+    {SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION, ADAPTER_SCHEMA_VERSION, ACQUISITION_SCHEMA_VERSION}
 )
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
@@ -60,6 +68,7 @@ def build_report(
     orientation_evidence: OrientationEvidenceV1 | None = None,
     exposure_analysis: ExposureAnalysis | None = None,
     local_context_analysis: LocalContextAnalysis | None = None,
+    pdbtm_acquisition: PdbtmAcquisitionProvenance | None = None,
 ) -> dict[str, Any]:
     """Build a versioned, machine-readable single-structure review report.
 
@@ -119,10 +128,14 @@ def build_report(
         orientation["import"] = import_record
     if orientation_evidence is not None:
         orientation["evidence"] = orientation_evidence.as_dict()
+    if pdbtm_acquisition is not None:
+        orientation["acquisition"] = pdbtm_acquisition.as_dict()
 
     report = {
         "schema_version": (
-            ADAPTER_SCHEMA_VERSION
+            ACQUISITION_SCHEMA_VERSION
+            if pdbtm_acquisition is not None
+            else ADAPTER_SCHEMA_VERSION
             if orientation_evidence is not None
             else CONTEXT_SCHEMA_VERSION
             if exposure_analysis is not None or local_context_analysis is not None
@@ -266,6 +279,8 @@ def validate_report(report: dict[str, Any]) -> None:
         raise ReportError("Schema 1.2 reports require context_analysis metadata.")
     if schema_version == ADAPTER_SCHEMA_VERSION and "evidence" not in report["orientation"]:
         raise ReportError("Schema 1.3 reports require adapter orientation evidence.")
+    if schema_version == ACQUISITION_SCHEMA_VERSION and "acquisition" not in report["orientation"]:
+        raise ReportError("Schema 1.4 reports require PDBTM acquisition provenance.")
     has_context = "context_analysis" in report
     required_review_fields = {
         "model",
@@ -298,14 +313,21 @@ def validate_report(report: dict[str, Any]) -> None:
             and "local_context" not in item
         ):
             raise ReportError(f"Review item {index} is missing required local-context evidence.")
-    if schema_version == ADAPTER_SCHEMA_VERSION:
+    if "evidence" in report.get("orientation", {}):
         validate_stage4_report_semantics(report)
 
 
 def validate_stage4_report_semantics(report: Mapping[str, object]) -> None:
-    """Validate nonlinear scientific invariants for a schema-1.3 report."""
+    """Validate nonlinear scientific invariants for adapter orientation evidence.
 
-    if report.get("schema_version") != ADAPTER_SCHEMA_VERSION:
+    Triggered by the presence of ``orientation.evidence`` rather than an exact
+    schema-version match, so these geometric invariants are still enforced for
+    a schema-1.4 report that carries evidence alongside acquisition
+    provenance -- schema 1.4 keeps schema 1.3's evidence shape unmodified and
+    optional, not exempt from its own semantic contract.
+    """
+
+    if "evidence" not in report.get("orientation", {}):
         return
     try:
         orientation = _semantic_mapping(report.get("orientation"), "orientation")
