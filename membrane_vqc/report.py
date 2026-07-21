@@ -313,14 +313,21 @@ def validate_report(report: dict[str, Any]) -> None:
             and "local_context" not in item
         ):
             raise ReportError(f"Review item {index} is missing required local-context evidence.")
-    if schema_version == ADAPTER_SCHEMA_VERSION:
+    if "evidence" in report.get("orientation", {}):
         validate_stage4_report_semantics(report)
 
 
 def validate_stage4_report_semantics(report: Mapping[str, object]) -> None:
-    """Validate nonlinear scientific invariants for a schema-1.3 report."""
+    """Validate nonlinear scientific invariants for adapter orientation evidence.
 
-    if report.get("schema_version") != ADAPTER_SCHEMA_VERSION:
+    Triggered by the presence of ``orientation.evidence`` rather than an exact
+    schema-version match, so these geometric invariants are still enforced for
+    a schema-1.4 report that carries evidence alongside acquisition
+    provenance -- schema 1.4 keeps schema 1.3's evidence shape unmodified and
+    optional, not exempt from its own semantic contract.
+    """
+
+    if "evidence" not in report.get("orientation", {}):
         return
     try:
         orientation = _semantic_mapping(report.get("orientation"), "orientation")

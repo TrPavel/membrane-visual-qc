@@ -21,10 +21,9 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from .errors import OrientationError
-from .pdbtm_cache import CachedSnapshot
 from .pdbtm_cache_contract import (
     CACHE_CONTRACT,
     PAYLOAD_ROLES,
@@ -34,6 +33,14 @@ from .pdbtm_cache_contract import (
     PayloadIdentity,
     compute_pair_id,
 )
+
+if TYPE_CHECKING:
+    # Deferred: this function only ever duck-types its snapshot argument (via
+    # getattr/attribute access), so importing membrane_vqc.pdbtm_cache purely
+    # for a type hint would needlessly widen this module's own import graph
+    # against its documented "pure" boundary. Mirrors report.py's identical
+    # TYPE_CHECKING guard for the same reason.
+    from .pdbtm_cache import CachedSnapshot
 
 MODEL_VERSION = "1"
 PROVIDER_KIND = "pdbtm_api_v1"
@@ -201,18 +208,22 @@ def build_pdbtm_acquisition_provenance(
     ``snapshot`` must be a :class:`CachedSnapshot` returned by
     :meth:`PdbtmCacheRepository.read_active` or ``.read_snapshot`` with the
     default semantic validator (so ``semantic_result`` is populated). This
-    function performs no I/O of any kind; every fact is independently
-    re-derived from ``snapshot`` and cross-checked for internal consistency
-    before being trusted -- an untrusted or hand-constructed candidate is
-    rejected, not passed through.
+    function performs no I/O of any kind. The trust-critical facts -- the
+    pair ID, both payloads' exact size and SHA-256, and the provider-version
+    and record-ID evidence against the pair-validation summary -- are
+    independently re-derived from ``snapshot`` and cross-checked; any
+    contradiction is rejected rather than passed through. Remaining
+    acquisition metadata (URLs, timestamps, ETag/Last-Modified, content
+    type) is copied from the same already-validated evidence after its
+    role/order/status/transport-verification invariants are checked, not
+    independently re-derived, since Stage 4B1 does not retain a second,
+    independent source to re-derive it from.
     """
 
     if consumption_mode not in _CONSUMPTION_MODES:
         _fail(f"Unsupported consumption mode: {consumption_mode!r}")
-    if cache_generation is not None and (
-        isinstance(cache_generation, bool) or cache_generation < 0
-    ):
-        _fail("cache_generation must be a non-negative integer or None.")
+    if cache_generation is not None and (type(cache_generation) is not int or cache_generation < 0):
+        _fail("cache_generation must be a non-negative int or None.")
 
     core = snapshot.snapshot_core
     if core.cache_contract != CACHE_CONTRACT or core.provider != PROVIDER:
@@ -254,26 +265,47 @@ def build_pdbtm_acquisition_provenance(
     if getattr(orientation_result, "status", None) != "imported":
         _fail("Snapshot's pair-validation result was not an accepted 'imported' status.")
     source = getattr(orientation_result, "source", None)
-    if source is None or source.record_id != core.canonical_record_id:
+    source_record_id = getattr(source, "record_id", None)
+    if source is None or source_record_id != core.canonical_record_id:
         _fail("Pair-validation source record ID does not match the snapshot's record ID.")
 
+    validator_resource_version = getattr(validator_versions, "resource_version", None)
+    validator_software_version = getattr(validator_versions, "software_version", None)
     if (
-        validator_versions.resource_version != core.provider_versions.resource_version
-        or validator_versions.software_version != core.provider_versions.software_version
+        validator_resource_version != core.provider_versions.resource_version
+        or validator_software_version != core.provider_versions.software_version
     ):
         _fail("Provider version evidence contradicts the snapshot's recorded provider versions.")
 
-    if summary.adapter_name != ADAPTER_NAME or summary.adapter_version != ADAPTER_VERSION:
+    summary_adapter_name = getattr(summary, "adapter_name", None)
+    summary_adapter_version = getattr(summary, "adapter_version", None)
+    summary_mapping_method = getattr(summary, "mapping_method", None)
+    summary_current_fingerprint = getattr(summary, "current_fingerprint", None)
+    summary_transformed_fingerprint = getattr(summary, "transformed_fingerprint", None)
+    if summary_adapter_name != ADAPTER_NAME or summary_adapter_version != ADAPTER_VERSION:
         _fail("Unexpected adapter identity in pair-validation summary.")
-    if summary.mapping_method != EXPECTED_MAPPING_METHOD:
+    if summary_mapping_method != EXPECTED_MAPPING_METHOD:
         _fail("Pair validation did not use the expected identity-frame method.")
-    if summary.current_fingerprint != summary.transformed_fingerprint:
+    if (
+        summary_current_fingerprint is None
+        or summary_current_fingerprint != summary_transformed_fingerprint
+    ):
         _fail("Pair-validation fingerprints do not agree.")
 
     evidence = getattr(orientation_result, "evidence", None)
     coordinate_frame = getattr(getattr(evidence, "mapping", None), "current_frame", None)
     if coordinate_frame != EXPECTED_COORDINATE_FRAME:
         _fail("Pair validation did not resolve in the expected coordinate frame.")
+
+    rmsd = getattr(summary, "runtime_identity_rmsd", None)
+    maximum_residual = getattr(summary, "runtime_identity_maximum_residual", None)
+    if (
+        isinstance(rmsd, bool)
+        or not isinstance(rmsd, (int, float))
+        or isinstance(maximum_residual, bool)
+        or not isinstance(maximum_residual, (int, float))
+    ):
+        _fail("Pair-validation residual metrics are missing or not numeric.")
 
     payload_provenance: list[AcquisitionPayloadProvenance] = []
     for identity in core.payloads:
@@ -316,12 +348,12 @@ def build_pdbtm_acquisition_provenance(
         validated_at=core.validated_at,
         payloads=(payload_provenance[0], payload_provenance[1]),
         pair_self_consistency=PairSelfConsistency(
-            adapter_name=summary.adapter_name,
-            adapter_version=summary.adapter_version,
-            method=summary.mapping_method,
+            adapter_name=summary_adapter_name,
+            adapter_version=summary_adapter_version,
+            method=summary_mapping_method,
             coordinate_frame=coordinate_frame,
-            rmsd=summary.runtime_identity_rmsd,
-            maximum_residual=summary.runtime_identity_maximum_residual,
+            rmsd=rmsd,
+            maximum_residual=maximum_residual,
             fingerprint_match=True,
         ),
         object_applicability=_NOT_EVALUATED_APPLICABILITY,

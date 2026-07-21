@@ -18,7 +18,7 @@ from membrane_vqc.membrane import AtomRecord
 from membrane_vqc.orientation import legacy_global_z
 from membrane_vqc.pdbtm_cache import CacheRepository
 from membrane_vqc.pdbtm_report_provenance import build_pdbtm_acquisition_provenance
-from membrane_vqc.report import build_report
+from membrane_vqc.report import ReportError, build_report, validate_report
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,7 +81,7 @@ def test_draft_schema_1_4_file_matches_its_recorded_hash():
     future edit is a deliberate, reviewed change rather than a silent drift."""
 
     assert hashlib.sha256(SCHEMA_1_4.read_bytes()).hexdigest() == (
-        "b3a8b5c724a5c87f8edf895332d983d28426cdbfb61c4057db07af0a63682982"
+        "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530"
     )
 
 
@@ -454,3 +454,93 @@ def test_existing_schema_1_3_generation_is_unaffected_by_acquisition_support(tmp
     )
     assert report["schema_version"] == "1.1"
     assert "acquisition" not in report["orientation"]
+
+
+def _schema_1_4_report_with_evidence_and_acquisition(tmp_path):
+    """A schema-1.4 report carrying BOTH orientation.evidence (copied from the frozen,
+    already-valid schema-1.3 synthetic report) and orientation.acquisition -- the
+    combination docs/stage4b2_implementation.md explicitly anticipates a future Stage 4B3
+    report producing. Built from real, already-valid fixtures; callers corrupt a copy."""
+
+    schema_1_3_report = json.loads(
+        (ROOT / "reports" / "pdbtm_synthetic_mvqc.json").read_text(encoding="utf-8")
+    )
+    acquisition_report = _synthetic_acquisition_report(tmp_path)
+    combined = json.loads(json.dumps(schema_1_3_report))  # deep copy
+    combined["schema_version"] = "1.4"
+    combined["orientation"]["acquisition"] = acquisition_report["orientation"]["acquisition"]
+    return combined
+
+
+def test_stage4_semantics_still_enforced_for_schema_1_4_reports_carrying_evidence(tmp_path):
+    """Adversarial-review regression (confirmed independently by two review agents): the
+    Stage-4 geometric semantic checks used to be gated on schema_version == "1.3" exactly,
+    so an otherwise-identical schema-1.4 report carrying the same orientation.evidence block
+    silently skipped them. A non-unit current_geometry.normal must now be rejected for 1.4
+    exactly as it already was for 1.3."""
+
+    valid = _schema_1_4_report_with_evidence_and_acquisition(tmp_path)
+    validate_report(valid)  # sanity: the unmodified combination is valid on its own
+
+    corrupted = json.loads(json.dumps(valid))
+    corrupted["orientation"]["evidence"]["current_geometry"]["normal"] = [
+        0.5,
+        0.5,
+        0.6,
+    ]
+    with pytest.raises(ReportError, match="unit length"):
+        validate_report(corrupted)
+
+
+def test_stage4_semantics_still_run_via_the_example_validator_script_for_schema_1_4(tmp_path):
+    """Same regression as above, via scripts/validate_example_reports.py's own gate
+    (independently duplicated there, and independently fixed there)."""
+
+    from scripts.validate_example_reports import validate_stage4_report_semantics
+
+    corrupted = _schema_1_4_report_with_evidence_and_acquisition(tmp_path)
+    corrupted["orientation"]["evidence"]["current_geometry"]["normal"] = [
+        0.5,
+        0.5,
+        0.6,
+    ]
+    with pytest.raises(ReportError, match="unit length"):
+        validate_stage4_report_semantics(corrupted)
+
+
+def test_schema_1_4_rejects_transformed_pdb_payload_with_json_url_suffix(tmp_path):
+    """Adversarial-review regression: payload URL suffix was not tied to payload role, so a
+    transformed_pdb-role payload with a .json URL used to validate."""
+
+    validator = _validator()
+    report = _synthetic_acquisition_report(tmp_path)
+    payload = report["orientation"]["acquisition"]["payloads"][1]
+    payload["requested_url"] = payload["requested_url"].replace(".trpdb", ".json")
+    payload["final_url"] = payload["final_url"].replace(".trpdb", ".json")
+    with pytest.raises(Exception):
+        validator.validate(report)
+
+
+def test_schema_1_4_rejects_transformed_pdb_payload_with_json_content_type(tmp_path):
+    """Adversarial-review regression: content_type was not tied to payload role, so a
+    transformed_pdb-role payload claiming application/json used to validate even though the
+    real producer (pdbtm_cache_contract.AcquisitionPayload) can never emit that combination."""
+
+    validator = _validator()
+    report = _synthetic_acquisition_report(tmp_path)
+    report["orientation"]["acquisition"]["payloads"][1]["content_type"] = {
+        "media_type": "application/json",
+        "charset": None,
+    }
+    with pytest.raises(Exception):
+        validator.validate(report)
+
+
+def test_schema_1_4_rejects_pdbtm_json_payload_with_trpdb_url_suffix(tmp_path):
+    validator = _validator()
+    report = _synthetic_acquisition_report(tmp_path)
+    payload = report["orientation"]["acquisition"]["payloads"][0]
+    payload["requested_url"] = payload["requested_url"].replace(".json", ".trpdb")
+    payload["final_url"] = payload["final_url"].replace(".json", ".trpdb")
+    with pytest.raises(Exception):
+        validator.validate(report)

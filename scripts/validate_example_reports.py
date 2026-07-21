@@ -46,7 +46,7 @@ def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
     for report_path in report_paths:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         validator.validate(report)
-        if report.get("schema_version") == "1.3":
+        if "evidence" in report.get("orientation", {}):
             validate_stage4_report_semantics(report)
 
 

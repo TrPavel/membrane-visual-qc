@@ -289,3 +289,93 @@ def test_conversion_performs_no_network_calls(tmp_path, monkeypatch):
     monkeypatch.setattr(socket.socket, "connect", forbidden)
     _, snapshot = _commit_and_read_active(tmp_path)
     build_pdbtm_acquisition_provenance(snapshot, consumption_mode="active_cache_read")
+
+
+def test_float_cache_generation_rejected(tmp_path):
+    """Adversarial-review regression: a non-int cache_generation (e.g. a float that would
+    have silently passed the old `< 0` comparison) must be cleanly rejected, not accepted."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    with pytest.raises(ProvenanceConversionError, match="cache_generation"):
+        build_pdbtm_acquisition_provenance(
+            snapshot, consumption_mode="active_cache_read", cache_generation=1.5
+        )
+
+
+def test_non_int_cache_generation_rejected_cleanly(tmp_path):
+    """Adversarial-review regression: a str cache_generation used to crash with a raw
+    TypeError from `cache_generation < 0` instead of a clean ProvenanceConversionError."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    with pytest.raises(ProvenanceConversionError, match="cache_generation"):
+        build_pdbtm_acquisition_provenance(
+            snapshot,
+            consumption_mode="active_cache_read",
+            cache_generation="1",  # type: ignore[arg-type]
+        )
+
+
+class _BareObjectNoRecordId:
+    """A source-shaped object missing `record_id`, to probe unguarded attribute access."""
+
+
+class _DuckTypedResult:
+    """A minimal, deliberately untyped stand-in for OrientationImportResult.
+
+    build_pdbtm_acquisition_provenance() only ever duck-types semantic_result
+    (CachedSnapshot.semantic_result is typed `object | None`, with no shape
+    guarantee), so it must tolerate a stand-in like this one -- not just the
+    real, invariant-enforcing OrientationImportResult dataclass, which cannot
+    itself be constructed in a self-contradictory shape via dataclasses.replace().
+    """
+
+    def __init__(self, status, source):
+        self.status = status
+        self.source = source
+        self.evidence = None
+
+
+def test_semantic_result_source_missing_record_id_raises_conversion_error(tmp_path):
+    """Adversarial-review regression: source.record_id was accessed without getattr, so a
+    duck-typed source object missing that attribute raised a raw AttributeError. The real
+    OrientationImportResult dataclass enforces self.source == self.evidence.source, so this
+    contradiction can only be reached via a duck-typed stand-in, not dataclasses.replace()."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    _orientation_result, versions, summary = snapshot.semantic_result
+    tampered_result = _DuckTypedResult(status="imported", source=_BareObjectNoRecordId())
+    tampered = replace(snapshot, semantic_result=(tampered_result, versions, summary))
+    with pytest.raises(ProvenanceConversionError, match="record ID"):
+        build_pdbtm_acquisition_provenance(tampered, consumption_mode="active_cache_read")
+
+
+def test_semantic_result_none_provider_versions_raises_conversion_error(tmp_path):
+    """Adversarial-review regression: validator_versions.resource_version was accessed
+    without getattr; semantic_result's shape is not guaranteed (CachedSnapshot.semantic_result
+    is typed object | None), so a None/wrong-typed element must not crash with AttributeError."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    orientation_result, _versions, summary = snapshot.semantic_result
+    tampered = replace(snapshot, semantic_result=(orientation_result, None, summary))
+    with pytest.raises(ProvenanceConversionError, match="[Pp]rovider version"):
+        build_pdbtm_acquisition_provenance(tampered, consumption_mode="active_cache_read")
+
+
+def test_semantic_result_none_summary_raises_conversion_error(tmp_path):
+    """Adversarial-review regression: summary.adapter_name was accessed without getattr."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    orientation_result, versions, _summary = snapshot.semantic_result
+    tampered = replace(snapshot, semantic_result=(orientation_result, versions, None))
+    with pytest.raises(ProvenanceConversionError, match="adapter identity"):
+        build_pdbtm_acquisition_provenance(tampered, consumption_mode="active_cache_read")
+
+
+def test_semantic_result_wrong_typed_tuple_elements_raise_conversion_error(tmp_path):
+    """Adversarial-review regression: a `semantic_result` tuple of the right length but
+    entirely wrong-typed elements (e.g. plain strings) must not crash with AttributeError."""
+
+    _, snapshot = _commit_and_read_active(tmp_path)
+    tampered = replace(snapshot, semantic_result=("a", "b", "c"))
+    with pytest.raises(ProvenanceConversionError):
+        build_pdbtm_acquisition_provenance(tampered, consumption_mode="active_cache_read")

@@ -655,6 +655,7 @@
       "additionalProperties": false
     },
     "pairSelfConsistency": {
+      "description": "PAIR SELF-CONSISTENCY ONLY, not object applicability: this records that the acquired pdbtm_json and transformed_pdb payloads validated against EACH OTHER in the offline adapter's own identity frame. Despite reusing schema-1.3 field names (method, coordinate_frame, rmsd, maximum_residual), none of these values describe, and must never be read as describing, any currently loaded PyMOL object -- unlike schema 1.3's coordinateMapping, no live-object coordinates are involved anywhere in this block. See the sibling object_applicability block, which is always established:false here.",
       "type": "object",
       "required": [
         "adapter_name",
@@ -669,7 +670,10 @@
         "adapter_name": {"const": "pdbtm_api_v1_offline"},
         "adapter_version": {"const": "1"},
         "method": {"const": "identity"},
-        "coordinate_frame": {"const": "pdbtm_transformed_companion"},
+        "coordinate_frame": {
+          "description": "Always the fixed pair-internal identity frame the two acquired payloads were compared in -- never a live PyMOL object's coordinate frame.",
+          "const": "pdbtm_transformed_companion"
+        },
         "rmsd": {"type": "number", "minimum": 0, "maximum": 0.002},
         "maximum_residual": {"type": "number", "minimum": 0, "maximum": 0.002},
         "fingerprint_match": {"const": true}
@@ -677,6 +681,7 @@
       "additionalProperties": false
     },
     "objectApplicability": {
+      "description": "Explicit, always-truthful statement that this acquisition provenance does not establish applicability against any currently loaded structure. Stage 4B2 (cache acquisition/reporting only) can never set established:true; only the separate, unrelated offline-adapter object-matching path (Stage 4A2's mvqc_check_pdbtm, orthogonal to this block) can establish real applicability.",
       "type": "object",
       "required": ["established", "scope", "statement"],
       "properties": {
@@ -696,6 +701,7 @@
       "additionalProperties": false
     },
     "acquisition": {
+      "description": "PDBTM cache-acquisition provenance (Stage 4B2). Records that a validated PDBTM JSON/transformed-PDB pair was retrieved and cached; see pair_self_consistency for what was actually checked and object_applicability for the explicit, always-false statement of what this block does NOT establish about any currently loaded structure.",
       "type": "object",
       "required": [
         "model_version",
@@ -721,24 +727,64 @@
         "provider_contract": {"const": "pdbtm-api-v1/cache-v1"},
         "canonical_record_id": {"$ref": "#/$defs/canonicalRecordId"},
         "acquisition_mode": {"const": "direct_https_provider_fetch"},
-        "consumption_mode": {"enum": ["active_cache_read", "snapshot_cache_read"]},
+        "consumption_mode": {
+          "description": "Whether this pair was read as the record's currently active cache entry (active_cache_read) or looked up by an explicit historical snapshot id (snapshot_cache_read).",
+          "enum": ["active_cache_read", "snapshot_cache_read"]
+        },
         "pair_id": {"$ref": "#/$defs/sha256Digest"},
         "snapshot_id": {"$ref": "#/$defs/sha256Digest"},
         "cache_generation": {
           "oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
         },
         "provider_versions": {"$ref": "#/$defs/acquisitionProviderVersions"},
-        "validated_at": {"$ref": "#/$defs/rfc3339UtcTimestamp"},
+        "validated_at": {
+          "description": "When the Stage 4B1 cache committed this pair after pair self-consistency validation -- not a timestamp of any object-applicability check.",
+          "$ref": "#/$defs/rfc3339UtcTimestamp"
+        },
         "payloads": {
+          "description": "Exactly two payloads, in fixed pdbtm_json then transformed_pdb order; each payload's URL suffix and content type are additionally constrained to match its own role, not just the generic acquisitionPayload shape.",
           "type": "array",
           "prefixItems": [
             {
               "$ref": "#/$defs/acquisitionPayload",
-              "properties": {"role": {"const": "pdbtm_json"}}
+              "properties": {
+                "role": {"const": "pdbtm_json"},
+                "requested_url": {
+                  "pattern": "^https://pdbtm\\.unitmp\\.org/api/v1/entry/[0-9][a-z0-9]{3}\\.json$"
+                },
+                "final_url": {
+                  "pattern": "^https://pdbtm\\.unitmp\\.org/api/v1/entry/[0-9][a-z0-9]{3}\\.json$"
+                },
+                "content_type": {
+                  "oneOf": [
+                    {"properties": {"media_type": {"const": "application/json"}}},
+                    {
+                      "properties": {
+                        "media_type": {"const": "text/plain"},
+                        "charset": {"const": "utf-8"}
+                      }
+                    }
+                  ]
+                }
+              }
             },
             {
               "$ref": "#/$defs/acquisitionPayload",
-              "properties": {"role": {"const": "transformed_pdb"}}
+              "properties": {
+                "role": {"const": "transformed_pdb"},
+                "requested_url": {
+                  "pattern": "^https://pdbtm\\.unitmp\\.org/api/v1/entry/[0-9][a-z0-9]{3}\\.trpdb$"
+                },
+                "final_url": {
+                  "pattern": "^https://pdbtm\\.unitmp\\.org/api/v1/entry/[0-9][a-z0-9]{3}\\.trpdb$"
+                },
+                "content_type": {
+                  "properties": {
+                    "media_type": {"const": "text/plain"},
+                    "charset": {"const": "utf-8"}
+                  }
+                }
+              }
             }
           ],
           "minItems": 2,

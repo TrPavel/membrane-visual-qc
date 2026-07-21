@@ -174,7 +174,9 @@ def test_frozen_v040_evidence_is_verified_independently():
 
     assert result["version"] == "0.4.0"
     assert result["report"] == "reports/pdbtm_synthetic_mvqc.json"
-    assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4"}
+    # Schema 1.4 is still an editable draft (postdates v0.4.0) and must NOT be
+    # required to stay byte-identical by this frozen-evidence gate.
+    assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3"}
 
 
 def test_frozen_v040_evidence_rejects_byte_changes(tmp_path):
