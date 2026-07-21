@@ -302,7 +302,10 @@ class MembraneVQCDialog:
             if values is None:
                 return
             if self._is_cached_source():
-                if self._cached_snapshot is None:
+                if (
+                    self._cached_snapshot is None
+                    or self._selection_state != SELECTION_CACHED_SELECTED
+                ):
                     self._show_error("Press Use cached pair before running QC.")
                     return
                 self.orientation_source.setText("unavailable")
@@ -385,7 +388,10 @@ class MembraneVQCDialog:
             if selection is None:
                 return
             if self._is_cached_source():
-                if self._cached_snapshot is None:
+                if (
+                    self._cached_snapshot is None
+                    or self._selection_state != SELECTION_CACHED_SELECTED
+                ):
                     self._show_error("Press Use cached pair before showing the slab.")
                     return
                 self.orientation_source.setText("unavailable")
@@ -580,7 +586,9 @@ class MembraneVQCDialog:
         worker = worker_class()
         worker.moveToThread(thread)
         thread.finished.connect(worker.deleteLater)
-        thread.finished.connect(thread.deleteLater)
+        thread.finished.connect(
+            lambda finished_thread=thread: self._on_worker_thread_finished(finished_thread)
+        )
         worker.inspect_finished.connect(self._on_inspect_finished)
         worker.fetch_finished.connect(self._on_fetch_finished)
         worker.use_cached_finished.connect(self._on_use_cached_finished)
@@ -590,12 +598,25 @@ class MembraneVQCDialog:
         self._worker_thread = thread
         return worker
 
+    def _on_worker_thread_finished(self, thread):
+        # Only clear bookkeeping for the exact thread that just stopped; a
+        # newer worker/thread pair may already have replaced it (e.g. a rapid
+        # close-then-reopen). Deferring thread.deleteLater() to here (rather
+        # than a bare thread.finished.connect(thread.deleteLater) alongside an
+        # immediate `self._worker_thread = None` in _teardown_worker) is
+        # deliberate: QThread.quit() is asynchronous, so dropping the last
+        # Python reference to the QThread object immediately after calling it
+        # risks Qt destroying a QThread wrapper while the underlying OS
+        # thread is still running, which aborts the process.
+        if self._worker_thread is thread:
+            self._worker = None
+            self._worker_thread = None
+        thread.deleteLater()
+
     def _teardown_worker(self, *_):
         self._invalidate_active_request(request_cancel=True)
         if self._worker_thread is not None:
             self._worker_thread.quit()
-        self._worker_thread = None
-        self._worker = None
 
     def _canonical_cached_record_id_or_error(self):
         text = str(self.cached_record_id.text()).strip()
@@ -702,6 +723,10 @@ class MembraneVQCDialog:
             self._sync_pdbtm_controls()
             return
         self._retrieval_state = RETRIEVAL_AVAILABLE
+        # A successful commit may have bumped the cache's index generation past
+        # whatever an earlier inspect captured; discard that now-unreliable
+        # value rather than let a later Use cached pair attach a stale one.
+        self._last_inspect = (None, None)
         self.cache_status.setText(
             "A new validated snapshot is available. Press Use cached pair to select it."
         )
@@ -742,6 +767,12 @@ class MembraneVQCDialog:
         record_id = self._pending_use_cached_record_id
         self._pending_use_cached_record_id = None
         if isinstance(result, WorkerFailure):
+            # Fail closed: a re-validation failure (corrupt/missing/conflicted)
+            # must never leave a previously selected snapshot looking current,
+            # since Run QC/Show Slab gate only on a snapshot being present.
+            self._cached_snapshot = None
+            self._cached_snapshot_record_id = None
+            self._cached_snapshot_generation = None
             self._selection_state = SELECTION_CACHED_SELECTION_UNAVAILABLE
             self.cache_status.setText(result.message)
             self._sync_pdbtm_controls()

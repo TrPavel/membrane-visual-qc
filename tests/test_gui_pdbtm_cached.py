@@ -278,6 +278,58 @@ def test_use_cached_pair_failure_marks_selection_unavailable():
     assert dialog._cached_snapshot is None
 
 
+def test_use_cached_pair_failure_clears_a_previously_valid_selection():
+    """A re-validation failure must never leave a stale selection usable by Run QC."""
+    dialog = cached_dialog()
+    dialog._on_use_cached_clicked()
+    dialog._on_use_cached_finished(dialog._pending_request_id, _snapshot_stub())
+    assert dialog._cached_snapshot is not None
+
+    dialog._on_use_cached_clicked()
+    request_id = dialog._pending_request_id
+
+    from membrane_vqc.pdbtm_worker import WorkerFailure
+
+    dialog._on_use_cached_finished(
+        request_id,
+        WorkerFailure("CACHE_CORRUPT", "Cached pair failed integrity validation.", True, False),
+    )
+
+    assert dialog._cached_snapshot is None
+    assert dialog._cached_snapshot_record_id is None
+    assert dialog._cached_snapshot_generation is None
+    assert dialog._selection_state == gui.SELECTION_CACHED_SELECTION_UNAVAILABLE
+
+
+def test_run_qc_refuses_a_snapshot_left_over_from_a_failed_revalidation(monkeypatch):
+    """Defense in depth: Run QC must gate on selection state, not snapshot presence alone."""
+    dialog = cached_dialog()
+    dialog._cached_snapshot = _snapshot_stub()
+    dialog._selection_state = gui.SELECTION_CACHED_SELECTION_UNAVAILABLE
+    called = []
+    monkeypatch.setattr(gui, "mvqc_check_pdbtm_cached", lambda *a, **k: called.append(1))
+
+    dialog.run_qc()
+
+    assert called == []
+
+
+def test_fetch_success_discards_a_stale_prior_inspect_generation():
+    """A committed Fetch must not let a later Use cached pair attach a pre-fetch generation."""
+    dialog = cached_dialog()
+    dialog._last_inspect = ("1pcr", 3)
+
+    dialog._on_fetch_clicked()
+    dialog._on_fetch_finished(dialog._pending_request_id, _snapshot_stub())
+
+    assert dialog._last_inspect == (None, None)
+
+    dialog._on_use_cached_clicked()
+    dialog._on_use_cached_finished(dialog._pending_request_id, _snapshot_stub())
+
+    assert dialog._cached_snapshot_generation is None
+
+
 def test_changing_record_id_invalidates_the_selected_cached_snapshot():
     dialog = cached_dialog()
     dialog._on_use_cached_clicked()
@@ -385,6 +437,7 @@ def test_run_qc_uses_the_selected_snapshot_once_available(monkeypatch):
     snapshot = _snapshot_stub()
     dialog._cached_snapshot = snapshot
     dialog._cached_snapshot_generation = 3
+    dialog._selection_state = gui.SELECTION_CACHED_SELECTED
     calls = []
 
     def fake_check(snap, **kwargs):
@@ -415,6 +468,7 @@ def test_show_slab_uses_the_selected_snapshot_once_available(monkeypatch):
     dialog = cached_dialog()
     snapshot = _snapshot_stub()
     dialog._cached_snapshot = snapshot
+    dialog._selection_state = gui.SELECTION_CACHED_SELECTED
     calls = []
 
     def fake_slab(snap, **kwargs):
