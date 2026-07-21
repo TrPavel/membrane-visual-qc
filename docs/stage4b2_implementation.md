@@ -1,6 +1,6 @@
 # Stage 4B2 provenance and report schema 1.4
 
-Status: implementation complete on this PR; merges alongside this document.
+Status: implemented and validated on PR #16; not exposed through PyMOL or the GUI.
 
 ## Scope and boundaries
 
@@ -125,6 +125,18 @@ the real Stage 4B1 cache (`PdbtmCacheRepository`) and the real Stage 4B2 convers
 existing synthetic fixtures under `data/synthetic/` with a clearly fake record ID (`9zzz`) --
 never official PDBTM/RCSB payload content. It demonstrates both payload roles, pair/snapshot
 identity, and the pair self-consistency block, and validates against schema 1.4.
+
+## Final acceptance
+
+Implemented and validated on PR [#16](https://github.com/TrPavel/membrane-visual-qc/pull/16),
+implementation head `47156bb6467320d2dbebea575e31ec0d8ecf86a7`. Focused provenance tests passed
+15; full validation passed 666 tests with 8 optional skips and 88% combined coverage (674 total,
+zero failures) on Python 3.12 and the bundled Incentive PyMOL 3.1.8 CPython 3.10.20. The
+deterministic development Plugin ZIP is `MembraneVisualQC-0.5.0.dev0.zip`, 100,752 bytes, SHA-256
+`020994ab3b74a513a7eecd0c6f8020b973912c98a61ee487d1ca8526535221d5`. The synthetic schema-1.4
+example passed two-request-equivalent end-to-end validation through the real Stage 4B1 cache and
+Stage 4B2 conversion (see "Synthetic example" above). See `docs/development_state.md`'s "Stage 4B2
+completion" section for the full CI/coverage/artifact record.
 
 ## Deferred work
 
