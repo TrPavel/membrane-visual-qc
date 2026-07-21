@@ -65,6 +65,10 @@ STAGE4B1_RUNTIME_MODULES = {
 STAGE4B2_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_report_provenance.py",
 }
+STAGE4B3_RUNTIME_MODULES = {
+    "membrane_vqc/pdbtm_worker.py",
+    "membrane_vqc/pdbtm_gui_worker.py",
+}
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
     FROZEN_V040_REPORT: "18874373d3792f70919b985162fd1982cd3d41595d5f589955069af37788bb0e",
@@ -239,7 +243,9 @@ def _validate_artifact_set(
         metadata_name = f"membrane_vqc_pymol-{expected_version}.dist-info/METADATA"
         if wheel_names.count(metadata_name) != 1:
             raise ReleaseArtifactError(f"Wheel must contain exactly {metadata_name}")
-        missing_wheel = (STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES) - set(wheel_names)
+        missing_wheel = (
+            STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES | STAGE4B3_RUNTIME_MODULES
+        ) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
@@ -277,6 +283,7 @@ def _validate_artifact_set(
         "membrane_vqc/pdbtm_pymol.py",
         *STAGE4B1_RUNTIME_MODULES,
         *STAGE4B2_RUNTIME_MODULES,
+        *STAGE4B3_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
     }

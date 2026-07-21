@@ -8,12 +8,13 @@ latest published GitHub prerelease for limited public testing. Active source dev
 and complete; see "Stage 4B1 completion" below. Stage 4B2, a pure schema/report-provenance
 integration adding draft report schema 1.4 and a network/cache-free conversion from a validated
 Stage 4B1 cache result to report provenance, is merged into `main` and complete; see "Stage 4B2
-completion" below. There is still no GUI or PyMOL network workflow, and cached provider data still
-reach a report only through the explicit, typed `pdbtm_acquisition` input added by Stage 4B2 -- no
-report generation call performs network or cache I/O itself. Report schemas 1.0 through 1.3 remain
-released and immutable; schema 1.4 is a new, separate draft contract. Stage 4B3, Stage 4B4, and
-Stage 4C have not started. No Stage 4B1 or Stage 4B2 release or PyPI publication was made; PyPI is
-not used.
+completion" below. Stage 4B3, the cached-PDBTM GUI/PyMOL worker orchestration, is implemented on
+branch `feat/stage4b3-gui-final-acceptance`; see "Stage 4B3 implementation" below for status
+pending merge. Report schemas 1.0 through 1.3 remain released and immutable; schema 1.4 is a new,
+separate draft contract now reachable from a real GUI action (Stage 4B3's cached Run QC) in
+addition to Stage 4B2's typed `pdbtm_acquisition` input. Stage 4B4 exact-artifact acceptance and
+Stage 4C have not started. No Stage 4B1, Stage 4B2, or Stage 4B3 release or PyPI publication was
+made; PyPI is not used.
 
 ## Post-v0.4.0 development reset
 
@@ -174,8 +175,31 @@ through the real Stage 4B1 cache and Stage 4B2 conversion using the existing syn
 under `data/synthetic/` with an obviously fake record ID (`9zzz`); no official PDBTM/RCSB payload
 was committed. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
 smoke was not rerun, since this is a pure schema/report stage validated entirely with synthetic
-data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3, Stage 4B4, and Stage 4C
-have not started.
+data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3 is implemented (see
+"Stage 4B3 implementation" below); Stage 4B4 and Stage 4C have not started.
+
+## Stage 4B3 implementation
+
+Stage 4B3 adds the cached-PDBTM GUI/PyMOL worker orchestration on top of Stage 4B1's transport/cache
+core and Stage 4B2's schema-1.4 provenance conversion: a Qt-free `PdbtmWorkerOrchestrator`
+(`membrane_vqc/pdbtm_worker.py`), a lazily-Qt-imported `QObject`/`QThread` glue layer
+(`membrane_vqc/pdbtm_gui_worker.py`), a `Local files`/`Validated cache` source selector and cached
+controls inside the existing PDBTM panel, and network-free cached `Run QC`/`Show Slab` helpers
+(`commands.mvqc_check_pdbtm_cached`/`mvqc_slab_pdbtm_cached`) that build the first real (non-
+synthetic) schema-1.4 report carrying both `orientation.evidence` and `orientation.acquisition`.
+Full architecture, control names, state machines, and boundaries are in
+`docs/stage4b3_gui_orchestration.md`.
+
+Local pre-PR validation on branch `feat/stage4b3-gui-final-acceptance` passed: Ruff check and
+format check; 739 tests collected (731 passed, 8 optional FreeSASA skips, zero failures) with 87%
+combined coverage; 20 example reports validate (schema 1.1: 7, 1.2: 11, 1.3: 1, 1.4: 1); schema
+hashes unchanged at 1.0 `5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`, 1.3
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`, 1.4 (still draft)
+`7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`; wheel/sdist build; deterministic
+double Plugin ZIP build. This is a pre-merge, pre-adversarial-review snapshot; see the PR itself and
+its eventual merge record for final figures.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head

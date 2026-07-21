@@ -119,7 +119,9 @@ retained on this final merged head; it was not re-derived or re-run after merge.
 
 ## Deferred work
 
-Stage 4B2 (schema/report integration), Stage 4B3 (GUI and PyMOL orchestration), Stage 4B4 (final
-provider acceptance) and Stage 4C have not started. Proxy/PAC/CONNECT support, cache migration,
+Stage 4B2 (schema/report integration) is merged and complete; see `docs/stage4b2_implementation.md`.
+Stage 4B3 (GUI and PyMOL orchestration) is implemented on top of this stage's retrieval/cache core;
+see `docs/stage4b3_gui_orchestration.md`. Stage 4B4 (final exact-artifact acceptance) and Stage 4C
+status are recorded in `docs/development_state.md`. Proxy/PAC/CONNECT support, cache migration,
 automatic garbage collection, RCSB/OPM retrieval, fitting and automatic source selection remain
 outside this slice.

@@ -25,6 +25,26 @@ The format follows Keep a Changelog style, and this project intends to use seman
   parameter that selects schema 1.4 explicitly. Schemas 1.0-1.3 and existing report-generation
   call sites are unaffected; schema 1.4 is never selected implicitly.
 
+- Added Stage 4B3: a cached-PDBTM GUI workflow inside the existing **PDBTM offline pair** mode.
+  `membrane_vqc/pdbtm_worker.py` is a Qt-free orchestration layer over the Stage 4B1
+  transport/cache stack (`PdbtmWorkerOrchestrator.inspect/fetch/use_cached_pair/clear`);
+  `membrane_vqc/pdbtm_gui_worker.py` is a thin lazily-imported `QObject`/`QThread` glue layer that
+  runs it off the main thread via queued trigger signals. The GUI adds a `Local files` /
+  `Validated cache` source selector, a canonical record-ID field, `Fetch / Refresh`, `Cancel`,
+  visible cache status/metadata, `Use cached pair`, `Open cache location`, and `Clear cached
+  record`. Only `Fetch / Refresh` ever authorizes network access; every other action (including
+  automatic cache-status inspection on ID/source changes) is network-free. A per-dialog session
+  ID, generation counter, and per-request ID guard stale worker deliveries -- a superseded fetch,
+  use, or clear result is silently ignored and never selects a snapshot, runs QC, renders a slab,
+  or changes `qc.LAST_REPORT`.
+- Added `membrane_vqc.pdbtm_pymol.resolve_pdbtm_from_payloads()`, an in-memory-bytes sibling of
+  `resolve_pdbtm_from_pymol()`, and `commands.mvqc_check_pdbtm_cached()` /
+  `mvqc_slab_pdbtm_cached()` (internal helpers, not new PyMOL commands), which establish
+  current-object applicability against the exact validated cached snapshot returned by
+  `Use cached pair` and build a schema-1.4 report containing both `orientation.evidence`
+  (current-object applicability) and `orientation.acquisition` (cache provenance). Local PDBTM
+  file workflows are unchanged and continue to emit schema 1.3.
+
 ### Security
 
 - Restricted Stage 4B1 to the reviewed PDBTM host and routes with ordinary TLS verification,
@@ -33,6 +53,10 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Schema 1.4's acquisition provenance is closed and strict (no additional properties, bounded/
   allow-listed strings, exact enums) and always states that PDBTM cache acquisition does not by
   itself establish that any loaded structure matches the cached pair.
+- Stage 4B3's worker never imports PyMOL or Qt, never calls a `cmd` method, and never tests
+  applicability against a live object; the GUI never displays an absolute cache path, raw
+  exception text, or other local/network diagnostic detail, and `Clear cached record` requires
+  explicit confirmation.
 
 ## [0.4.0] - 2026-07-19
 

@@ -57,6 +57,18 @@ def pdbtm_dialog():
     dialog.pdbtm_json = FakeText("provider.json")
     dialog.transformed_pdb = FakeText("transformed.pdb")
     dialog.biological_assembly = FakeText("1")
+    dialog.pdbtm_source = FakeText(gui.PDBTM_SOURCE_LOCAL)
+    dialog.cached_record_id = FakeText("")
+    dialog.fetch_button = FakeText()
+    dialog.cancel_button = FakeText()
+    dialog.cache_status = FakeText()
+    dialog.cache_metadata = FakeText()
+    dialog.use_cached_button = FakeText()
+    dialog.open_cache_location_button = FakeText()
+    dialog.clear_cached_button = FakeText()
+    dialog._pending_request_id = None
+    dialog._cached_snapshot = None
+    dialog._cached_snapshot_generation = None
     return dialog
 
 

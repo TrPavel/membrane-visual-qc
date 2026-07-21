@@ -1,6 +1,10 @@
 # Stage 4B network retrieval and cache design
 
-Status: design accepted for draft review; no runtime implementation exists.
+Status: design accepted. Stage 4B1 (transport/cache core), Stage 4B2 (schema 1.4/provenance), and
+Stage 4B3 (GUI/PyMOL worker orchestration) are implemented; see `docs/stage4b1_implementation.md`,
+`docs/stage4b2_implementation.md`, `docs/stage4b3_gui_orchestration.md`, and
+`docs/development_state.md` for current status. Stage 4B4 exact-artifact acceptance and Stage 4C
+status are also recorded in `docs/development_state.md`.
 
 Stage 4B adds an optional, explicit way to retrieve the same two inputs already accepted by the
 PDBTM offline-pair adapter and to store only complete validated pairs in a local cache. It does not

@@ -10,7 +10,8 @@ from . import qc
 from .membrane import aggregate_residues, residue_dicts
 from .neighbors import ligand_neighbor_residues
 from .orientation_io import load_orientation_file
-from .pdbtm_pymol import resolve_pdbtm_from_pymol
+from .pdbtm_pymol import resolve_pdbtm_from_payloads, resolve_pdbtm_from_pymol
+from .pdbtm_report_provenance import build_pdbtm_acquisition_provenance
 from .pymol_adapter import (
     MVQC_NAMES,
     clear_owned,
@@ -202,6 +203,97 @@ def mvqc_slab_pdbtm(
     except Exception:
         clear_owned()
         qc.LAST_REPORT = None
+        raise
+
+
+def mvqc_check_pdbtm_cached(
+    snapshot,
+    selection: str = "all",
+    biological_assembly: str = "",
+    ligand: str = "organic",
+    cutoff: float = DEFAULT_LIGAND_CUTOFF,
+    quiet: int = 1,
+    export_path: str = "",
+    input_path: str = "",
+    analyze_context: int = 0,
+    exposure_quality: str = "Standard",
+    exposure_backend: str = "Built-in",
+    *,
+    cache_generation: int | None = None,
+    consumption_mode: str = "active_cache_read",
+):
+    """Run QC using a validated cached PDBTM pair already selected via Use cached pair.
+
+    Network-free and not a registered PyMOL command: ``snapshot`` must already
+    be the exact integrity-checked, semantically revalidated
+    ``CachedSnapshot`` the GUI obtained from ``Use cached pair``. This
+    function performs no cache or network I/O of its own; it only
+    establishes current-object applicability against the live PyMOL object
+    (Stage 4A2) and builds a schema-1.4 report carrying both that evidence
+    and the cached pair's own acquisition provenance (Stage 4B2).
+    """
+
+    clear_owned()
+    qc.LAST_REPORT = None
+    try:
+        selection = _selection(selection)
+        cutoff = _positive_float(cutoff, "cutoff")
+        json_payload, transformed_payload = snapshot.payloads
+        imported = resolve_pdbtm_from_payloads(
+            selection=selection,
+            pdbtm_json_payload=json_payload,
+            transformed_pdb_payload=transformed_payload,
+            biological_assembly=str(biological_assembly).strip() or None,
+        )
+        acquisition = build_pdbtm_acquisition_provenance(
+            snapshot,
+            consumption_mode=consumption_mode,
+            cache_generation=cache_generation,
+        )
+        exposure_config, context_config = _analysis_configs(analyze_context, exposure_quality)
+        return qc.run_check_with_membrane(
+            selection=selection,
+            membrane=imported.membrane,
+            orientation_evidence=imported.evidence,
+            pdbtm_acquisition=acquisition,
+            ligand=str(ligand).strip(),
+            cutoff=cutoff,
+            quiet=int(quiet),
+            export_path=str(export_path).strip(),
+            input_path=str(input_path).strip(),
+            exposure_config=exposure_config,
+            local_context_config=context_config,
+            exposure_backend=exposure_backend,
+        )
+    except Exception:
+        clear_owned()
+        qc.LAST_REPORT = None
+        raise
+
+
+def mvqc_slab_pdbtm_cached(snapshot, selection: str = "all", biological_assembly: str = ""):
+    """Render only the resolved current-frame slab from a validated cached PDBTM pair.
+
+    Not a registered PyMOL command; called directly by the GUI's cached
+    Show Slab action with the exact snapshot obtained from Use cached pair.
+    """
+
+    clear_owned()
+    qc.LAST_REPORT = None
+    try:
+        selection = _selection(selection)
+        json_payload, transformed_payload = snapshot.payloads
+        imported = resolve_pdbtm_from_payloads(
+            selection=selection,
+            pdbtm_json_payload=json_payload,
+            transformed_pdb_payload=transformed_payload,
+            biological_assembly=str(biological_assembly).strip() or None,
+        )
+        atoms = protein_atoms(selection)
+        create_membrane_planes(imported.membrane, atoms, selection)
+        return imported
+    except Exception:
+        clear_owned()
         raise
 
 

@@ -144,7 +144,11 @@ completion" section for the full CI/coverage/artifact record.
 
 ## Deferred work
 
-Stage 4B3 (GUI and PyMOL orchestration -- wiring an actual `Fetch`/`Use cached pair` action to
-this provenance path), Stage 4B4 (final provider acceptance), and Stage 4C have not started.
-Automatic source selection, fitting, structural alignment, RCSB/OPM retrieval, proxy/PAC/CONNECT
-support, and cache migration/garbage collection remain outside this and the prior slice.
+Stage 4B3 (GUI and PyMOL orchestration) now wires an actual `Fetch`/`Use cached pair` action to
+this provenance path; see `docs/stage4b3_gui_orchestration.md`. This stage's own runtime module
+(`membrane_vqc/pdbtm_report_provenance.py`) and schema 1.4 are unchanged by that work -- Stage 4B3
+only calls `build_pdbtm_acquisition_provenance()` and `build_report(pdbtm_acquisition=...)` exactly
+as documented above, from a network-free, main-thread cached-QC path. Stage 4B4 (final exact-artifact
+acceptance) and Stage 4C status are recorded in `docs/development_state.md`. Automatic source
+selection, fitting, structural alignment, RCSB/OPM retrieval, proxy/PAC/CONNECT support, and cache
+migration/garbage collection remain outside this and the prior slice.
