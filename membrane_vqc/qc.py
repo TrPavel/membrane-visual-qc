@@ -80,6 +80,7 @@ def run_check_with_membrane(
     input_path: str = "",
     orientation_import: Any | None = None,
     orientation_evidence: OrientationEvidenceV1 | None = None,
+    pdbtm_acquisition: Any | None = None,
     exposure_config: ExposureConfig | None = None,
     exposure_targets: Iterable[tuple[str, str, str, str]] | None = None,
     local_context_config: LocalContextConfig | None = None,
@@ -185,6 +186,7 @@ def run_check_with_membrane(
         membrane=membrane,
         orientation_import=orientation_import,
         orientation_evidence=orientation_evidence,
+        pdbtm_acquisition=pdbtm_acquisition,
         exposure_analysis=exposure_analysis,
         local_context_analysis=local_context_analysis,
     )

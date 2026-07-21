@@ -146,14 +146,40 @@ def resolve_pdbtm_from_pymol(
 
     json_payload = read_local_payload(pdbtm_json_path, role="pdbtm_json")
     transformed_payload = read_local_payload(transformed_pdb_path, role="transformed_pdb")
+    return resolve_pdbtm_from_payloads(
+        selection=selection,
+        pdbtm_json_payload=json_payload,
+        transformed_pdb_payload=transformed_payload,
+        biological_assembly=biological_assembly,
+        cmd_obj=cmd_obj,
+    )
+
+
+def resolve_pdbtm_from_payloads(
+    *,
+    selection: str,
+    pdbtm_json_payload: bytes,
+    transformed_pdb_payload: bytes,
+    biological_assembly: str | None = None,
+    cmd_obj: object | None = None,
+) -> OrientationImportResult:
+    """Resolve one accepted PDBTM pair, given already-in-memory exact bytes.
+
+    This is the byte-origin-agnostic sibling of :func:`resolve_pdbtm_from_pymol`
+    used by the Stage 4B3 cached-selection path: the caller (a validated
+    ``CachedSnapshot``) has already proven pair self-consistency; this
+    function only ever establishes *current-object applicability* against the
+    live PyMOL object, exactly like the local-file path above.
+    """
+
     context = structure_context_from_pymol(
         selection,
         biological_assembly=biological_assembly,
         cmd_obj=cmd_obj,
     )
     result = import_pdbtm_orientation(
-        json_payload,
-        transformed_payload,
+        pdbtm_json_payload,
+        transformed_pdb_payload,
         context,
         metadata={
             "json_media_type": "application/json",

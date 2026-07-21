@@ -17,6 +17,7 @@ from membrane_vqc.pdbtm_adapter import import_pdbtm_orientation
 from membrane_vqc.pdbtm_pymol import (
     PdbtmCommandError,
     read_local_payload,
+    resolve_pdbtm_from_payloads,
     resolve_pdbtm_from_pymol,
     structure_context_from_pymol,
 )
@@ -233,6 +234,37 @@ def test_resolution_preserves_exact_payload_hashes_without_local_paths():
     serialized = json.dumps(result.as_dict())
     assert str(JSON_PATH.resolve()) not in serialized
     assert str(TRANSFORMED_PATH.resolve()) not in serialized
+
+
+def test_resolve_from_payloads_matches_resolve_from_pymol_for_identical_bytes():
+    from_path = _resolved()
+    from_bytes = resolve_pdbtm_from_payloads(
+        selection="protein and chain A",
+        pdbtm_json_payload=JSON_PATH.read_bytes(),
+        transformed_pdb_payload=TRANSFORMED_PATH.read_bytes(),
+        cmd_obj=SnapshotCmd(TRANSFORMED_PATH),
+    )
+
+    assert from_bytes.status == "imported"
+    assert from_bytes.evidence.as_dict() == from_path.evidence.as_dict()
+
+
+def test_resolve_from_payloads_rejects_nonimported_adapter_status(monkeypatch):
+    monkeypatch.setattr(
+        "membrane_vqc.pdbtm_pymol.import_pdbtm_orientation",
+        lambda *args, **kwargs: OrientationImportResult(
+            "partial",
+            messages=(ImportMessage("TRANSFORMED_COMPANION_REQUIRED", "Need companion."),),
+        ),
+    )
+
+    with pytest.raises(PdbtmCommandError, match="TRANSFORMED_COMPANION_REQUIRED: Need companion"):
+        resolve_pdbtm_from_payloads(
+            selection="protein and chain A",
+            pdbtm_json_payload=JSON_PATH.read_bytes(),
+            transformed_pdb_payload=TRANSFORMED_PATH.read_bytes(),
+            cmd_obj=SnapshotCmd(TRANSFORMED_PATH),
+        )
 
 
 def test_resolution_exercises_identity_and_inverse_paths():

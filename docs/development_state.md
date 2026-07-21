@@ -8,12 +8,13 @@ latest published GitHub prerelease for limited public testing. Active source dev
 and complete; see "Stage 4B1 completion" below. Stage 4B2, a pure schema/report-provenance
 integration adding draft report schema 1.4 and a network/cache-free conversion from a validated
 Stage 4B1 cache result to report provenance, is merged into `main` and complete; see "Stage 4B2
-completion" below. There is still no GUI or PyMOL network workflow, and cached provider data still
-reach a report only through the explicit, typed `pdbtm_acquisition` input added by Stage 4B2 -- no
-report generation call performs network or cache I/O itself. Report schemas 1.0 through 1.3 remain
-released and immutable; schema 1.4 is a new, separate draft contract. Stage 4B3, Stage 4B4, and
-Stage 4C have not started. No Stage 4B1 or Stage 4B2 release or PyPI publication was made; PyPI is
-not used.
+completion" below. Stage 4B3, the cached-PDBTM GUI/PyMOL worker orchestration, is implemented on
+branch `feat/stage4b3-gui-final-acceptance`; see "Stage 4B3 implementation" below for status
+pending merge. Report schemas 1.0 through 1.3 remain released and immutable; schema 1.4 is a new,
+separate draft contract now reachable from a real GUI action (Stage 4B3's cached Run QC) in
+addition to Stage 4B2's typed `pdbtm_acquisition` input. Stage 4B4 exact-artifact acceptance and
+Stage 4C have not started. No Stage 4B1, Stage 4B2, or Stage 4B3 release or PyPI publication was
+made; PyPI is not used.
 
 ## Post-v0.4.0 development reset
 
@@ -174,8 +175,58 @@ through the real Stage 4B1 cache and Stage 4B2 conversion using the existing syn
 under `data/synthetic/` with an obviously fake record ID (`9zzz`); no official PDBTM/RCSB payload
 was committed. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
 smoke was not rerun, since this is a pure schema/report stage validated entirely with synthetic
-data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3, Stage 4B4, and Stage 4C
-have not started.
+data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3 is implemented (see
+"Stage 4B3 implementation" below); Stage 4B4 and Stage 4C have not started.
+
+## Stage 4B3 implementation
+
+Stage 4B3 adds the cached-PDBTM GUI/PyMOL worker orchestration on top of Stage 4B1's transport/cache
+core and Stage 4B2's schema-1.4 provenance conversion: a Qt-free `PdbtmWorkerOrchestrator`
+(`membrane_vqc/pdbtm_worker.py`), a lazily-Qt-imported `QObject`/`QThread` glue layer
+(`membrane_vqc/pdbtm_gui_worker.py`), a `Local files`/`Validated cache` source selector and cached
+controls inside the existing PDBTM panel, and network-free cached `Run QC`/`Show Slab` helpers
+(`commands.mvqc_check_pdbtm_cached`/`mvqc_slab_pdbtm_cached`) that build the first real (non-
+synthetic) schema-1.4 report carrying both `orientation.evidence` and `orientation.acquisition`.
+Full architecture, control names, state machines, and boundaries are in
+`docs/stage4b3_gui_orchestration.md`.
+
+A parallel 7-way adversarial-review round (Qt lifecycle/thread shutdown; stale-result/cancellation
+races; PyMOL thread-affinity/object preservation; cache-selection/corruption behavior;
+report/provenance truthfulness; implicit-network/privacy risks; backward compatibility/packaging)
+found and this branch fixed three real, reproducible defects: `_teardown_worker` dropped the last
+Python reference to a still-`quit()`-ing `QThread`, risking a "destroyed while still running"
+process abort on dialog close; a failed `Use cached pair` re-validation left a previously-selected
+snapshot usable by Run QC/Show Slab; and a Fetch immediately followed by `Use cached pair` could
+attach a stale pre-fetch cache generation to the exported provenance. Separately, direct headless
+real-`QThread` smoke testing (not caught by static review or the synchronous fake-Qt unit tests)
+found that `Qt.AutoConnection` did not reliably resolve to queued delivery for this worker's
+self-connected-signal patterns against the bundled PyQt5 build -- every Fetch/Inspect/Use-cached-
+pair/Clear would have frozen the whole PyMOL GUI for its full duration -- and that routing Cancel
+through a queued signal into the worker thread could never actually interrupt an in-flight fetch;
+both are fixed (explicit `QtCore.Qt.QueuedConnection` throughout; Cancel now calls the shared
+`RetrievalOperation.request_cancel()` directly). See `docs/stage4b3_gui_orchestration.md` and
+`docs/stage4b4_exact_acceptance.md` for full detail.
+
+Final local validation on branch `feat/stage4b3-gui-final-acceptance` (head
+`9ae38be6b6e5ffe89c40981b6a4cc277d3ad13bf`) passed: Ruff check and format check; 741 tests collected
+(733 passed, 8 optional FreeSASA skips, zero failures) with 87% combined coverage; 20 example
+reports validate (schema 1.1: 7, 1.2: 11, 1.3: 1, 1.4: 1); schema hashes unchanged at 1.0
+`5153097dde8fda81a4348243d7f940642310e1e9c1fb58b6533456f3722d8710`, 1.1
+`86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf`, 1.2
+`96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430`, 1.3
+`6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc`, 1.4 (still draft)
+`7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`; wheel/sdist build; deterministic
+double Plugin ZIP build.
+
+Both CI workflows (push run [29853518696](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853518696)
+and pull_request run [29853522061](https://github.com/TrPavel/membrane-visual-qc/actions/runs/29853522061))
+passed all five jobs on this exact head. The exact CI-built Plugin ZIP, downloaded and verified
+byte-identical from both independent runs' artifacts, is `MembraneVisualQC-0.5.0.dev0.zip`,
+110,358 bytes, SHA-256 `5ad626ef12e72be4807ad15ef34f39595ca76b1addc1c19c6c2f8e5487c400c1`. Stage 4B4
+exact-artifact acceptance results (live fetch, cached offline use/QC/export/clear, headless
+real-Qt cancellation/lifecycle) are recorded in `docs/stage4b4_exact_acceptance.md`; literal
+mouse-driven Plugin Manager installation and on-screen screenshots were not performed, since this
+session has no desktop GUI automation tool.
 
 Stage 4 research and architecture design are complete and merged through
 [#7](https://github.com/TrPavel/membrane-visual-qc/pull/7). Final PR head
