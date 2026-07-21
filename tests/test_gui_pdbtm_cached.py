@@ -51,7 +51,19 @@ class FakeWorker:
         self.request_fetch = RecordedSignal()
         self.request_use_cached = RecordedSignal()
         self.request_clear = RecordedSignal()
-        self.request_cancel = RecordedSignal()
+
+
+class FakeOperation:
+    """Stands in for pdbtm_retrieval.RetrievalOperation in dialog-level tests."""
+
+    def __init__(self):
+        self.cancel_calls = 0
+
+    def request_cancel(self):
+        self.cancel_calls += 1
+
+    def is_cancelled(self):
+        return self.cancel_calls > 0
 
 
 class FakeMessageBox:
@@ -118,6 +130,7 @@ def cached_dialog(*, source=gui.PDBTM_SOURCE_CACHED, record_id="1pcr"):
     dialog._cached_snapshot_record_id = None
     dialog._cached_snapshot_generation = None
     dialog._last_inspect = (None, None)
+    dialog._fetch_operations = {}
     dialog._worker = FakeWorker()
     dialog._worker_thread = None
     return dialog
@@ -349,17 +362,19 @@ def test_changing_record_id_invalidates_the_selected_cached_snapshot():
 def test_cancel_with_no_pending_request_is_a_noop():
     dialog = cached_dialog()
     dialog._on_cancel_clicked()
-    assert dialog._worker.request_cancel.calls == []
+    assert dialog._fetch_operations == {}
 
 
 def test_cancel_requests_cooperative_cancellation_and_invalidates_delivery():
     dialog = cached_dialog()
     dialog._on_fetch_clicked()
     request_id = dialog._pending_request_id
+    operation = FakeOperation()
+    dialog._on_fetch_started(request_id, operation)
 
     dialog._on_cancel_clicked()
 
-    assert dialog._worker.request_cancel.calls == [(request_id,)]
+    assert operation.cancel_calls == 1
     assert dialog._pending_request_id is None
     assert dialog._retrieval_state == gui.RETRIEVAL_CANCELLED
 
@@ -368,6 +383,7 @@ def test_committed_result_after_cancel_is_ignored_not_misreported():
     dialog = cached_dialog()
     dialog._on_fetch_clicked()
     request_id = dialog._pending_request_id
+    dialog._on_fetch_started(request_id, FakeOperation())
     dialog._on_cancel_clicked()
     assert dialog._retrieval_state == gui.RETRIEVAL_CANCELLED
 

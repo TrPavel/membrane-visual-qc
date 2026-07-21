@@ -44,9 +44,26 @@ and self-connected "request" trigger signals (`request_inspect`, `request_fetch`
 `worker.request_*.emit(...)`, never a `_run_*`/private method directly, so the work is guaranteed
 to execute on the worker's own thread once it has been `moveToThread`-ed there.
 
-Cancellation is cooperative: `PdbtmAsyncWorker` keeps a `request_id -> RetrievalOperation` map for
-in-flight fetches; `request_cancel.emit(request_id)` calls `RetrievalOperation.request_cancel()`,
-the exact Stage 4B1 primitive, unmodified.
+Cancellation is **not** delivered as a queued signal into the worker thread. `_run_fetch` blocks
+that thread's event loop for the fetch's entire duration (it is one synchronous call into the
+Qt-free orchestrator), so a cross-thread signal aimed at that thread would simply queue up behind
+the blocking call and only be processed once the fetch has already finished. Instead,
+`fetch_started` hands the GUI a direct reference to the shared, thread-safe `RetrievalOperation`
+the moment a fetch begins; the GUI calls `operation.request_cancel()` on it directly (a plain,
+lock-guarded Python method call, not a Qt dispatch), which the already-blocked fetch call observes
+at its next internal cooperative checkpoint. This exact Stage 4B1 primitive is otherwise unmodified.
+
+Every `.connect()` call for a cross-thread signal in this module and in `gui.py`'s `_ensure_worker`
+explicitly passes `QtCore.Qt.QueuedConnection` rather than relying on `Qt.AutoConnection`.
+Headless real-Qt smoke testing against the bundled Incentive PyMOL PyQt5 build (see
+`docs/stage4b4_exact_acceptance.md`) found that `Qt.AutoConnection`'s cross-thread detection did
+not reliably resolve to a queued connection for these self-connected-signal / plain-Python-slot
+patterns: `emit()` blocked the calling thread for the slot's full duration instead of posting and
+returning immediately, which would have frozen the entire PyMOL GUI for the duration of every
+Fetch/Inspect/Use-cached-pair/Clear call -- silently defeating the whole point of the worker
+thread. This was caught only by an actual headless `QThread` run, not by static review or the
+synchronous fake-Qt unit tests (which cannot observe connection-type semantics at all). Being
+explicit about the connection type removes the ambiguity regardless of binding/version quirks.
 
 ## GUI controls
 
@@ -106,6 +123,21 @@ GUI thread (explicitly disallowed), the GUI shows `CANCELLED` as soon as cancell
 -- an intentional simplification of the design document's "may show Cancelling... until the worker
 confirms" language, never fatal to correctness because the underlying invalidation guard (above)
 makes a late commit's result unobservable regardless of which label is shown.
+
+Consistent with Stage 4B1's own documented limitation ("DNS resolution cannot be guaranteed to
+stop immediately in CPython 3.10... the worker may exit only at the bounded network deadline; this
+limitation must be displayed honestly rather than using unsafe thread termination"), pressing
+Cancel does not guarantee the in-flight network call itself returns early -- only that the GUI
+immediately treats the request as cancelled and ignores whatever the fetch eventually returns.
+Headless smoke testing observed that, because `fetch_started` cannot be delivered to the GUI until
+the worker thread's single blocking `_run_fetch` call returns some measure of control to Qt's
+dispatch machinery, `operation.request_cancel()` may not reach the shared `RetrievalOperation`
+until close to when the fetch would have finished naturally anyway -- i.e. cancellation is
+reliably correct at the GUI/state-machine level (a stale result is always ignored) but is not a
+reliable way to shorten an in-flight fetch's wall-clock duration. This is a pre-existing, accepted
+Stage 4B1 property, not a Stage 4B3 regression; see `docs/stage4b4_exact_acceptance.md` for the
+exact headless observation and why it could not be more precisely characterized without genuine
+interactive PyMOL access.
 
 ## Cached Run QC / Show Slab
 

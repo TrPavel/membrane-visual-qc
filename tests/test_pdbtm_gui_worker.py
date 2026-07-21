@@ -20,7 +20,7 @@ class _FakeSignalInstance:
     def __init__(self):
         self._slots = []
 
-    def connect(self, slot):
+    def connect(self, slot, *_connection_type):
         self._slots.append(slot)
 
     def emit(self, *args):
@@ -48,9 +48,14 @@ class FakeQObject:
         pass
 
 
+class FakeQt:
+    QueuedConnection = "queued-connection"
+
+
 class FakeQtCore:
     QObject = FakeQObject
     Signal = _FakeSignalDescriptor
+    Qt = FakeQt
 
 
 class RecordingOrchestrator:
@@ -185,37 +190,48 @@ def test_request_clear_emits_clear_finished():
     assert results == [("req-1", "cleared")]
 
 
-def test_cancel_signal_cancels_the_in_flight_fetch_operation():
-    cancelled_flags = []
+def test_fetch_started_hands_the_caller_the_live_operation_before_blocking():
+    """The caller must be able to cancel directly, since a queued signal aimed
+    at the worker thread would only be delivered after the blocking fetch call
+    already returned -- too late to interrupt anything."""
+    started = []
 
     def on_fetch(operation):
-        worker.request_cancel.emit("req-1")
+        # By the time the orchestrator's fetch() runs, fetch_started must
+        # already have been emitted and delivered synchronously (this fake Qt
+        # dispatches connected slots immediately on emit()).
+        assert len(started) == 1
+        assert started[0][1] is operation
+
+    orchestrator = RecordingOrchestrator(fetch_result="snapshot", on_fetch=on_fetch)
+    worker = _worker(orchestrator)
+    worker.fetch_started.connect(lambda rid, op: started.append((rid, op)))
+
+    worker.request_fetch.emit("req-1", "1pcr")
+
+    assert started[0][0] == "req-1"
+
+
+def test_direct_operation_cancel_is_observed_by_the_blocking_fetch_call():
+    cancelled_flags = []
+    operations = []
+
+    def on_fetch(operation):
+        # Simulates the GUI calling operation.request_cancel() directly, from
+        # whatever thread it lives on, the moment the user presses Cancel --
+        # not via any Qt signal back into this (busy) worker thread.
+        operation.request_cancel()
         cancelled_flags.append(operation.is_cancelled())
 
     orchestrator = RecordingOrchestrator(on_fetch=on_fetch)
     worker = _worker(orchestrator)
+    worker.fetch_started.connect(lambda rid, op: operations.append(op))
     results = []
     worker.fetch_finished.connect(lambda rid, res: results.append((rid, res)))
 
     worker.request_fetch.emit("req-1", "1pcr")
 
     assert cancelled_flags == [True]
+    assert operations[0].is_cancelled()
     assert isinstance(results[0][1], WorkerFailure)
     assert results[0][1].code == "RETRIEVAL_CANCELLED"
-
-
-def test_cancel_signal_for_unknown_request_id_is_a_no_op():
-    worker = _worker(RecordingOrchestrator(fetch_result="snapshot"))
-    # No fetch is in flight yet; cancelling an unknown ID must not raise.
-    worker.request_cancel.emit("never-requested")
-
-    results = []
-    worker.fetch_finished.connect(lambda rid, res: results.append((rid, res)))
-    worker.request_fetch.emit("req-1", "1pcr")
-    assert results == [("req-1", "snapshot")]
-
-
-def test_operation_bookkeeping_is_cleared_after_each_fetch():
-    worker = _worker(RecordingOrchestrator(fetch_result="snapshot"))
-    worker.request_fetch.emit("req-1", "1pcr")
-    assert worker._operations == {}

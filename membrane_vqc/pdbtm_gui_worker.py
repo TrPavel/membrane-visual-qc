@@ -13,6 +13,31 @@ and emits Qt signals carrying plain data (or a :class:`WorkerFailure`) back to
 whichever thread is connected -- ordinarily the main/GUI thread via a queued
 connection because the worker instance has been moved to a separate
 ``QThread``.
+
+Every ``connect()`` call in this module passes ``QtCore.Qt.QueuedConnection``
+explicitly rather than relying on ``Qt.AutoConnection``'s cross-thread
+detection: empirically, against the bundled Incentive PyMOL PyQt5 build,
+``Qt.AutoConnection`` did not reliably resolve to a queued connection for
+these self-connected-signal / plain-Python-slot patterns, and ``emit()``
+blocked the calling thread for the slot's full duration instead of posting
+and returning immediately -- silently defeating the entire point of moving
+work off the GUI thread. This was caught only by an actual headless
+``QThread`` smoke run (see ``docs/stage4b4_exact_acceptance.md``), not by
+static review or the synchronous fake-Qt unit tests, which cannot observe
+connection-type semantics at all. Being explicit here removes the ambiguity
+regardless of binding/version quirks.
+
+Cancellation is deliberately NOT delivered as a queued signal into the worker
+thread: ``_run_fetch`` blocks that thread's event loop for the entire fetch
+(it is a single synchronous call into the Qt-free orchestrator), so a
+cross-thread signal aimed at that thread would simply queue up behind the
+blocking call and only be processed once the fetch has already finished --
+useless for actually interrupting it. Instead, ``fetch_started`` hands the
+GUI a direct reference to the shared, thread-safe ``RetrievalOperation`` the
+moment a fetch begins; the GUI calls ``operation.request_cancel()`` on it
+directly (a plain, lock-guarded Python method call, not a Qt dispatch), which
+the already-blocked fetch call observes at its next internal cooperative
+checkpoint regardless of the worker thread's event-loop state.
 """
 
 from __future__ import annotations
@@ -47,29 +72,21 @@ def make_worker_class(QtCore):
         fetch_finished = QtCore.Signal(str, object)
         use_cached_finished = QtCore.Signal(str, object)
         clear_finished = QtCore.Signal(str, object)
+        fetch_started = QtCore.Signal(str, object)
 
         request_inspect = QtCore.Signal(str, str)
         request_fetch = QtCore.Signal(str, str)
         request_use_cached = QtCore.Signal(str, str)
         request_clear = QtCore.Signal(str, str)
-        request_cancel = QtCore.Signal(str)
 
         def __init__(self, orchestrator: PdbtmWorkerOrchestrator | None = None) -> None:
             super().__init__()
             self._orchestrator = orchestrator or PdbtmWorkerOrchestrator()
-            self._operations: dict[str, RetrievalOperation] = {}
-            self.request_inspect.connect(self._run_inspect)
-            self.request_fetch.connect(self._run_fetch)
-            self.request_use_cached.connect(self._run_use_cached)
-            self.request_clear.connect(self._run_clear)
-            self.request_cancel.connect(self._run_cancel)
-
-        def _run_cancel(self, request_id: str) -> None:
-            """Cooperatively request cancellation of an in-flight fetch, if any."""
-
-            operation = self._operations.get(request_id)
-            if operation is not None:
-                operation.request_cancel()
+            queued = QtCore.Qt.QueuedConnection
+            self.request_inspect.connect(self._run_inspect, queued)
+            self.request_fetch.connect(self._run_fetch, queued)
+            self.request_use_cached.connect(self._run_use_cached, queued)
+            self.request_clear.connect(self._run_clear, queued)
 
         def _run_inspect(self, request_id: str, record_id: str) -> None:
             try:
@@ -81,14 +98,12 @@ def make_worker_class(QtCore):
 
         def _run_fetch(self, request_id: str, record_id: str) -> None:
             operation = RetrievalOperation()
-            self._operations[request_id] = operation
+            self.fetch_started.emit(request_id, operation)
             try:
                 result = self._orchestrator.fetch(record_id, operation)
             except Stage4BError as error:
                 self.fetch_finished.emit(request_id, failure_from_error(error))
                 return
-            finally:
-                self._operations.pop(request_id, None)
             self.fetch_finished.emit(request_id, result)
 
         def _run_use_cached(self, request_id: str, record_id: str) -> None:

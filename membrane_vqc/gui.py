@@ -170,6 +170,7 @@ class MembraneVQCDialog:
         self._cached_snapshot_record_id = None
         self._cached_snapshot_generation = None
         self._last_inspect = (None, None)
+        self._fetch_operations = {}
         self._worker = None
         self._worker_thread = None
         self.window = QtWidgets.QDialog()
@@ -573,8 +574,18 @@ class MembraneVQCDialog:
         self._pending_request_id = None
         self._pending_use_cached_record_id = None
         self._pending_clear_record_id = None
-        if pending is not None and request_cancel and self._worker is not None:
-            self._worker.request_cancel.emit(pending)
+        if pending is not None and request_cancel:
+            # Cancel the shared, thread-safe RetrievalOperation directly rather
+            # than routing through a worker-thread signal: _run_fetch blocks
+            # that thread's event loop for the entire fetch, so a queued
+            # signal aimed at it would only be processed after the fetch has
+            # already finished on its own -- too late to interrupt anything.
+            operation = self._fetch_operations.pop(pending, None)
+            if operation is not None:
+                operation.request_cancel()
+
+    def _on_fetch_started(self, request_id, operation):
+        self._fetch_operations[request_id] = operation
 
     def _ensure_worker(self):
         if self._worker is not None:
@@ -585,14 +596,22 @@ class MembraneVQCDialog:
         thread = self.QtCore.QThread()
         worker = worker_class()
         worker.moveToThread(thread)
-        thread.finished.connect(worker.deleteLater)
+        # Explicit QueuedConnection throughout: see pdbtm_gui_worker's module
+        # docstring -- Qt.AutoConnection did not reliably resolve to queued
+        # delivery for these cross-thread connections against the bundled
+        # PyQt5 build, so emit() blocked the emitting thread instead of
+        # posting and returning immediately.
+        queued = self.QtCore.Qt.QueuedConnection
+        thread.finished.connect(worker.deleteLater, queued)
         thread.finished.connect(
-            lambda finished_thread=thread: self._on_worker_thread_finished(finished_thread)
+            lambda finished_thread=thread: self._on_worker_thread_finished(finished_thread),
+            queued,
         )
-        worker.inspect_finished.connect(self._on_inspect_finished)
-        worker.fetch_finished.connect(self._on_fetch_finished)
-        worker.use_cached_finished.connect(self._on_use_cached_finished)
-        worker.clear_finished.connect(self._on_clear_finished)
+        worker.inspect_finished.connect(self._on_inspect_finished, queued)
+        worker.fetch_started.connect(self._on_fetch_started, queued)
+        worker.fetch_finished.connect(self._on_fetch_finished, queued)
+        worker.use_cached_finished.connect(self._on_use_cached_finished, queued)
+        worker.clear_finished.connect(self._on_clear_finished, queued)
         thread.start()
         self._worker = worker
         self._worker_thread = thread
@@ -714,6 +733,7 @@ class MembraneVQCDialog:
         worker.request_fetch.emit(request_id, canonical)
 
     def _on_fetch_finished(self, request_id, result):
+        self._fetch_operations.pop(request_id, None)
         if request_id != self._pending_request_id:
             return
         self._pending_request_id = None
