@@ -27,6 +27,7 @@ SCHEMA_1_1 = ROOT / "schemas" / "mvqc-report-1.1.schema.json"
 SCHEMA_1_2 = ROOT / "schemas" / "mvqc-report-1.2.schema.json"
 SCHEMA_1_3 = ROOT / "schemas" / "mvqc-report-1.3.schema.json"
 SCHEMA_1_4 = ROOT / "schemas" / "mvqc-report-1.4.schema.json"
+SCHEMA_1_5 = ROOT / "schemas" / "mvqc-report-1.5.schema.json"
 _SYNTHETIC = ROOT / "data" / "synthetic"
 
 
@@ -44,7 +45,7 @@ def test_example_report_validator_supports_required_direct_script_command():
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "Validated 21 report(s)" in completed.stdout
+    assert "Validated 22 report(s)" in completed.stdout
 
 
 def test_schema_has_stable_non_placeholder_identifier():
@@ -59,6 +60,10 @@ def test_schema_has_stable_non_placeholder_identifier():
     assert schema_1_3["$id"] == "urn:membrane-vqc:schema:report:1.3-draft"
     schema_1_4 = json.loads(SCHEMA_1_4.read_text(encoding="utf-8"))
     assert schema_1_4["$id"] == "urn:membrane-vqc:schema:report:1.4-draft"
+    assert not schema_1_4["title"].endswith("(draft)")
+    schema_1_5 = json.loads(SCHEMA_1_5.read_text(encoding="utf-8"))
+    assert schema_1_5["$id"] == "urn:membrane-vqc:schema:report:1.5-draft"
+    assert not schema_1_5["title"].endswith("(draft)")
 
 
 def test_released_schema_files_remain_byte_for_byte_immutable():
@@ -74,14 +79,11 @@ def test_released_schema_files_remain_byte_for_byte_immutable():
     assert hashlib.sha256(SCHEMA_1_3.read_bytes()).hexdigest() == (
         "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc"
     )
-
-
-def test_draft_schema_1_4_file_matches_its_recorded_hash():
-    """Schema 1.4 is a new draft contract (not yet released); this pins its bytes so any
-    future edit is a deliberate, reviewed change rather than a silent drift."""
-
     assert hashlib.sha256(SCHEMA_1_4.read_bytes()).hexdigest() == (
-        "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530"
+        "ee3bc91b2ba2c32814aad61eb69ed8413bae9460c33cb5d69d839335ff6e698e"
+    )
+    assert hashlib.sha256(SCHEMA_1_5.read_bytes()).hexdigest() == (
+        "9b94df52457668e05e6e8a9cd2a7a6c362d8da59343755875d78516ddd0a7411"
     )
 
 
@@ -103,7 +105,7 @@ def test_generated_examples_can_dispatch_by_declared_schema_version():
     assert validate_reports_by_version(reports) == {
         "1.1": 7,
         "1.2": 11,
-        "1.3": 1,
+        "1.3": 2,
         "1.4": 1,
         "1.5": 1,
     }

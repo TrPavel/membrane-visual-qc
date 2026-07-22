@@ -1,0 +1,503 @@
+{
+  "capabilities": {},
+  "flagged_residues": [],
+  "generated_at": "2026-07-22T12:00:00.000000+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "",
+    "path": "",
+    "provenance_status": "input_path_not_supplied",
+    "selection": "pdbtm_cached_1pcr_v050",
+    "sha256": "",
+    "slab_mode": "manual",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Offline PDBTM orientation was verified by direct coordinate evidence.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "acquisition": {
+      "acquisition_mode": "direct_https_provider_fetch",
+      "cache_generation": null,
+      "canonical_record_id": "1pcr",
+      "consumption_mode": "snapshot_cache_read",
+      "model_version": "1",
+      "object_applicability": {
+        "established": false,
+        "scope": "not_evaluated",
+        "statement": "This provenance confirms the acquired PDBTM JSON and transformed-PDB payload pair is internally self-consistent and was validated and cached. It does not evaluate, and must not be read as confirming, that any currently loaded structure matches this pair."
+      },
+      "pair_id": "99b69dbd1b6c813dafb045747af410baade7001dfea9af905705728fa8e82c52",
+      "pair_self_consistency": {
+        "adapter_name": "pdbtm_api_v1_offline",
+        "adapter_version": "1",
+        "coordinate_frame": "pdbtm_transformed_companion",
+        "fingerprint_match": true,
+        "maximum_residual": 0.0,
+        "method": "identity",
+        "rmsd": 0.0
+      },
+      "payloads": [
+        {
+          "byte_size": 283537,
+          "completed_at": "2026-07-20T11:49:43.630920Z",
+          "content_type": {
+            "charset": "utf-8",
+            "media_type": "text/plain"
+          },
+          "etag": null,
+          "final_url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.json",
+          "last_modified": null,
+          "requested_at": "2026-07-20T11:49:43.222493Z",
+          "requested_url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.json",
+          "role": "pdbtm_json",
+          "sha256": "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0",
+          "transport_verification": "direct_https_tls_verified"
+        },
+        {
+          "byte_size": 628434,
+          "completed_at": "2026-07-20T11:49:43.992021Z",
+          "content_type": {
+            "charset": "utf-8",
+            "media_type": "text/plain"
+          },
+          "etag": null,
+          "final_url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.trpdb",
+          "last_modified": null,
+          "requested_at": "2026-07-20T11:49:43.631442Z",
+          "requested_url": "https://pdbtm.unitmp.org/api/v1/entry/1pcr.trpdb",
+          "role": "transformed_pdb",
+          "sha256": "7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698",
+          "transport_verification": "direct_https_tls_verified"
+        }
+      ],
+      "provider_contract": "pdbtm-api-v1/cache-v1",
+      "provider_kind": "pdbtm_api_v1",
+      "provider_name": "PDBTM",
+      "provider_versions": {
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "snapshot_id": "86f0bcbc232b2258aad5186b3232492673247f00c24fb9ea35a8416ea637df56",
+      "validated_at": "2026-07-20T11:49:44.868259Z"
+    },
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "confidence": "coordinate_verified",
+    "evidence": {
+      "adapter_name": "pdbtm_api_v1_offline",
+      "adapter_version": "1",
+      "coordinate_mapping": {
+        "current_frame": "current_model",
+        "determinant": 1.000000132527091,
+        "fingerprints": {
+          "algorithm": "mvqc_atom_identity_coordinates_sha256",
+          "current": "aa4c7379794948a3e2dc4d6facb5e395e532fe3d8db9772ce84d164d6fabedac",
+          "inverse_reference": "ed4807b717147052199c82cf57a2a9c83bac33815d906fe2d67335f5b6b1fe19",
+          "matched_count": 6469,
+          "transformed_reference": "aa4c7379794948a3e2dc4d6facb5e395e532fe3d8db9772ce84d164d6fabedac",
+          "version": "1"
+        },
+        "method": "identity",
+        "metrics": {
+          "runtime_identity": {
+            "matched_atom_count": 6469,
+            "matched_residue_count": 823,
+            "maximum_distance_from_spatial_witness_line": 47.56224677384324,
+            "maximum_residual": 0.0,
+            "per_axis_maximum_residual": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "per_axis_rmsd": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rmsd": 0.0,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 91.38886972164607
+          },
+          "runtime_inverse": {
+            "matched_atom_count": 6469,
+            "matched_residue_count": 823,
+            "maximum_distance_from_spatial_witness_line": 47.56224677384324,
+            "maximum_residual": 130.68614964123978,
+            "per_axis_maximum_residual": [
+              32.99593417308336,
+              122.2513993394749,
+              68.63239834682982
+            ],
+            "per_axis_rmsd": [
+              24.951779068214908,
+              81.89746978970331,
+              37.57500111741783
+            ],
+            "rmsd": 93.49688521869767,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 91.38886972164607
+          }
+        },
+        "orthonormality_error": 1.3313037072748557e-07,
+        "precision_profile": {
+          "current_coordinate_decimal_places": 3,
+          "integer_values_use_sibling_field_precision": true,
+          "normal_semantics": "positive_z_half_thickness",
+          "normal_xy_noise_limit": 1e-07,
+          "provider_forward_axis_bounds": [
+            0.001129618545257574,
+            0.001206181120257574,
+            0.0012879036502575743
+          ],
+          "provider_forward_theoretical_bound": 0.00209513884146193,
+          "provider_forward_validation_limit": 0.003,
+          "reviewed_envelope_decision": "accepted",
+          "rotation_decimal_places": [
+            [
+              8,
+              8,
+              8
+            ],
+            [
+              8,
+              8,
+              8
+            ],
+            [
+              8,
+              8,
+              8
+            ]
+          ],
+          "runtime_identity_theoretical_bound": 0.0017320508075688772,
+          "runtime_inverse_theoretical_bound": 0.002210767242864187,
+          "transformed_coordinate_decimal_places": 3,
+          "translation_decimal_places": [
+            7,
+            8,
+            8
+          ]
+        },
+        "provider_original_to_transformed": [
+          [
+            0.98019749,
+            0.16070147,
+            0.11570647,
+            -40.1937561
+          ],
+          [
+            -0.00698903,
+            0.61202049,
+            -0.79081106,
+            -26.91108322
+          ],
+          [
+            -0.19789919,
+            0.77434236,
+            0.60102409,
+            -80.97983551
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "provider_transformed_to_original": [
+          [
+            0.9801974306753916,
+            -0.006989032795106916,
+            -0.1978992040728227,
+            23.183889021859812
+          ],
+          [
+            0.16070142231548207,
+            0.6120204400290048,
+            0.7743422374648911,
+            85.63543378578538
+          ],
+          [
+            0.11570644191585414,
+            -0.7908110236136012,
+            0.6010240158694797,
+            32.03992118047575
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "source_frame": "pdbtm_transformed",
+        "source_to_current": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "thresholds": {
+          "provider_forward_validation_limit": 0.003,
+          "runtime_identity_match_limit": {
+            "maximum_residual": 0.002,
+            "rmsd": 0.002
+          },
+          "runtime_inverse_match_limit": {
+            "maximum_residual": 0.003,
+            "rmsd": 0.003
+          }
+        }
+      },
+      "current_geometry": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frame": "current_model",
+        "geometry": "planar",
+        "interface_width": 3.0,
+        "lower_offset": -12.25,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "upper_offset": 12.25
+      },
+      "current_scope": {
+        "biological_assembly": null,
+        "chain_mapping": {
+          "H": [
+            "C"
+          ],
+          "L": [
+            "A"
+          ],
+          "M": [
+            "B"
+          ]
+        },
+        "chain_namespace": "legacy_pdb",
+        "chains": [
+          "H",
+          "L",
+          "M"
+        ],
+        "coordinate_fingerprint": "aa4c7379794948a3e2dc4d6facb5e395e532fe3d8db9772ce84d164d6fabedac",
+        "coordinate_frame": "current_model",
+        "legacy_chains": [
+          "H",
+          "L",
+          "M"
+        ],
+        "model_id": "1",
+        "provider_chain_labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "selected_model": 1,
+        "structure_id": "1pcr"
+      },
+      "geometric_confidence": "coordinate_verified",
+      "model_version": "1",
+      "raw_metadata": {
+        "current_assembly": null,
+        "ent_cif_chain_map": {
+          "H": [
+            "C"
+          ],
+          "L": [
+            "A"
+          ],
+          "M": [
+            "B"
+          ]
+        },
+        "mvqc_interface_width": 3.0,
+        "provider_assembly": null,
+        "provider_chain_labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "source": {
+        "citation": "PDBTM database",
+        "name": "PDBTM",
+        "raw_payloads": [
+          {
+            "byte_size": 283537,
+            "media_type": null,
+            "retrieval_verified": false,
+            "retrieved_at": null,
+            "role": "pdbtm_json",
+            "sha256": "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0",
+            "source": null
+          },
+          {
+            "byte_size": 628434,
+            "media_type": null,
+            "retrieval_verified": false,
+            "retrieved_at": null,
+            "role": "transformed_pdb",
+            "sha256": "7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698",
+            "source": null
+          }
+        ],
+        "record_id": "1pcr",
+        "resource_version": "1017",
+        "retrieved_at": null,
+        "software_version": "3.2.134",
+        "source_url": null
+      },
+      "source_geometry": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frame": "pdbtm_transformed",
+        "geometry": "planar",
+        "interface_width": null,
+        "lower_offset": -12.25,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "upper_offset": 12.25
+      },
+      "source_scope": {
+        "biological_assembly": null,
+        "chain_mapping": {
+          "H": [
+            "C"
+          ],
+          "L": [
+            "A"
+          ],
+          "M": [
+            "B"
+          ]
+        },
+        "chain_namespace": "legacy_pdb",
+        "chains": [
+          "H",
+          "L",
+          "M"
+        ],
+        "coordinate_fingerprint": "aa4c7379794948a3e2dc4d6facb5e395e532fe3d8db9772ce84d164d6fabedac",
+        "coordinate_frame": "pdbtm_transformed",
+        "legacy_chains": [
+          "H",
+          "L",
+          "M"
+        ],
+        "model_id": "1",
+        "provider_chain_labels": [
+          "A",
+          "B",
+          "C"
+        ],
+        "selected_model": 1,
+        "structure_id": "1pcr"
+      },
+      "warnings": []
+    },
+    "geometry": "planar",
+    "interface_width": 3.0,
+    "lower_offset": -12.25,
+    "metadata": {
+      "adapter": "pdbtm_api_v1_offline"
+    },
+    "normal": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "pdbtm_offline",
+    "source_version": "1017",
+    "upper_offset": 12.25,
+    "warnings": []
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": ""
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [],
+  "runtime": {
+    "platform": "Windows-10-build-26200",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.4",
+  "software": {
+    "commit": "38589a5ee6e3cb99c5d11a6c3b1735283abc0843",
+    "commit_status": "recorded",
+    "name": "membrane-vqc-pymol",
+    "version": "0.5.0"
+  },
+  "summary": {
+    "charged_core_residues": 0,
+    "core_residues": 0,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "INSUFFICIENT_CONTEXT",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 0
+  },
+  "timestamp": "2026-07-22T12:00:00.000000+00:00",
+  "version": "0.5.0",
+  "warnings": []
+}

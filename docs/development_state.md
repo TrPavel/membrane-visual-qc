@@ -2,6 +2,17 @@
 
 Snapshot date: 2026-07-22 (Europe/Moscow).
 
+Stage 4A, Stage 4B1–4B4, and Stage 4C are complete and merged into `main`. The repository is now
+preparing v0.5.0 as a GitHub prerelease for limited public testing. Stage 4 provides offline PDBTM
+pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch versus Use
+behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit schema 1.5
+PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose a source,
+create consensus, rank providers, or make a biological verdict. Final release validation totals,
+artifact hashes, PR/merge/tag identities, and publication evidence are **PENDING**. PyPI is not
+used.
+
+### Historical pre-merge Stage 4C snapshot
+
 Stage 4B1–4B3 are merged into `main`; Stage 4B4's remaining literal Plugin Manager and visible-GUI
 gate passed owner observation on 2026-07-22 against the exact accepted Stage 4B3 ZIP. Active source
 development remains `0.5.0.dev0`. Stage 4C is implemented on
@@ -12,7 +23,7 @@ does not fetch implicitly, fit or mutate coordinates, choose a source, create co
 providers, or make a biological verdict. No Stage 4B or Stage 4C tag, release, or PyPI publication
 has been made; PyPI is not used.
 
-## Stage 4C implementation
+## Stage 4C completion
 
 OPM is offline-only because the reviewed official API does not provide a stable, unambiguous
 secondary-record resolution contract for the required use case. Exact local OPM legacy-PDB bytes
@@ -24,7 +35,7 @@ and coverage evidence. Opposite normals are sign-aligned. The 5°, 2 Å normal-d
 2 Å thickness bands are review aids, not biological truth; arbitrary in-plane centre-anchor
 translation is reported but does not change the closeness band.
 
-Draft schema 1.5 is separate from the single-source schema 1.4 contract. It binds both applicable
+Schema 1.5 is separate from the single-source schema 1.4 contract. It binds both applicable
 sources to one selected-object snapshot with the named
 `mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp` fingerprint, retains only payload
 digests/sizes and safe provenance, and explicitly records no consensus, ranking, preferred source,
@@ -189,11 +200,14 @@ review-round fix above), and `release-candidate --version 0.5.0.dev0` artifact v
 passed; schema 1.4's own hash is
 `7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`.
 
-One deterministic synthetic example, `reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
+At that stage, one deterministic synthetic example, then named
+`reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
 SHA-256 `73ad22e1d4ef13bab72f7440b8407295360abd63c51bbc9348cc565173a257bf`), was built end to end
 through the real Stage 4B1 cache and Stage 4B2 conversion using the existing synthetic fixtures
 under `data/synthetic/` with an obviously fake record ID (`9zzz`); no official PDBTM/RCSB payload
-was committed. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
+was committed. It was replaced during v0.5.0 release preparation by the truthful retained
+`reports/pdbtm_acquisition_v050_mvqc.json`, rebuilt from the preserved verified `1pcr` snapshot
+without retaining either raw provider body. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
 smoke was not rerun, since this is a pure schema/report stage validated entirely with synthetic
 data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3 is implemented (see
 "Stage 4B3 implementation" below); Stage 4B4 and Stage 4C have not started.

@@ -67,6 +67,7 @@ BROWSE_LABEL = "Browse\u2026"
 
 PDBTM_SOURCE_LOCAL = "Local files"
 PDBTM_SOURCE_CACHED = "Validated cache"
+DIALOG_TITLE = f"Membrane Visual QC {VERSION}"
 
 RETRIEVAL_IDLE = "IDLE"
 RETRIEVAL_INSPECTING_CACHE = "INSPECTING_CACHE"
@@ -211,7 +212,7 @@ class MembraneVQCDialog:
         self._comparison_report = None
         self._comparison_used_cache = False
         self.window = QtWidgets.QDialog()
-        self.window.setWindowTitle("Membrane Visual QC")
+        self.window.setWindowTitle(DIALOG_TITLE)
         layout = QtWidgets.QFormLayout(self.window)
 
         self.selection = QtWidgets.QLineEdit("all")

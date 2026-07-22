@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:membrane-vqc:schema:report:1.5-draft",
-  "title": "Membrane Visual QC PDBTM/OPM orientation comparison report (draft)",
+  "title": "Membrane Visual QC PDBTM/OPM orientation comparison report",
   "type": "object",
   "required": [
     "schema_version", "report_type", "software", "runtime", "generated_at",

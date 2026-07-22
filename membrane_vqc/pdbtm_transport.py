@@ -13,12 +13,13 @@ import ssl
 import time
 from typing import Protocol
 
+from .constants import VERSION
 from .pdbtm_errors import Stage4BError, Stage4BErrorCode
 
 PDBTM_HOST = "pdbtm.unitmp.org"
 PDBTM_PORT = 443
 PDBTM_ORIGIN = f"https://{PDBTM_HOST}"
-PDBTM_USER_AGENT = "MembraneVisualQC/0.5.0.dev0 (+https://github.com/TrPavel/membrane-visual-qc)"
+PDBTM_USER_AGENT = f"MembraneVisualQC/{VERSION} (+https://github.com/TrPavel/membrane-visual-qc)"
 PDBTM_ROLES = ("pdbtm_json", "transformed_pdb")
 
 _RECORD_ID = re.compile(r"^[0-9][A-Za-z0-9]{3}$", flags=re.ASCII)

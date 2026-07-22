@@ -1,6 +1,7 @@
 # Stage 4B2 provenance and report schema 1.4
 
-Status: implemented and validated on PR #16; not exposed through PyMOL or the GUI.
+Status: complete and merged. Schema 1.4 provenance is used by the explicit validated-cache PDBTM
+workflow added in Stage 4B3.
 
 ## Scope and boundaries
 
@@ -120,11 +121,14 @@ input -- it is not wired into any existing GUI or PyMOL workflow by this stage.
 
 ## Synthetic example
 
-`reports/pdbtm_acquisition_synthetic_mvqc.json` is a schema-1.4 example built end to end through
+The original `reports/pdbtm_acquisition_synthetic_mvqc.json` was a schema-1.4 example built end to end through
 the real Stage 4B1 cache (`PdbtmCacheRepository`) and the real Stage 4B2 conversion, using the
 existing synthetic fixtures under `data/synthetic/` with a clearly fake record ID (`9zzz`) --
 never official PDBTM/RCSB payload content. It demonstrates both payload roles, pair/snapshot
 identity, and the pair self-consistency block, and validates against schema 1.4.
+For v0.5.0 release evidence it was replaced by `reports/pdbtm_acquisition_v050_mvqc.json`,
+which is regenerated from the preserved integrity-checked `1pcr` acquisition snapshot and
+retains provenance identities but no raw provider body.
 
 ## Final acceptance
 

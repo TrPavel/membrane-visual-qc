@@ -1,7 +1,7 @@
 # Stage 4B3 GUI and PyMOL worker orchestration
 
-Status: implemented; automated (fake-Qt and Qt-free) tests validated. Exact-artifact graphical and
-live-provider acceptance are recorded separately in `docs/stage4b4_exact_acceptance.md`.
+Status: **PASS — complete**. Automated, exact-artifact, live-provider, cached-offline, real-Qt, and
+owner-observed graphical acceptance are recorded in `docs/stage4b4_exact_acceptance.md`.
 
 ## Scope and boundaries
 
@@ -179,8 +179,8 @@ and Stage 4B2 conversion) cover this stage without any real Qt, PyMOL, or networ
 `tests/test_stage4b3_package_safety.py` proves `pdbtm_worker.py`/`pdbtm_gui_worker.py`/`gui.py`
 import without opening a socket or requiring PyQt5/PySide/pymol.
 
-## Deferred work
+## Historical deferred-work boundary
 
-Stage 4B4 (exact-artifact graphical and live-provider acceptance) and Stage 4C have not started as
-functionality; see `docs/stage4b4_exact_acceptance.md` and `docs/development_state.md` for their
-current status.
+At the time of the original Stage 4B3 implementation, Stage 4B4 and Stage 4C had not started as
+functionality. Both are now complete; see `docs/stage4b4_exact_acceptance.md`,
+`docs/stage4c_source_comparison.md`, and `docs/development_state.md`.

@@ -700,7 +700,7 @@ def test_schema_1_3_report_without_context(tmp_path):
     path.write_text(json.dumps(report), encoding="utf-8")
 
     assert report["schema_version"] == "1.3"
-    assert report["software"]["version"] == "0.5.0.dev0"
+    assert report["software"]["version"] == "0.5.0"
     validate_reports(SCHEMA_1_3, [path])
 
 
