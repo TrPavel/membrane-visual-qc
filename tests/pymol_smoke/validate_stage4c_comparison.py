@@ -36,6 +36,12 @@ from membrane_vqc.comparison_worker import (  # noqa: E402
     ComparisonWorkerOrchestrator,
     comparable_orientation,
 )
+from membrane_vqc.commands import (  # noqa: E402
+    mvqc_check,
+    mvqc_check_orientation,
+    mvqc_check_pdbtm,
+    mvqc_clear,
+)
 from membrane_vqc.pymol_adapter import MVQC_COMPARISON_NAMES  # noqa: E402
 
 
@@ -130,6 +136,28 @@ clear_comparison_boundaries(cmd)
 remaining = set(cmd.get_names("objects"))
 assert not (set(MVQC_COMPARISON_NAMES) & remaining)
 assert "stage4c_test" in remaining
+legacy_report = mvqc_check(selection="stage4c_test", ligand="", quiet=1)
+assert legacy_report["schema_version"] == "1.1"
+planar_report = mvqc_check_orientation(
+    selection="stage4c_test",
+    orientation_file=str(fixture_root.parents[1] / "demo" / "rotated_1ubq_orientation.json"),
+    ligand="",
+    quiet=1,
+)
+assert planar_report["schema_version"] == "1.1"
+pdbtm_report = mvqc_check_pdbtm(
+    selection="stage4c_test",
+    pdbtm_json=str(fixture_root / "pdbtm_api_v1_test.json"),
+    transformed_pdb=str(fixture_root / "pdbtm_transformed_test.pdb"),
+    ligand="",
+    quiet=1,
+)
+assert pdbtm_report["schema_version"] == "1.3"
+assert before == tuple(
+    tuple(float(value) for value in row) for row in cmd.get_coords("stage4c_test")
+)
+mvqc_clear()
+assert "stage4c_test" in set(cmd.get_names("objects"))
 print(
     json.dumps(
         {
@@ -137,7 +165,10 @@ print(
             "band": result.comparison.band,
             "coordinate_fingerprint": snapshot.coordinate_fingerprint,
             "coordinate_preserved": before == after,
+            "legacy_schema": legacy_report["schema_version"],
             "metrics": result.comparison.metrics.as_dict(),
+            "pdbtm_schema": pdbtm_report["schema_version"],
+            "planar_schema": planar_report["schema_version"],
             "png": str(png_path),
             "report": str(report_path),
         },
