@@ -6,7 +6,11 @@ import re
 import shutil
 import stat
 import tarfile
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 CI
+    import tomli as tomllib
 import zipfile
 
 import pytest
