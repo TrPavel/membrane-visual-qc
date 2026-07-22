@@ -1,0 +1,406 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:membrane-vqc:schema:report:1.5-draft",
+  "title": "Membrane Visual QC PDBTM/OPM orientation comparison report (draft)",
+  "type": "object",
+  "required": [
+    "schema_version", "report_type", "software", "runtime", "generated_at",
+    "selected_object", "sources", "comparison"
+  ],
+  "$defs": {
+    "safeText": {
+      "type": "string", "minLength": 1, "maxLength": 512,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "nullableSafeText": {"anyOf": [{"$ref": "#/$defs/safeText"}, {"type": "null"}]},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "finiteNumber": {"type": "number"},
+    "vector3": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/finiteNumber"},
+        {"$ref": "#/$defs/finiteNumber"},
+        {"$ref": "#/$defs/finiteNumber"}
+      ],
+      "minItems": 3, "maxItems": 3
+    },
+    "geometry": {
+      "type": "object",
+      "required": [
+        "geometry", "center", "normal", "lower_offset", "upper_offset",
+        "interface_width", "frame"
+      ],
+      "properties": {
+        "geometry": {"const": "planar"},
+        "center": {"$ref": "#/$defs/vector3"},
+        "normal": {"$ref": "#/$defs/vector3"},
+        "lower_offset": {"$ref": "#/$defs/finiteNumber"},
+        "upper_offset": {"$ref": "#/$defs/finiteNumber"},
+        "interface_width": {
+          "anyOf": [{"type": "number", "minimum": 0}, {"type": "null"}]
+        },
+        "frame": {"$ref": "#/$defs/safeText"}
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "structure_id", "model_id", "biological_assembly", "chains",
+        "coordinate_frame", "coordinate_fingerprint", "coordinate_fingerprint_algorithm"
+      ],
+      "properties": {
+        "structure_id": {"$ref": "#/$defs/nullableSafeText"},
+        "model_id": {"$ref": "#/$defs/safeText"},
+        "biological_assembly": {"$ref": "#/$defs/nullableSafeText"},
+        "chains": {
+          "type": "array", "items": {"$ref": "#/$defs/safeText"},
+          "minItems": 1, "uniqueItems": true
+        },
+        "coordinate_frame": {"$ref": "#/$defs/safeText"},
+        "coordinate_fingerprint": {
+          "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "coordinate_fingerprint_algorithm": {
+          "const": "mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "payloadDigest": {
+      "type": "object",
+      "required": ["role", "sha256", "byte_size", "media_type"],
+      "properties": {
+        "role": {"$ref": "#/$defs/safeText"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "byte_size": {"type": "integer", "minimum": 0, "maximum": 5242880},
+        "media_type": {"$ref": "#/$defs/nullableSafeText"}
+      },
+      "additionalProperties": false
+    },
+    "cachedAcquisition": {
+      "type": "object",
+      "required": [
+        "model_version", "provider_kind", "provider_name", "provider_contract",
+        "canonical_record_id", "acquisition_mode", "consumption_mode", "pair_id",
+        "snapshot_id", "cache_generation", "provider_versions", "validated_at",
+        "payloads", "pair_self_consistency", "object_applicability"
+      ],
+      "properties": {
+        "model_version": {"const": "1"},
+        "provider_kind": {"const": "pdbtm_api_v1"},
+        "provider_name": {"const": "PDBTM"},
+        "provider_contract": {"$ref": "#/$defs/safeText"},
+        "canonical_record_id": {"$ref": "#/$defs/safeText"},
+        "acquisition_mode": {"const": "direct_https_provider_fetch"},
+        "consumption_mode": {"enum": ["active_cache_read", "snapshot_cache_read"]},
+        "pair_id": {"$ref": "#/$defs/sha256"},
+        "snapshot_id": {"$ref": "#/$defs/sha256"},
+        "cache_generation": {
+          "anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
+        },
+        "provider_versions": {
+          "type": "object",
+          "required": ["resource_version", "software_version"],
+          "properties": {
+            "resource_version": {"$ref": "#/$defs/nullableSafeText"},
+            "software_version": {"$ref": "#/$defs/nullableSafeText"}
+          },
+          "additionalProperties": false
+        },
+        "validated_at": {"$ref": "#/$defs/safeText"},
+        "payloads": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["role", "sha256", "byte_size"],
+            "properties": {
+              "role": {"enum": ["pdbtm_json", "transformed_pdb"]},
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "byte_size": {"type": "integer", "minimum": 0, "maximum": 5242880}
+            },
+            "additionalProperties": false
+          }
+        },
+        "pair_self_consistency": {
+          "type": "object",
+          "required": [
+            "adapter_name", "adapter_version", "method", "coordinate_frame",
+            "rmsd", "maximum_residual", "fingerprint_match"
+          ],
+          "properties": {
+            "adapter_name": {"const": "pdbtm_api_v1_offline"},
+            "adapter_version": {"const": "1"},
+            "method": {"const": "identity"},
+            "coordinate_frame": {"const": "pdbtm_transformed_companion"},
+            "rmsd": {"type": "number", "minimum": 0},
+            "maximum_residual": {"type": "number", "minimum": 0},
+            "fingerprint_match": {"const": true}
+          },
+          "additionalProperties": false
+        },
+        "object_applicability": {
+          "type": "object",
+          "required": ["established", "scope", "statement"],
+          "properties": {
+            "established": {"const": false},
+            "scope": {"const": "not_evaluated"},
+            "statement": {"$ref": "#/$defs/safeText"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "applicability": {
+      "type": "object",
+      "required": [
+        "established", "status", "method", "matched_atom_count",
+        "matched_residue_count", "scope", "current_geometry", "warnings"
+      ],
+      "properties": {
+        "established": {"type": "boolean"},
+        "status": {"enum": ["applicable", "not_applicable"]},
+        "method": {"$ref": "#/$defs/nullableSafeText"},
+        "matched_atom_count": {
+          "anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
+        },
+        "matched_residue_count": {
+          "anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]
+        },
+        "scope": {"anyOf": [{"$ref": "#/$defs/scope"}, {"type": "null"}]},
+        "current_geometry": {
+          "anyOf": [{"$ref": "#/$defs/geometry"}, {"type": "null"}]
+        },
+        "warnings": {"type": "array", "items": {"$ref": "#/$defs/safeText"}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"established": {"const": true}}},
+          "then": {
+            "properties": {
+              "status": {"const": "applicable"},
+              "scope": {"$ref": "#/$defs/scope"},
+              "current_geometry": {"$ref": "#/$defs/geometry"}
+            }
+          },
+          "else": {
+            "properties": {
+              "status": {"const": "not_applicable"},
+              "current_geometry": {"type": "null"}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "source_key", "provider_name", "adapter", "record_id", "provider_versions",
+        "evidence_id", "payloads", "pdbtm_cached_acquisition", "applicability"
+      ],
+      "properties": {
+        "source_key": {"enum": ["pdbtm", "opm"]},
+        "provider_name": {"$ref": "#/$defs/safeText"},
+        "adapter": {
+          "type": "object",
+          "required": ["name", "version"],
+          "properties": {
+            "name": {"$ref": "#/$defs/safeText"},
+            "version": {"$ref": "#/$defs/safeText"}
+          },
+          "additionalProperties": false
+        },
+        "record_id": {"$ref": "#/$defs/safeText"},
+        "provider_versions": {
+          "type": "object",
+          "required": ["resource_version", "software_version"],
+          "properties": {
+            "resource_version": {"$ref": "#/$defs/nullableSafeText"},
+            "software_version": {"$ref": "#/$defs/nullableSafeText"}
+          },
+          "additionalProperties": false
+        },
+        "evidence_id": {"$ref": "#/$defs/sha256"},
+        "payloads": {
+          "type": "array", "items": {"$ref": "#/$defs/payloadDigest"},
+          "minItems": 1, "maxItems": 4
+        },
+        "pdbtm_cached_acquisition": {
+          "anyOf": [{"$ref": "#/$defs/cachedAcquisition"}, {"type": "null"}]
+        },
+        "applicability": {"$ref": "#/$defs/applicability"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"source_key": {"const": "opm"}}},
+          "then": {"properties": {"pdbtm_cached_acquisition": {"type": "null"}}}
+        }
+      ],
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "normal_axis_angle_degrees", "second_normal_sign",
+        "center_displacement_angstrom", "center_along_first_normal_angstrom",
+        "center_along_second_normal_angstrom", "center_along_reviewed_direction_angstrom",
+        "center_perpendicular_to_reviewed_direction_angstrom", "first_thickness_angstrom",
+        "second_thickness_angstrom", "thickness_difference_angstrom",
+        "lower_offset_difference_angstrom", "upper_offset_difference_angstrom"
+      ],
+      "properties": {
+        "normal_axis_angle_degrees": {"type": "number", "minimum": 0, "maximum": 90},
+        "second_normal_sign": {"enum": [-1, 1]},
+        "center_displacement_angstrom": {"type": "number", "minimum": 0},
+        "center_along_first_normal_angstrom": {"$ref": "#/$defs/finiteNumber"},
+        "center_along_second_normal_angstrom": {"$ref": "#/$defs/finiteNumber"},
+        "center_along_reviewed_direction_angstrom": {"$ref": "#/$defs/finiteNumber"},
+        "center_perpendicular_to_reviewed_direction_angstrom": {"type": "number", "minimum": 0},
+        "first_thickness_angstrom": {"type": "number", "exclusiveMinimum": 0},
+        "second_thickness_angstrom": {"type": "number", "exclusiveMinimum": 0},
+        "thickness_difference_angstrom": {"$ref": "#/$defs/finiteNumber"},
+        "lower_offset_difference_angstrom": {"$ref": "#/$defs/finiteNumber"},
+        "upper_offset_difference_angstrom": {"$ref": "#/$defs/finiteNumber"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "1.5"},
+    "report_type": {"const": "orientation_source_comparison"},
+    "software": {
+      "type": "object", "required": ["name", "version", "commit"],
+      "properties": {
+        "name": {"$ref": "#/$defs/safeText"},
+        "version": {"$ref": "#/$defs/safeText"},
+        "commit": {"$ref": "#/$defs/safeText"}
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object", "required": ["python", "pymol", "platform"],
+      "properties": {
+        "python": {"$ref": "#/$defs/safeText"},
+        "pymol": {"$ref": "#/$defs/safeText"},
+        "platform": {"$ref": "#/$defs/safeText"}
+      },
+      "additionalProperties": false
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    },
+    "selected_object": {
+      "type": "object",
+      "required": [
+        "structure_id", "model_id", "biological_assembly", "chains",
+        "coordinate_frame", "coordinate_fingerprint", "coordinate_fingerprint_algorithm",
+        "atom_count"
+      ],
+      "properties": {
+        "structure_id": {"$ref": "#/$defs/safeText"},
+        "model_id": {"$ref": "#/$defs/safeText"},
+        "biological_assembly": {"$ref": "#/$defs/nullableSafeText"},
+        "chains": {
+          "type": "array", "items": {"$ref": "#/$defs/safeText"},
+          "minItems": 1, "uniqueItems": true
+        },
+        "coordinate_frame": {"$ref": "#/$defs/safeText"},
+        "coordinate_fingerprint": {"$ref": "#/$defs/sha256"},
+        "coordinate_fingerprint_algorithm": {
+          "const": "mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp"
+        },
+        "atom_count": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "prefixItems": [
+        {"$ref": "#/$defs/source", "properties": {"source_key": {"const": "pdbtm"}}},
+        {"$ref": "#/$defs/source", "properties": {"source_key": {"const": "opm"}}}
+      ],
+      "minItems": 2, "maxItems": 2
+    },
+    "comparison": {
+      "type": "object",
+      "required": [
+        "method", "method_version", "first_source", "second_source", "comparable",
+        "band", "thresholds", "metrics", "reasons", "warnings", "interpretation"
+      ],
+      "properties": {
+        "method": {"const": "planar_axis_geometry_v1"},
+        "method_version": {"const": "1"},
+        "first_source": {"const": "pdbtm"},
+        "second_source": {"const": "opm"},
+        "comparable": {"type": "boolean"},
+        "band": {
+          "enum": [
+            "geometrically_close_under_reviewed_tolerance",
+            "measurable_geometric_difference",
+            "not_comparable"
+          ]
+        },
+        "thresholds": {
+          "type": "object",
+          "required": [
+            "normal_axis_angle_degrees", "center_displacement_angstrom",
+            "thickness_difference_angstrom", "interpretation"
+          ],
+          "properties": {
+            "normal_axis_angle_degrees": {"const": 5.0},
+            "center_displacement_angstrom": {"const": 2.0},
+            "thickness_difference_angstrom": {"const": 2.0},
+            "interpretation": {"const": "review_flags_not_biological_truth"}
+          },
+          "additionalProperties": false
+        },
+        "metrics": {"anyOf": [{"$ref": "#/$defs/metrics"}, {"type": "null"}]},
+        "reasons": {"type": "array", "items": {"$ref": "#/$defs/safeText"}},
+        "warnings": {"type": "array", "items": {"$ref": "#/$defs/safeText"}},
+        "interpretation": {
+          "type": "object",
+          "required": [
+            "consensus", "ranking", "preferred_source", "biological_verdict", "statement"
+          ],
+          "properties": {
+            "consensus": {"const": false},
+            "ranking": {"const": false},
+            "preferred_source": {"const": null},
+            "biological_verdict": {"const": false},
+            "statement": {"$ref": "#/$defs/safeText"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"comparable": {"const": true}}},
+          "then": {
+            "properties": {
+              "metrics": {"$ref": "#/$defs/metrics"},
+              "band": {
+                "enum": [
+                  "geometrically_close_under_reviewed_tolerance",
+                  "measurable_geometric_difference"
+                ]
+              },
+              "reasons": {"maxItems": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "metrics": {"type": "null"},
+              "band": {"const": "not_comparable"},
+              "reasons": {"minItems": 1}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

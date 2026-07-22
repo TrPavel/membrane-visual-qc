@@ -13,6 +13,15 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Added
 
+- Added Stage 4C's explicit offline PDBTM-versus-OPM geometric comparison: a pure-Python OPM DUM
+  boundary adapter, identity-only selected-object applicability, sign-ambiguous planar comparison,
+  four comparison-owned PyMOL boundary objects, a dedicated cancellable GUI workflow, and additive
+  draft report schema 1.5. The workflow never fetches implicitly, fits or mutates coordinates,
+  selects a preferred source, invents consensus, ranks providers, or makes a biological verdict.
+- Closed the remaining Stage 4B4 manual graphical gate for the exact 110,358-byte Stage 4B3 ZIP;
+  Plugin Manager install/restart, all three existing modes, cached/local behavior, schema 1.3/1.4
+  exports, coordinate preservation, and idle close/reopen were owner-observed as passing.
+
 - Added the Stage 4B1 pure-Python direct-HTTPS PDBTM transport, deterministic provider-pair
   validation, canonical content-addressed cache, atomic generation-aware publication, explicit
   clear, and cancellation/delivery state machine.

@@ -29,6 +29,9 @@ dev = ["build", "jsonschema", "mypy", "pytest", "pytest-cov", "ruff"]
 [tool.setuptools.packages.find]
 include = ["membrane_vqc*"]
 
+[tool.setuptools.data-files]
+"schemas" = ["schemas/mvqc-report-1.5.schema.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

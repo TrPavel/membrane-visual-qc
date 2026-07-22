@@ -14,6 +14,7 @@ from scripts.validate_release_artifacts import (
     STAGE4B1_RUNTIME_MODULES,
     STAGE4B2_RUNTIME_MODULES,
     STAGE4B3_RUNTIME_MODULES,
+    STAGE4C_RUNTIME_MODULES,
     _assert_safe_archive_names,
     _assert_safe_archive_payload,
     _validate_version_agreement,
@@ -128,9 +129,16 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr("membrane_vqc/__init__.py", "")
         for module in sorted(
-            STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES | STAGE4B3_RUNTIME_MODULES
+            STAGE4B1_RUNTIME_MODULES
+            | STAGE4B2_RUNTIME_MODULES
+            | STAGE4B3_RUNTIME_MODULES
+            | STAGE4C_RUNTIME_MODULES
         ):
             archive.writestr(module, "")
+        archive.writestr(
+            f"membrane_vqc_pymol-{version}.data/data/schemas/mvqc-report-1.5.schema.json",
+            (ROOT / "schemas" / "mvqc-report-1.5.schema.json").read_bytes(),
+        )
         archive.writestr(
             f"membrane_vqc_pymol-{version}.dist-info/METADATA",
             f"Metadata-Version: 2.4\nName: membrane-vqc-pymol\nVersion: {version}\n",
@@ -144,17 +152,21 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
         "membrane_vqc/commands.py": "",
         "membrane_vqc/pdbtm_pymol.py": "",
         "membrane_vqc/report.py": "",
-        "schemas/mvqc-report-1.0.schema.json": "{}",
-        "schemas/mvqc-report-1.1.schema.json": "{}",
-        "schemas/mvqc-report-1.2.schema.json": "{}",
-        "schemas/mvqc-report-1.3.schema.json": "{}",
-        "schemas/mvqc-report-1.4.schema.json": "{}",
+        **{
+            f"schemas/mvqc-report-{version}.schema.json": (
+                ROOT / "schemas" / f"mvqc-report-{version}.schema.json"
+            ).read_text(encoding="utf-8")
+            for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
+        },
     }
     required.update(
         {
             module: ""
             for module in (
-                STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES | STAGE4B3_RUNTIME_MODULES
+                STAGE4B1_RUNTIME_MODULES
+                | STAGE4B2_RUNTIME_MODULES
+                | STAGE4B3_RUNTIME_MODULES
+                | STAGE4C_RUNTIME_MODULES
             )
         }
     )
@@ -187,6 +199,15 @@ def test_frozen_v040_evidence_is_verified_independently():
     # Schema 1.4 is still an editable draft (postdates v0.4.0) and must NOT be
     # required to stay byte-identical by this frozen-evidence gate.
     assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3"}
+
+
+def test_stage4c_schema_is_current_only_and_frozen_scope_stays_unchanged():
+    from scripts.validate_release_artifacts import FROZEN_V040_SCHEMA_VERSIONS, SCHEMA_HASHES
+
+    assert SCHEMA_HASHES["1.5"] == (
+        "1de049797e068fc6d60d7c0c73cfb64add9b24bc6b7c24e7c8cd1078b2ee47e3"
+    )
+    assert FROZEN_V040_SCHEMA_VERSIONS == {"1.0", "1.1", "1.2", "1.3"}
 
 
 def test_frozen_v040_evidence_rejects_byte_changes(tmp_path):

@@ -1,10 +1,8 @@
 # Stage 4B4 exact-artifact acceptance
 
-Status: partially complete. Every item achievable without interactive desktop GUI automation was
-run against the exact final PR head's CI artifact and passed. Literal mouse-driven Plugin Manager
-installation, a full interactive GUI restart, and on-screen screenshot confirmation could not be
-performed by this session (see "Capability boundary" below) and are recorded as not performed
-rather than fabricated.
+Status: **PASS — complete**. Automated exact-artifact, live-provider, cached-offline, and real-Qt
+gates passed first. The owner then completed the literal Plugin Manager installation/restart and
+the bounded on-screen regression checklist on 2026-07-22 using the same byte-verified Plugin ZIP.
 
 ## Accepted environment and artifact
 
@@ -32,14 +30,27 @@ rather than fabricated.
   package (extracted from the `9ae38be` artifact); since `d004f2b`'s independently-rebuilt package
   is proven byte-identical, those results stand unchanged for the final head.
 
-## Capability boundary
+## Manual Plugin Manager graphical acceptance — PASS
 
-This session has no desktop GUI automation tool (no mouse/keyboard/screenshot driver for native
-Windows applications) -- only a web browser pane and a shell are available. This means the
-literal, mouse-driven steps of the acceptance checklist below (installing the exact ZIP through
-the PyMOL **Plugin Manager** dialog, performing a full PyMOL GUI restart, and taking genuine
-on-screen screenshots) cannot be performed by this session. Those items are marked **NOT PERFORMED
-(tool capability)** below rather than fabricated.
+On 2026-07-22 the owner reported `PASS` for the complete bounded 14-item checklist using the exact
+110,358-byte Plugin ZIP identified above. The accepted observations cover Plugin Manager
+installation after disabling the development copy; a complete PyMOL restart; dialog opening and
+Unicode rendering; all three unchanged orientation modes; **Local files** as the PDBTM default;
+validated-cache control visibility and state gating; legacy global-z QC; planar-orientation QC;
+local-file PDBTM QC with schema 1.3; offline inspection and explicit use of the already-tested
+cached `1pcr` pair; cached Show Slab/QC/export with schema 1.4; selected-object coordinate
+preservation; idle close/reopen; and continued responsiveness without a QThread warning or crash.
+
+No screenshot or log excerpt was supplied because no checklist item failed. The sanitized owner
+result and artifact identity are retained under ignored `.local/stage4b4-manual-graphical/`; no
+cache payload or local absolute path is committed.
+
+## Original automation capability boundary
+
+The implementation session had no desktop mouse/keyboard driver for native Windows applications,
+so it did not claim to perform the literal graphical steps itself. Those steps were subsequently
+performed by the owner and are recorded above; the distinction is retained to keep the evidence
+chain explicit.
 
 Where the *underlying production code path* can be genuinely exercised without mouse/screenshot
 interaction -- by running the bundled PyMOL interpreter's real Python headlessly, including with
@@ -51,15 +62,15 @@ recorded as a genuine, non-mouse-driven PASS/FAIL below.
 
 | Item | Result |
 |---|---|
-| Plugin installed via Plugin Manager, full restart | NOT PERFORMED (tool capability) |
-| Dialog opens, correct Unicode rendering | NOT PERFORMED (tool capability) |
-| All 3 orientation modes selectable | NOT PERFORMED (tool capability) |
-| Legacy global-z regression | NOT PERFORMED (tool capability) |
-| Planar orientation file regression | NOT PERFORMED (tool capability) |
-| Local PDBTM offline mode regression | NOT PERFORMED (tool capability) |
-| Run QC / Show Slab / Colour Hydropathy / Ligand Shell / Export JSON | NOT PERFORMED (tool capability) |
-| Wrong-pair and coordinate-frame-mismatch cleanup | NOT PERFORMED (tool capability) |
-| Input coordinates preserved | NOT PERFORMED (tool capability) |
+| Plugin installed via Plugin Manager, full restart | PASS |
+| Dialog opens, correct Unicode rendering | PASS |
+| All 3 orientation modes selectable | PASS |
+| Legacy global-z regression | PASS |
+| Planar orientation file regression | PASS |
+| Local PDBTM offline mode regression | PASS — schema 1.3 |
+| Validated-cache inspect/use/QC/Show Slab/export | PASS — schema 1.4 |
+| Close/reopen and QThread lifecycle | PASS |
+| Input coordinates preserved | PASS |
 
 These regressions are covered instead by the retained automated suite (`tests/test_pymol_lifecycle.py`,
 `tests/test_pymol_orientation.py`, `tests/test_gui_actions.py`, `tests/test_pdbtm_pymol.py`, and this
@@ -171,7 +182,7 @@ compensate for a connectivity concern.
 |---|---|
 | Outer CI artifact digest (2 independent runs) | PASS -- verified byte-identical |
 | Inner Plugin ZIP identity (2 independent runs) | PASS -- verified byte-identical |
-| GUI regression (mouse-driven) | NOT PERFORMED (tool capability) |
+| GUI regression (mouse-driven, owner-observed) | PASS |
 | Live fetch (bounded, `1pcr`) | PASS |
 | Cached offline use/QC/export/clear | PASS |
 | Graphical cancellation/lifecycle (headless real Qt) | PASS (after fixing 2 real defects found by this exact testing) |

@@ -1,0 +1,190 @@
+{
+  "comparison": {
+    "band": "measurable_geometric_difference",
+    "comparable": true,
+    "first_source": "pdbtm",
+    "interpretation": {
+      "biological_verdict": false,
+      "consensus": false,
+      "preferred_source": null,
+      "ranking": false,
+      "statement": "This is a geometric comparison for review. It does not select a source, create a consensus orientation, rank providers, or make a biological verdict."
+    },
+    "method": "planar_axis_geometry_v1",
+    "method_version": "1",
+    "metrics": {
+      "center_along_first_normal_angstrom": 3.0,
+      "center_along_reviewed_direction_angstrom": 3.0,
+      "center_along_second_normal_angstrom": 3.0,
+      "center_displacement_angstrom": 11.575836902790225,
+      "center_perpendicular_to_reviewed_direction_angstrom": 11.180339887498949,
+      "first_thickness_angstrom": 30.0,
+      "lower_offset_difference_angstrom": 3.0,
+      "normal_axis_angle_degrees": 0.0,
+      "second_normal_sign": 1,
+      "second_thickness_angstrom": 30.0,
+      "thickness_difference_angstrom": 0.0,
+      "upper_offset_difference_angstrom": 3.0
+    },
+    "reasons": [],
+    "second_source": "opm",
+    "thresholds": {
+      "center_displacement_angstrom": 2.0,
+      "interpretation": "review_flags_not_biological_truth",
+      "normal_axis_angle_degrees": 5.0,
+      "thickness_difference_angstrom": 2.0
+    },
+    "warnings": []
+  },
+  "generated_at": "2026-07-22T12:00:00Z",
+  "report_type": "orientation_source_comparison",
+  "runtime": {
+    "platform": "Windows-10-build-26200",
+    "pymol": "3.1.8",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.5",
+  "selected_object": {
+    "atom_count": 12,
+    "biological_assembly": null,
+    "chains": [
+      "A"
+    ],
+    "coordinate_fingerprint": "eabca6d90aa8d3f62bfd24147fcf5960830c619cc5234492734237e1ec396f9c",
+    "coordinate_fingerprint_algorithm": "mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp",
+    "coordinate_frame": "pymol_current_object",
+    "model_id": "1",
+    "structure_id": "test"
+  },
+  "software": {
+    "commit": "synthetic-example",
+    "name": "Membrane Visual QC",
+    "version": "0.5.0.dev0"
+  },
+  "sources": [
+    {
+      "adapter": {
+        "name": "pdbtm_api_v1_offline",
+        "version": "1"
+      },
+      "applicability": {
+        "current_geometry": {
+          "center": [
+            5.0,
+            10.0,
+            -3.0
+          ],
+          "frame": "pymol_current_object",
+          "geometry": "planar",
+          "interface_width": 3.0,
+          "lower_offset": -15.0,
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "upper_offset": 15.0
+        },
+        "established": true,
+        "matched_atom_count": 12,
+        "matched_residue_count": 3,
+        "method": "inverse_provider_transform",
+        "scope": {
+          "biological_assembly": null,
+          "chains": [
+            "A"
+          ],
+          "coordinate_fingerprint": "eabca6d90aa8d3f62bfd24147fcf5960830c619cc5234492734237e1ec396f9c",
+          "coordinate_fingerprint_algorithm": "mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp",
+          "coordinate_frame": "pymol_current_object",
+          "model_id": "1",
+          "structure_id": "test"
+        },
+        "status": "applicable",
+        "warnings": []
+      },
+      "evidence_id": "cbc5aa7d0a3e6e2e6908622d8ddc2d32c4b6bf27dc10727658ce2433a78be9bb",
+      "payloads": [
+        {
+          "byte_size": 527,
+          "media_type": null,
+          "role": "pdbtm_json",
+          "sha256": "7577a8135d0934ea39f118ad0b19b2475f48529dc105626b37a2437522272a7e"
+        },
+        {
+          "byte_size": 1019,
+          "media_type": null,
+          "role": "transformed_pdb",
+          "sha256": "2bf25ae63c52eae197de7d9bf1f963dca972ff687a2482282a19ef3900f59cb1"
+        }
+      ],
+      "pdbtm_cached_acquisition": null,
+      "provider_name": "PDBTM",
+      "provider_versions": {
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "record_id": "test",
+      "source_key": "pdbtm"
+    },
+    {
+      "adapter": {
+        "name": "opm_pdb_offline",
+        "version": "1"
+      },
+      "applicability": {
+        "current_geometry": {
+          "center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "frame": "pymol_current_object",
+          "geometry": "planar",
+          "interface_width": 3.0,
+          "lower_offset": -15.0,
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "upper_offset": 15.0
+        },
+        "established": true,
+        "matched_atom_count": 12,
+        "matched_residue_count": 3,
+        "method": "identity_no_transform",
+        "scope": {
+          "biological_assembly": null,
+          "chains": [
+            "A"
+          ],
+          "coordinate_fingerprint": "eabca6d90aa8d3f62bfd24147fcf5960830c619cc5234492734237e1ec396f9c",
+          "coordinate_fingerprint_algorithm": "mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp",
+          "coordinate_frame": "pymol_current_object",
+          "model_id": "1",
+          "structure_id": "test"
+        },
+        "status": "applicable",
+        "warnings": []
+      },
+      "evidence_id": "634951682f881bc3ee3a5a332228dd03da3caefa4a63848f2179af7def87c3c4",
+      "payloads": [
+        {
+          "byte_size": 1506,
+          "media_type": "chemical/x-pdb",
+          "role": "opm_pdb",
+          "sha256": "555a3160f76887e812773af3567da5e882691dff79ccaea03cebc21e580314b7"
+        }
+      ],
+      "pdbtm_cached_acquisition": null,
+      "provider_name": "OPM",
+      "provider_versions": {
+        "resource_version": null,
+        "software_version": null
+      },
+      "record_id": "test",
+      "source_key": "opm"
+    }
+  ]
+}

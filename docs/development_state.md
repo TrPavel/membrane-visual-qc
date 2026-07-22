@@ -1,20 +1,40 @@
 # Development state
 
-Snapshot date: 2026-07-21 (Europe/Moscow).
+Snapshot date: 2026-07-22 (Europe/Moscow).
 
-Stage 4 is complete through offline PDBTM interoperability and merged into `main`. v0.4.0 is the
-latest published GitHub prerelease for limited public testing. Active source development is
-`0.5.0.dev0`. Stage 4B1, the pure-Python PDBTM network transport/cache core, is merged into `main`
-and complete; see "Stage 4B1 completion" below. Stage 4B2, a pure schema/report-provenance
-integration adding draft report schema 1.4 and a network/cache-free conversion from a validated
-Stage 4B1 cache result to report provenance, is merged into `main` and complete; see "Stage 4B2
-completion" below. Stage 4B3, the cached-PDBTM GUI/PyMOL worker orchestration, is implemented on
-branch `feat/stage4b3-gui-final-acceptance`; see "Stage 4B3 implementation" below for status
-pending merge. Report schemas 1.0 through 1.3 remain released and immutable; schema 1.4 is a new,
-separate draft contract now reachable from a real GUI action (Stage 4B3's cached Run QC) in
-addition to Stage 4B2's typed `pdbtm_acquisition` input. Stage 4B4 exact-artifact acceptance and
-Stage 4C have not started. No Stage 4B1, Stage 4B2, or Stage 4B3 release or PyPI publication was
-made; PyPI is not used.
+Stage 4B1–4B3 are merged into `main`; Stage 4B4's remaining literal Plugin Manager and visible-GUI
+gate passed owner observation on 2026-07-22 against the exact accepted Stage 4B3 ZIP. Active source
+development remains `0.5.0.dev0`. Stage 4C is implemented on
+`feat/stage4c-source-comparison` and is undergoing final validation. It adds an offline-only OPM
+adapter, explicit PDBTM-versus-OPM geometric comparison, dedicated GUI/worker/rendering lifecycle,
+and additive draft report schema 1.5. Schemas 1.0 through 1.4 remain byte-identical. The comparison
+does not fetch implicitly, fit or mutate coordinates, choose a source, create consensus, rank
+providers, or make a biological verdict. No Stage 4B or Stage 4C tag, release, or PyPI publication
+has been made; PyPI is not used.
+
+## Stage 4C implementation
+
+OPM is offline-only because the reviewed official API does not provide a stable, unambiguous
+secondary-record resolution contract for the required use case. Exact local OPM legacy-PDB bytes
+are bounded to 5 MiB and parsed for planar `DUM` N/O boundary evidence; the labels identify
+surfaces but do not establish biological sidedness. Applicability is identity-only in the current
+coordinate frame with no fit, alignment, fallback, or mutation. The comparison reports continuous
+normal-axis, anchor displacement, normal/perpendicular displacement, boundary, thickness, scope,
+and coverage evidence. Opposite normals are sign-aligned. The 5°, 2 Å normal-displacement, and
+2 Å thickness bands are review aids, not biological truth; arbitrary in-plane centre-anchor
+translation is reported but does not change the closeness band.
+
+Draft schema 1.5 is separate from the single-source schema 1.4 contract. It binds both applicable
+sources to one selected-object snapshot with the named
+`mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp` fingerprint, retains only payload
+digests/sizes and safe provenance, and explicitly records no consensus, ranking, preferred source,
+or biological verdict. Final PR/CI, artifact, report, coverage, and merge identities will be added
+after their gates complete.
+
+Schema 1.5 is pinned at SHA-256
+`1de049797e068fc6d60d7c0c73cfb64add9b24bc6b7c24e7c8cd1078b2ee47e3`. The retained synthetic
+comparison report is 5,809 bytes with SHA-256
+`22666578b124efa1f2dbbb57cbe4c17c17be4787355b54d7e538623ca6b98d18`.
 
 ## Post-v0.4.0 development reset
 

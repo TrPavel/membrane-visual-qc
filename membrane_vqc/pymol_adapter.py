@@ -11,6 +11,13 @@ from .context_models import LocalContextAnalysis
 from .membrane import AtomRecord, ResidueFlag, ResidueRecord
 from .orientation import PlanarMembrane, orthonormal_basis
 
+MVQC_COMPARISON_NAMES = (
+    "mvqc_compare_pdbtm_lower",
+    "mvqc_compare_pdbtm_upper",
+    "mvqc_compare_opm_lower",
+    "mvqc_compare_opm_upper",
+)
+
 MVQC_NAMES = frozenset(
     {
         "mvqc_slab_lower",
@@ -24,6 +31,7 @@ MVQC_NAMES = frozenset(
         "mvqc_context_waters",
         "mvqc_context_ions",
         "mvqc_context_ligands",
+        *MVQC_COMPARISON_NAMES,
     }
 )
 
@@ -54,6 +62,13 @@ def clear_slab(cmd_obj: Any | None = None) -> None:
     """Remove only the membrane-boundary objects owned by the plugin."""
     cmd = get_cmd(cmd_obj)
     for name in MVQC_SLAB_NAMES:
+        cmd.delete(name)
+
+
+def clear_comparison(cmd_obj: Any | None = None) -> None:
+    """Remove only source-comparison boundary objects owned by the plugin."""
+    cmd = get_cmd(cmd_obj)
+    for name in MVQC_COMPARISON_NAMES:
         cmd.delete(name)
 
 
@@ -317,6 +332,81 @@ def create_membrane_planes(
     maximum_size: float = 120.0,
 ) -> None:
     """Render arbitrary planar membrane boundaries without rotating coordinates."""
+    _create_named_membrane_planes(
+        membrane,
+        atoms,
+        selection,
+        cmd_obj,
+        names=MVQC_SLAB_NAMES,
+        colors=((0.2, 0.5, 1.0), (1.0, 0.5, 0.2)),
+        alpha=0.28,
+        margin=margin,
+        minimum_size=minimum_size,
+        maximum_size=maximum_size,
+    )
+
+
+def create_comparison_membrane_planes(
+    pdbtm_membrane: PlanarMembrane,
+    opm_membrane: PlanarMembrane,
+    atoms: list[AtomRecord],
+    selection: str,
+    cmd_obj: Any | None = None,
+    *,
+    margin: float = 6.0,
+    minimum_size: float = 20.0,
+    maximum_size: float = 120.0,
+) -> None:
+    """Render two source geometries using four comparison-owned CGO objects."""
+    cmd = get_cmd(cmd_obj)
+    clear_comparison(cmd)
+    try:
+        _create_named_membrane_planes(
+            pdbtm_membrane,
+            atoms,
+            "",
+            cmd,
+            names=MVQC_COMPARISON_NAMES[:2],
+            colors=((0.15, 0.55, 1.0), (0.15, 0.85, 0.95)),
+            alpha=0.24,
+            clear_existing=False,
+            margin=margin,
+            minimum_size=minimum_size,
+            maximum_size=maximum_size,
+        )
+        _create_named_membrane_planes(
+            opm_membrane,
+            atoms,
+            selection,
+            cmd,
+            names=MVQC_COMPARISON_NAMES[2:],
+            colors=((0.85, 0.25, 0.85), (1.0, 0.65, 0.15)),
+            alpha=0.24,
+            clear_existing=False,
+            margin=margin,
+            minimum_size=minimum_size,
+            maximum_size=maximum_size,
+        )
+    except Exception:
+        clear_comparison(cmd)
+        raise
+
+
+def _create_named_membrane_planes(
+    membrane: PlanarMembrane,
+    atoms: list[AtomRecord],
+    selection: str,
+    cmd_obj: Any | None,
+    *,
+    names: tuple[str, str],
+    colors: tuple[tuple[float, float, float], tuple[float, float, float]],
+    alpha: float,
+    clear_existing: bool = True,
+    margin: float,
+    minimum_size: float,
+    maximum_size: float,
+) -> None:
+    """Render one membrane into explicitly owned lower/upper object names."""
     cmd = get_cmd(cmd_obj)
     try:
         from pymol.cgo import ALPHA, BEGIN, COLOR, END, NORMAL, TRIANGLES, VERTEX
@@ -324,8 +414,9 @@ def create_membrane_planes(
         print("Could not import PyMOL CGO constants; membrane planes were not created.")
         return
 
-    for name in MVQC_SLAB_NAMES:
-        cmd.delete(name)
+    if clear_existing:
+        for name in names:
+            cmd.delete(name)
 
     footprint = projected_footprint(
         membrane,
@@ -340,7 +431,7 @@ def create_membrane_planes(
         normal = tuple(normal_sign * value for value in membrane.normal)
         cgo = [
             ALPHA,
-            0.28,
+            alpha,
             BEGIN,
             TRIANGLES,
             COLOR,
@@ -356,12 +447,12 @@ def create_membrane_planes(
         return cgo
 
     cmd.load_cgo(
-        plane(membrane.lower_offset, (0.2, 0.5, 1.0), -1.0),
-        "mvqc_slab_lower",
+        plane(membrane.lower_offset, colors[0], -1.0),
+        names[0],
     )
     cmd.load_cgo(
-        plane(membrane.upper_offset, (1.0, 0.5, 0.2), 1.0),
-        "mvqc_slab_upper",
+        plane(membrane.upper_offset, colors[1], 1.0),
+        names[1],
     )
 
     if selection.strip():

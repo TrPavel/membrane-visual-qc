@@ -16,6 +16,7 @@ from typing import Iterable
 PACKAGE_NAME = "membrane_vqc"
 MANIFEST_NAME = f"{PACKAGE_NAME}/PLUGIN_MANIFEST.json"
 CHECKSUMS_NAME = f"{PACKAGE_NAME}/SHA256SUMS.txt"
+STAGE4C_SCHEMA_NAME = f"{PACKAGE_NAME}/schemas/mvqc-report-1.5.schema.json"
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 ALLOWED_SUFFIXES = {".py", ".json", ".txt", ".md", ".png", ".svg"}
 REQUIRED_PACKAGE_FILES = {
@@ -29,12 +30,20 @@ REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/pdbtm_provider.py",
     f"{PACKAGE_NAME}/pdbtm_retrieval.py",
     f"{PACKAGE_NAME}/pdbtm_transport.py",
+    f"{PACKAGE_NAME}/opm_adapter.py",
+    f"{PACKAGE_NAME}/orientation_comparison.py",
+    f"{PACKAGE_NAME}/comparison_report.py",
+    f"{PACKAGE_NAME}/comparison_worker.py",
+    f"{PACKAGE_NAME}/comparison_gui_worker.py",
+    f"{PACKAGE_NAME}/comparison_pymol.py",
+    STAGE4C_SCHEMA_NAME,
 }
 FORBIDDEN_PROVIDER_PAYLOADS = {
     (283_537, "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0"),
     (628_434, "7e52525ff397e4bfa5900e602f39753628e3b1408d513a3d0d76928c0fd10698"),
     (425_370, "22b3985dc13b14520b5507b3ec022211d4c281bdf30f2cdef057073305294f62"),
     (823_920, "f228413887e409312fba5ce76108836856fef62815b1bd8e4ffd97beb01f0b54"),
+    (801_495, "5805025619dafa256cb5508021f3406bb97cd84b4366cf62c98f1b46f5ea5561"),
 }
 
 
@@ -92,6 +101,11 @@ def collect_plugin_files(project_root: Path) -> list[tuple[str, Path]]:
         ):
             continue
         files.append((archive_name, path))
+
+    schema_path = project_root / "schemas" / "mvqc-report-1.5.schema.json"
+    if not schema_path.is_file() or schema_path.is_symlink():
+        raise PluginZipError(f"Missing Stage 4C schema: {schema_path}")
+    files.append((STAGE4C_SCHEMA_NAME, schema_path))
 
     names = {name for name, _ in files}
     missing = REQUIRED_PACKAGE_FILES - names
