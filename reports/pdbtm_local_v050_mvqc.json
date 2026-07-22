@@ -1,0 +1,406 @@
+{
+  "capabilities": {},
+  "flagged_residues": [],
+  "generated_at": "2026-07-22T12:00:00.000000+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "",
+    "path": "",
+    "provenance_status": "input_path_not_supplied",
+    "selection": "synthetic_pdbtm_local_v050",
+    "sha256": "",
+    "slab_mode": "manual",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Offline PDBTM orientation was verified by direct coordinate evidence.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "confidence": "coordinate_verified",
+    "evidence": {
+      "adapter_name": "pdbtm_api_v1_offline",
+      "adapter_version": "1",
+      "coordinate_mapping": {
+        "current_frame": "current_model",
+        "determinant": 1.0,
+        "fingerprints": {
+          "algorithm": "mvqc_atom_identity_coordinates_sha256",
+          "current": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
+          "inverse_reference": "eabca6d90aa8d3f62bfd24147fcf5960830c619cc5234492734237e1ec396f9c",
+          "matched_count": 12,
+          "transformed_reference": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
+          "version": "1"
+        },
+        "method": "identity",
+        "metrics": {
+          "runtime_identity": {
+            "matched_atom_count": 12,
+            "matched_residue_count": 3,
+            "maximum_distance_from_spatial_witness_line": 6.586264646032502,
+            "maximum_residual": 0.0,
+            "per_axis_maximum_residual": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "per_axis_rmsd": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rmsd": 0.0,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 12.68857754044952
+          },
+          "runtime_inverse": {
+            "matched_atom_count": 12,
+            "matched_residue_count": 3,
+            "maximum_distance_from_spatial_witness_line": 6.586264646032502,
+            "maximum_residual": 11.575836902790225,
+            "per_axis_maximum_residual": [
+              10.0,
+              9.0,
+              3.0
+            ],
+            "per_axis_rmsd": [
+              5.634713834792322,
+              5.7081812631812365,
+              3.0
+            ],
+            "rmsd": 8.563488385776752,
+            "spatial_witness_method": "lexicographic_double_sweep_lower_bound_v1",
+            "spatial_witness_separation_lower_bound": 12.68857754044952
+          }
+        },
+        "orthonormality_error": 0.0,
+        "precision_profile": {
+          "current_coordinate_decimal_places": 3,
+          "integer_values_use_sibling_field_precision": true,
+          "normal_semantics": "positive_z_half_thickness",
+          "normal_xy_noise_limit": 1e-07,
+          "provider_forward_axis_bounds": [
+            0.001000130015,
+            0.001000130015,
+            0.001000130015
+          ],
+          "provider_forward_theoretical_bound": 0.0017322760001546233,
+          "provider_forward_validation_limit": 0.002,
+          "reviewed_envelope_decision": "accepted",
+          "rotation_decimal_places": [
+            [
+              8,
+              8,
+              8
+            ],
+            [
+              8,
+              8,
+              8
+            ],
+            [
+              8,
+              8,
+              8
+            ]
+          ],
+          "runtime_identity_theoretical_bound": 0.0017320508075688772,
+          "runtime_inverse_theoretical_bound": 0.0017323972307207718,
+          "transformed_coordinate_decimal_places": 3,
+          "translation_decimal_places": [
+            8,
+            8,
+            8
+          ]
+        },
+        "provider_original_to_transformed": [
+          [
+            0.0,
+            -1.0,
+            0.0,
+            10.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0,
+            -5.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "provider_transformed_to_original": [
+          [
+            0.0,
+            1.0,
+            0.0,
+            5.0
+          ],
+          [
+            -1.0,
+            0.0,
+            0.0,
+            10.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            -3.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "source_frame": "pdbtm_transformed",
+        "source_to_current": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "thresholds": {
+          "provider_forward_validation_limit": 0.002,
+          "runtime_identity_match_limit": {
+            "maximum_residual": 0.002,
+            "rmsd": 0.002
+          },
+          "runtime_inverse_match_limit": {
+            "maximum_residual": 0.003,
+            "rmsd": 0.003
+          }
+        }
+      },
+      "current_geometry": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frame": "current_model",
+        "geometry": "planar",
+        "interface_width": 3.0,
+        "lower_offset": -15.0,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "upper_offset": 15.0
+      },
+      "current_scope": {
+        "biological_assembly": null,
+        "chain_mapping": {
+          "A": [
+            "X"
+          ]
+        },
+        "chain_namespace": "legacy_pdb",
+        "chains": [
+          "A"
+        ],
+        "coordinate_fingerprint": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
+        "coordinate_frame": "current_model",
+        "legacy_chains": [
+          "A"
+        ],
+        "model_id": "1",
+        "provider_chain_labels": [
+          "X"
+        ],
+        "selected_model": 1,
+        "structure_id": "test"
+      },
+      "geometric_confidence": "coordinate_verified",
+      "model_version": "1",
+      "raw_metadata": {
+        "current_assembly": null,
+        "ent_cif_chain_map": {
+          "A": [
+            "X"
+          ]
+        },
+        "mvqc_interface_width": 3.0,
+        "provider_assembly": null,
+        "provider_chain_labels": [
+          "X"
+        ],
+        "resource_version": "1017",
+        "software_version": "3.2.134"
+      },
+      "source": {
+        "citation": "PDBTM database",
+        "name": "PDBTM",
+        "raw_payloads": [
+          {
+            "byte_size": 527,
+            "media_type": null,
+            "retrieval_verified": false,
+            "retrieved_at": null,
+            "role": "pdbtm_json",
+            "sha256": "7577a8135d0934ea39f118ad0b19b2475f48529dc105626b37a2437522272a7e",
+            "source": null
+          },
+          {
+            "byte_size": 1019,
+            "media_type": null,
+            "retrieval_verified": false,
+            "retrieved_at": null,
+            "role": "transformed_pdb",
+            "sha256": "2bf25ae63c52eae197de7d9bf1f963dca972ff687a2482282a19ef3900f59cb1",
+            "source": null
+          }
+        ],
+        "record_id": "test",
+        "resource_version": "1017",
+        "retrieved_at": null,
+        "software_version": "3.2.134",
+        "source_url": null
+      },
+      "source_geometry": {
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frame": "pdbtm_transformed",
+        "geometry": "planar",
+        "interface_width": null,
+        "lower_offset": -15.0,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "upper_offset": 15.0
+      },
+      "source_scope": {
+        "biological_assembly": null,
+        "chain_mapping": {
+          "A": [
+            "X"
+          ]
+        },
+        "chain_namespace": "legacy_pdb",
+        "chains": [
+          "A"
+        ],
+        "coordinate_fingerprint": "7dde792500b15d19f8d51b8b31e58867453770da9c09467ddf7f09f613734ab7",
+        "coordinate_frame": "pdbtm_transformed",
+        "legacy_chains": [
+          "A"
+        ],
+        "model_id": "1",
+        "provider_chain_labels": [
+          "X"
+        ],
+        "selected_model": 1,
+        "structure_id": "test"
+      },
+      "warnings": []
+    },
+    "geometry": "planar",
+    "interface_width": 3.0,
+    "lower_offset": -15.0,
+    "metadata": {
+      "adapter": "pdbtm_api_v1_offline"
+    },
+    "normal": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "pdbtm_offline",
+    "source_version": "1017",
+    "upper_offset": 15.0,
+    "warnings": []
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": ""
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [],
+  "runtime": {
+    "platform": "Windows-10-build-26200",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.3",
+  "software": {
+    "commit": "38589a5ee6e3cb99c5d11a6c3b1735283abc0843",
+    "commit_status": "recorded",
+    "name": "membrane-vqc-pymol",
+    "version": "0.5.0"
+  },
+  "summary": {
+    "charged_core_residues": 0,
+    "core_residues": 0,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "INSUFFICIENT_CONTEXT",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 0
+  },
+  "timestamp": "2026-07-22T12:00:00.000000+00:00",
+  "version": "0.5.0",
+  "warnings": []
+}

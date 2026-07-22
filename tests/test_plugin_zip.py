@@ -60,7 +60,7 @@ def test_builder_rejects_known_provider_payload_content(tmp_path, monkeypatch):
     payload = b"official-provider-body-for-test"
     identity = (len(payload), hashlib.sha256(payload).hexdigest())
     monkeypatch.setattr("scripts.build_plugin_zip.FORBIDDEN_PROVIDER_PAYLOADS", {identity})
-    (root / "membrane_vqc" / "renamed.json").write_bytes(payload)
+    (root / "membrane_vqc" / "renamed.txt").write_bytes(payload)
 
     with pytest.raises(PluginZipError, match="Official provider payload"):
         build_plugin_zip(root)

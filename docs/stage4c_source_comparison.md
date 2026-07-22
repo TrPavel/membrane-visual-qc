@@ -5,7 +5,7 @@ acceptance are tracked separately from the completed Stage 4C implementation acc
 
 ## Scientific boundary
 
-Stage 4C is an explicit geometric review between two independently validated orientation sources.
+Stage 4C is an explicit geometric review between two independently applicable orientation source records.
 It never selects a preferred provider, changes the active QC source, constructs a consensus,
 fits or transforms coordinates, ranks providers, or interprets disagreement as a biological
 verdict. Both sources must be selected explicitly and must apply independently to one immutable

@@ -51,6 +51,19 @@ def test_release_validator_rejects_known_provider_payload_content(monkeypatch):
         _assert_safe_archive_payload("renamed.bin", payload)
 
 
+@pytest.mark.parametrize(
+    ("name", "payload"),
+    [
+        ("package/cache/2xyz.trpdb", b"ATOM provider body"),
+        ("package/cache/2xyz.pdb", b"ATOM provider body"),
+        ("package/cache/2xyz.json", b'{"pdb_id":"2xyz"}'),
+    ],
+)
+def test_release_validator_rejects_unknown_provider_shaped_payload(name, payload):
+    with pytest.raises(ReleaseArtifactError, match="Provider-shaped"):
+        _assert_safe_archive_payload(name, payload)
+
+
 def _copy_project_with_version(tmp_path, version):
     project = tmp_path / "alternate-project"
     project.mkdir()
@@ -294,6 +307,12 @@ def test_release_validator_rejects_unsafe_archive_names(name):
 def test_release_validator_rejects_duplicate_names():
     with pytest.raises(ReleaseArtifactError, match="duplicate"):
         _assert_safe_archive_names(["pkg/file.py", "pkg/file.py"])
+
+
+@pytest.mark.parametrize("alias", ["pkg/./file.py", "pkg//file.py"])
+def test_release_validator_rejects_noncanonical_alias_collisions(alias):
+    with pytest.raises(ReleaseArtifactError, match="Non-canonical"):
+        _assert_safe_archive_names(["pkg/file.py", alias])
 
 
 @pytest.mark.parametrize("file_type", [stat.S_IFLNK, stat.S_IFIFO])

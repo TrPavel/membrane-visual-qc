@@ -24,7 +24,9 @@ SCHEMA_NAMES = {
 # Backwards-compatible name retained for callers that refer to the Stage 4C schema directly.
 STAGE4C_SCHEMA_NAME = SCHEMA_NAMES["1.5"]
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
-ALLOWED_SUFFIXES = {".py", ".json", ".txt", ".md", ".png", ".svg"}
+# JSON enters only through the explicit released-schema list below. This keeps
+# arbitrary provider JSON bodies out of the runtime package by construction.
+ALLOWED_SUFFIXES = {".py", ".txt", ".md", ".png", ".svg"}
 REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/__init__.py",
     f"{PACKAGE_NAME}/commands.py",

@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
-from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 import re
-import tempfile
 
 from membrane_vqc.constants import VERSION
 from membrane_vqc.pdbtm_adapter import import_pdbtm_orientation
-from membrane_vqc.pdbtm_cache import CacheRepository
+from membrane_vqc.pdbtm_cache import CachedSnapshot, CacheRepository
+from membrane_vqc.pdbtm_cache_contract import parse_snapshot_envelope
+from membrane_vqc.pdbtm_provider import validate_pdbtm_pair
 from membrane_vqc.pdbtm_report_provenance import build_pdbtm_acquisition_provenance
 from membrane_vqc.report import build_report, validate_report
 from membrane_vqc.orientation_sources import StructureContext
@@ -22,7 +20,6 @@ from membrane_vqc.orientation_sources import StructureContext
 ROOT = Path(__file__).resolve().parents[1]
 SYNTHETIC = ROOT / "data" / "synthetic"
 GENERATED_AT = "2026-07-22T12:00:00.000000+00:00"
-VALIDATED_AT = datetime(2026, 7, 22, 11, 59, 59, tzinfo=timezone.utc)
 RUNTIME = {
     "python": "3.10.20",
     "pymol": "3.1.8",
@@ -30,43 +27,6 @@ RUNTIME = {
     "platform": "Windows-10-build-26200",
 }
 _COMMIT = re.compile(r"[0-9a-f]{40}\Z")
-
-
-@dataclass(frozen=True)
-class _Evidence:
-    requested_url: str
-    final_url: str
-    status: int
-    content_type: str
-    charset: str | None
-    content_encoding: str | None
-    etag: str | None
-    last_modified: str | None
-    requested_at: str
-    completed_at: str
-    byte_size: int
-    sha256: str
-    tls_verified: bool = True
-
-
-@dataclass(frozen=True)
-class _Payload:
-    role: str
-    body: bytes
-    evidence: _Evidence
-
-
-@dataclass(frozen=True)
-class _Versions:
-    resource_version: str = "1017"
-    software_version: str = "3.2.134"
-
-
-@dataclass(frozen=True)
-class _Candidate:
-    canonical_record_id: str
-    payloads: tuple[_Payload, _Payload]
-    provider_versions: _Versions = _Versions()
 
 
 def _require_release_identity(software_version: str, software_commit: str) -> None:
@@ -131,51 +91,50 @@ def build_local_pdbtm_example(*, software_version: str, software_commit: str) ->
     return _normalize(report, software_version=software_version, software_commit=software_commit)
 
 
-def _acquisition_payload(record_id: str, role: str, body: bytes, second: int) -> _Payload:
-    suffix = "json" if role == "pdbtm_json" else "trpdb"
-    url = f"https://pdbtm.unitmp.org/api/v1/entry/{record_id}.{suffix}"
-    media_type = "application/json" if role == "pdbtm_json" else "text/plain"
-    charset = None if role == "pdbtm_json" else "utf-8"
-    return _Payload(
-        role,
-        body,
-        _Evidence(
-            url,
-            url,
-            200,
-            media_type,
-            charset,
-            None,
-            None,
-            None,
-            f"2026-07-22T11:59:5{second}.000000Z",
-            f"2026-07-22T11:59:5{second + 1}.000000Z",
-            len(body),
-            hashlib.sha256(body).hexdigest(),
-        ),
-    )
-
-
-def build_cached_pdbtm_example(*, software_version: str, software_commit: str) -> dict[str, object]:
-    """Build schema 1.4 through the real cache and provenance boundaries."""
+def build_cached_pdbtm_example(
+    *,
+    software_version: str,
+    software_commit: str,
+    cache_dir: Path,
+    record_id: str,
+    snapshot_id: str | None = None,
+) -> dict[str, object]:
+    """Build schema 1.4 from a real, integrity-checked provider cache snapshot."""
 
     _require_release_identity(software_version, software_commit)
-    record_id = "9zzz"
-    json_bytes, pdb_bytes = _payloads(record_id)
-    candidate = _Candidate(
-        record_id,
-        (
-            _acquisition_payload(record_id, "pdbtm_json", json_bytes, 0),
-            _acquisition_payload(record_id, "transformed_pdb", pdb_bytes, 2),
-        ),
-    )
-    with tempfile.TemporaryDirectory(prefix="mvqc-v050-report-") as temporary:
-        repository = CacheRepository(Path(temporary) / "cache", utc_now=lambda: VALIDATED_AT)
-        generation = repository.capture_record_generation(record_id)
-        repository.commit_validated_pair(candidate, expected_record_generation=generation)
+    cache_dir = cache_dir.resolve()
+    repository = CacheRepository(cache_dir)
+    if snapshot_id is None:
         snapshot = repository.read_active(record_id)
+        inspection = repository.inspect()
+        record = inspection.records.get(snapshot.canonical_record_id)
+        if record is None:
+            raise RuntimeError("active cache record disappeared during retained-report generation")
+        cache_generation = record.generation
+        consumption_mode = "active_cache_read"
+    else:
+        if not re.fullmatch(r"[0-9a-f]{64}", snapshot_id):
+            raise ValueError("snapshot_id must be an exact lowercase SHA-256")
+        manifest = cache_dir / "records" / record_id / "snapshots" / f"{snapshot_id}.json"
+        envelope = parse_snapshot_envelope(manifest.read_bytes())
+        if (
+            envelope.snapshot_id != snapshot_id
+            or envelope.snapshot_core.canonical_record_id != record_id
+        ):
+            raise ValueError("preserved snapshot identity does not match the requested record")
+        bodies = tuple(
+            (cache_dir / "blobs" / "sha256" / item.sha256[:2] / item.sha256).read_bytes()
+            for item in envelope.snapshot_core.payloads
+        )
+        semantic_result = validate_pdbtm_pair(record_id, *bodies)
+        snapshot = CachedSnapshot(  # type: ignore[arg-type]
+            snapshot_id, envelope.snapshot_core, bodies, semantic_result
+        )
+        cache_generation = None
+        consumption_mode = "snapshot_cache_read"
+    json_bytes, pdb_bytes = snapshot.payloads
     provenance = build_pdbtm_acquisition_provenance(
-        snapshot, consumption_mode="active_cache_read", cache_generation=1
+        snapshot, consumption_mode=consumption_mode, cache_generation=cache_generation
     )
     imported = import_pdbtm_orientation(
         json_bytes, pdb_bytes, StructureContext(pdb_bytes, record_id, 1)
@@ -183,7 +142,7 @@ def build_cached_pdbtm_example(*, software_version: str, software_commit: str) -
     if imported.status != "imported" or imported.membrane is None or imported.evidence is None:
         raise RuntimeError("accepted cached PDBTM fixture did not import")
     report = build_report(
-        selection="synthetic_pdbtm_cached_v050",
+        selection=f"pdbtm_cached_{snapshot.canonical_record_id}_v050",
         zmin=-15.0,
         zmax=15.0,
         ligand_selection="",
@@ -210,14 +169,26 @@ def main() -> int:
     parser.add_argument("kind", choices=("local", "cached"))
     parser.add_argument("--software-version", default=VERSION)
     parser.add_argument("--software-commit", required=True)
+    parser.add_argument("--cache-dir", type=Path)
+    parser.add_argument("--record-id", default="1pcr")
+    parser.add_argument("--snapshot-id")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    builder = build_local_pdbtm_example if args.kind == "local" else build_cached_pdbtm_example
     try:
-        report = builder(
-            software_version=args.software_version,
-            software_commit=args.software_commit,
-        )
+        if args.kind == "local":
+            report = build_local_pdbtm_example(
+                software_version=args.software_version, software_commit=args.software_commit
+            )
+        else:
+            if args.cache_dir is None:
+                parser.error("cached generation requires --cache-dir from a real provider fetch")
+            report = build_cached_pdbtm_example(
+                software_version=args.software_version,
+                software_commit=args.software_commit,
+                cache_dir=args.cache_dir,
+                record_id=args.record_id,
+                snapshot_id=args.snapshot_id,
+            )
     except ValueError as exc:
         parser.error(str(exc))
     args.output.write_text(serialize(report), encoding="utf-8", newline="\n")

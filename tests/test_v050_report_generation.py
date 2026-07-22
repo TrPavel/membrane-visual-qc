@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -16,22 +18,101 @@ from scripts.validate_example_reports import (
     v050_release_report_inventory,
     validate_retained_report_privacy,
 )
+from membrane_vqc.pdbtm_cache import CacheRepository
 
 
 COMMIT = "a" * 40
 
 
-@pytest.mark.parametrize(
-    ("builder", "schema"),
-    [(build_local_pdbtm_example, "1.3"), (build_cached_pdbtm_example, "1.4")],
-)
-def test_pdbtm_release_examples_are_deterministic_and_private(builder, schema):
-    first = builder(software_version="0.5.0", software_commit=COMMIT)
-    second = builder(software_version="0.5.0", software_commit=COMMIT)
+@dataclass(frozen=True)
+class _Evidence:
+    requested_url: str
+    final_url: str
+    status: int
+    content_type: str
+    charset: str | None
+    content_encoding: str | None
+    etag: str | None
+    last_modified: str | None
+    requested_at: str
+    completed_at: str
+    byte_size: int
+    sha256: str
+    tls_verified: bool = True
+
+
+@dataclass(frozen=True)
+class _Payload:
+    role: str
+    body: bytes
+    evidence: _Evidence
+
+
+@dataclass(frozen=True)
+class _Versions:
+    resource_version: str = "1017"
+    software_version: str = "3.2.134"
+
+
+@dataclass(frozen=True)
+class _Candidate:
+    canonical_record_id: str
+    payloads: tuple[_Payload, _Payload]
+    provider_versions: _Versions = _Versions()
+
+
+def _seed_cache(cache_dir: Path, record_id: str = "9zzz") -> None:
+    fixture = Path(__file__).resolve().parents[1] / "data" / "synthetic"
+    json_bytes = (
+        (fixture / "pdbtm_api_v1_test.json")
+        .read_bytes()
+        .replace(b'"pdb_id":"test"', f'"pdb_id":"{record_id}"'.encode(), 1)
+    )
+    pdb_bytes = (
+        (fixture / "pdbtm_transformed_test.pdb")
+        .read_bytes()
+        .replace(b"TEST\n", f"{record_id.upper()}\n".encode(), 1)
+    )
+    payloads = []
+    for role, suffix, body, second in (
+        ("pdbtm_json", "json", json_bytes, 0),
+        ("transformed_pdb", "trpdb", pdb_bytes, 2),
+    ):
+        url = f"https://pdbtm.unitmp.org/api/v1/entry/{record_id}.{suffix}"
+        payloads.append(
+            _Payload(
+                role,
+                body,
+                _Evidence(
+                    url,
+                    url,
+                    200,
+                    "text/plain",
+                    "utf-8",
+                    None,
+                    None,
+                    None,
+                    f"2026-07-20T00:00:0{second}.000000Z",
+                    f"2026-07-20T00:00:0{second + 1}.000000Z",
+                    len(body),
+                    hashlib.sha256(body).hexdigest(),
+                ),
+            )
+        )
+    repository = CacheRepository(cache_dir)
+    generation = repository.capture_record_generation(record_id)
+    repository.commit_validated_pair(
+        _Candidate(record_id, tuple(payloads)), expected_record_generation=generation
+    )
+
+
+def test_local_pdbtm_release_example_is_deterministic_and_private():
+    first = build_local_pdbtm_example(software_version="0.5.0", software_commit=COMMIT)
+    second = build_local_pdbtm_example(software_version="0.5.0", software_commit=COMMIT)
 
     assert first == second
     assert serialize(first) == serialize(second)
-    assert first["schema_version"] == schema
+    assert first["schema_version"] == "1.3"
     assert first["software"]["version"] == "0.5.0"
     assert first["software"]["commit"] == COMMIT
     assert first["runtime"] == {
@@ -43,15 +124,39 @@ def test_pdbtm_release_examples_are_deterministic_and_private(builder, schema):
     validate_retained_report_privacy(first)
 
 
+def test_cached_pdbtm_release_example_reads_real_cache_snapshot(tmp_path):
+    cache_dir = tmp_path / "cache"
+    _seed_cache(cache_dir)
+    arguments = {
+        "software_version": "0.5.0",
+        "software_commit": COMMIT,
+        "cache_dir": cache_dir,
+        "record_id": "9zzz",
+    }
+    first = build_cached_pdbtm_example(**arguments)
+    second = build_cached_pdbtm_example(**arguments)
+    assert first == second
+    assert first["schema_version"] == "1.4"
+    assert first["orientation"]["acquisition"]["canonical_record_id"] == "9zzz"
+    validate_retained_report_privacy(first)
+
+
 def test_release_generators_require_truthful_commit():
     with pytest.raises(ValueError, match="40-character"):
         build_local_pdbtm_example(software_version="0.5.0", software_commit="placeholder")
 
 
 def test_v050_inventory_records_exact_bytes(tmp_path):
+    cache_dir = tmp_path / "cache"
+    _seed_cache(cache_dir)
     reports = {
         "1.3": build_local_pdbtm_example(software_version="0.5.0", software_commit=COMMIT),
-        "1.4": build_cached_pdbtm_example(software_version="0.5.0", software_commit=COMMIT),
+        "1.4": build_cached_pdbtm_example(
+            software_version="0.5.0",
+            software_commit=COMMIT,
+            cache_dir=cache_dir,
+            record_id="9zzz",
+        ),
         "1.5": build_comparison_example(software_version="0.5.0", software_commit=COMMIT),
     }
     for relative, schema in V050_RELEASE_REPORTS.items():

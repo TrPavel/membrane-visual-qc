@@ -200,11 +200,14 @@ review-round fix above), and `release-candidate --version 0.5.0.dev0` artifact v
 passed; schema 1.4's own hash is
 `7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530`.
 
-One deterministic synthetic example, `reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
+At that stage, one deterministic synthetic example, then named
+`reports/pdbtm_acquisition_synthetic_mvqc.json` (4,780 bytes,
 SHA-256 `73ad22e1d4ef13bab72f7440b8407295360abd63c51bbc9348cc565173a257bf`), was built end to end
 through the real Stage 4B1 cache and Stage 4B2 conversion using the existing synthetic fixtures
 under `data/synthetic/` with an obviously fake record ID (`9zzz`); no official PDBTM/RCSB payload
-was committed. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
+was committed. It was replaced during v0.5.0 release preparation by the truthful retained
+`reports/pdbtm_acquisition_v050_mvqc.json`, rebuilt from the preserved verified `1pcr` snapshot
+without retaining either raw provider body. Ordinary tests and CI make zero live provider requests; the Stage 4B1 live-provider
 smoke was not rerun, since this is a pure schema/report stage validated entirely with synthetic
 data. No Stage 4B2 release, tag, or PyPI publication was made. Stage 4B3 is implemented (see
 "Stage 4B3 implementation" below); Stage 4B4 and Stage 4C have not started.

@@ -54,6 +54,12 @@ FORBIDDEN_PROVIDER_NAMES = {
     "rcsb_assembly1.pdb.gz",
     "rcsb_deposited.pdb",
 }
+ALLOWED_SYNTHETIC_PROVIDER_PATHS = {
+    "data/synthetic/opm_oriented_test.pdb",
+    "data/synthetic/pdbtm_api_v1_test.json",
+    "data/synthetic/pdbtm_original_test.pdb",
+    "data/synthetic/pdbtm_transformed_test.pdb",
+}
 FROZEN_V040_VERSION = "0.4.0"
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
@@ -129,10 +135,23 @@ def _metadata_version(text: str) -> str:
 
 
 def _assert_safe_archive_names(names: list[str]) -> None:
-    if len(names) != len(set(names)):
-        raise ReleaseArtifactError("Release archive contains duplicate entries")
+    canonical_names: set[str] = set()
     for name in names:
         path = PurePosixPath(name)
+        canonical = path.as_posix()
+        is_directory = name.endswith("/")
+        if (
+            not name
+            or any(ord(character) < 32 or ord(character) == 127 for character in name)
+            or "//" in name
+            or any(part in {"", "."} for part in name.strip("/").split("/"))
+            or name != canonical + ("/" if is_directory else "")
+        ):
+            raise ReleaseArtifactError(f"Non-canonical release archive entry: {name}")
+        canonical_key = canonical.rstrip("/")
+        if canonical_key in canonical_names:
+            raise ReleaseArtifactError("Release archive contains duplicate entries")
+        canonical_names.add(canonical_key)
         if (
             "\\" in name
             or bool(re.match(r"^[A-Za-z]:", name))
@@ -171,6 +190,16 @@ def _assert_safe_archive_payload(name: str, data: bytes) -> None:
     identity = (len(data), hashlib.sha256(data).hexdigest())
     if identity in FORBIDDEN_PROVIDER_PAYLOADS:
         raise ReleaseArtifactError(f"Official provider payload is forbidden: {name}")
+    normalized = PurePosixPath(name).as_posix()
+    is_allowed_synthetic = any(
+        normalized == allowed or normalized.endswith(f"/{allowed}")
+        for allowed in ALLOWED_SYNTHETIC_PROVIDER_PATHS
+    )
+    suffix = PurePosixPath(normalized).suffix.lower()
+    if not is_allowed_synthetic and (
+        suffix in {".pdb", ".trpdb", ".ent"} or (suffix == ".json" and b'"pdb_id"' in data)
+    ):
+        raise ReleaseArtifactError(f"Provider-shaped payload is forbidden: {name}")
 
 
 def _contains_absolute_windows_path(value: object) -> bool:

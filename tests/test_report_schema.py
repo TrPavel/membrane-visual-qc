@@ -45,7 +45,7 @@ def test_example_report_validator_supports_required_direct_script_command():
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "Validated 21 report(s)" in completed.stdout
+    assert "Validated 22 report(s)" in completed.stdout
 
 
 def test_schema_has_stable_non_placeholder_identifier():
@@ -105,7 +105,7 @@ def test_generated_examples_can_dispatch_by_declared_schema_version():
     assert validate_reports_by_version(reports) == {
         "1.1": 7,
         "1.2": 11,
-        "1.3": 1,
+        "1.3": 2,
         "1.4": 1,
         "1.5": 1,
     }

@@ -57,9 +57,9 @@
     "structure_id": "test"
   },
   "software": {
-    "commit": "synthetic-example",
+    "commit": "38589a5ee6e3cb99c5d11a6c3b1735283abc0843",
     "name": "Membrane Visual QC",
-    "version": "0.5.0.dev0"
+    "version": "0.5.0"
   },
   "sources": [
     {

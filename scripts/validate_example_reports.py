@@ -27,7 +27,7 @@ SCHEMA_BY_VERSION = {
 
 V050_RELEASE_REPORTS = {
     Path("reports/pdbtm_local_v050_mvqc.json"): "1.3",
-    Path("reports/pdbtm_acquisition_synthetic_mvqc.json"): "1.4",
+    Path("reports/pdbtm_acquisition_v050_mvqc.json"): "1.4",
     Path("reports/source_comparison_synthetic_mvqc.json"): "1.5",
 }
 _COMMIT = re.compile(r"[0-9a-f]{40}\Z")
