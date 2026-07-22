@@ -16,7 +16,13 @@ from typing import Iterable
 PACKAGE_NAME = "membrane_vqc"
 MANIFEST_NAME = f"{PACKAGE_NAME}/PLUGIN_MANIFEST.json"
 CHECKSUMS_NAME = f"{PACKAGE_NAME}/SHA256SUMS.txt"
-STAGE4C_SCHEMA_NAME = f"{PACKAGE_NAME}/schemas/mvqc-report-1.5.schema.json"
+SCHEMA_VERSIONS = ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
+SCHEMA_NAMES = {
+    version: f"{PACKAGE_NAME}/schemas/mvqc-report-{version}.schema.json"
+    for version in SCHEMA_VERSIONS
+}
+# Backwards-compatible name retained for callers that refer to the Stage 4C schema directly.
+STAGE4C_SCHEMA_NAME = SCHEMA_NAMES["1.5"]
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 ALLOWED_SUFFIXES = {".py", ".json", ".txt", ".md", ".png", ".svg"}
 REQUIRED_PACKAGE_FILES = {
@@ -36,7 +42,7 @@ REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/comparison_worker.py",
     f"{PACKAGE_NAME}/comparison_gui_worker.py",
     f"{PACKAGE_NAME}/comparison_pymol.py",
-    STAGE4C_SCHEMA_NAME,
+    *SCHEMA_NAMES.values(),
 }
 FORBIDDEN_PROVIDER_PAYLOADS = {
     (283_537, "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0"),
@@ -102,10 +108,11 @@ def collect_plugin_files(project_root: Path) -> list[tuple[str, Path]]:
             continue
         files.append((archive_name, path))
 
-    schema_path = project_root / "schemas" / "mvqc-report-1.5.schema.json"
-    if not schema_path.is_file() or schema_path.is_symlink():
-        raise PluginZipError(f"Missing Stage 4C schema: {schema_path}")
-    files.append((STAGE4C_SCHEMA_NAME, schema_path))
+    for version, archive_name in SCHEMA_NAMES.items():
+        schema_path = project_root / "schemas" / f"mvqc-report-{version}.schema.json"
+        if not schema_path.is_file() or schema_path.is_symlink():
+            raise PluginZipError(f"Missing report schema {version}: {schema_path}")
+        files.append((archive_name, schema_path))
 
     names = {name for name, _ in files}
     missing = REQUIRED_PACKAGE_FILES - names
@@ -154,6 +161,9 @@ def validate_zip_layout(zip_path: Path) -> dict[str, object]:
             path = PurePosixPath(info.filename)
             if info.is_dir() or path.is_absolute() or ".." in path.parts or "\\" in info.filename:
                 raise PluginZipError(f"Unsafe or unexpected ZIP entry: {info.filename}")
+            mode_type = stat.S_IFMT(info.external_attr >> 16)
+            if mode_type not in (0, stat.S_IFREG):
+                raise PluginZipError(f"ZIP entry is not a regular file: {info.filename}")
             is_package_file = path.parts[0] == PACKAGE_NAME and len(path.parts) > 1
             if not is_package_file:
                 raise PluginZipError(f"Unexpected top-level ZIP entry: {info.filename}")

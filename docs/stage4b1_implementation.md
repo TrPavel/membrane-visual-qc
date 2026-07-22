@@ -1,6 +1,7 @@
 # Stage 4B1 transport and cache core
 
-Status: merged into main and accepted; not exposed through PyMOL or the GUI.
+Status: complete and merged. Its transport/cache core is exposed only through Stage 4B3's explicit
+GUI Fetch/Refresh workflow; package import and all non-fetch actions remain network-free.
 
 ## Scope and boundaries
 

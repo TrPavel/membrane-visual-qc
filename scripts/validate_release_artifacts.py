@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
+import stat
 import tarfile
 import zipfile
 
@@ -21,7 +22,7 @@ if str(ROOT) not in sys.path:
 from scripts.build_plugin_zip import (  # noqa: E402
     FORBIDDEN_PROVIDER_PAYLOADS,
     MANIFEST_NAME,
-    STAGE4C_SCHEMA_NAME,
+    SCHEMA_NAMES,
     project_version,
     sha256_file,
     validate_zip_layout,
@@ -33,15 +34,13 @@ SCHEMA_HASHES = {
     "1.1": "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf",
     "1.2": "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430",
     "1.3": "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc",
-    "1.4": "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530",
-    "1.5": "1de049797e068fc6d60d7c0c73cfb64add9b24bc6b7c24e7c8cd1078b2ee47e3",
+    "1.4": "ee3bc91b2ba2c32814aad61eb69ed8413bae9460c33cb5d69d839335ff6e698e",
+    "1.5": "9b94df52457668e05e6e8a9cd2a7a6c362d8da59343755875d78516ddd0a7411",
 }
 # Schemas that actually existed, frozen, at the v0.4.0 tag. 1.4 postdates that
-# release and is still an editable draft (see its own $id suffix and
-# tests/test_report_schema.py's hash test docstring) -- it must NOT be
-# required to stay byte-identical by the frozen-v0.4.0 evidence gate below,
-# even though it is (correctly) required to be present/pinned via the full
-# SCHEMA_HASHES table used by the current-development artifact checks.
+# release, so it must NOT be required to stay byte-identical by the
+# frozen-v0.4.0 evidence gate below, even though it is required to be
+# present/pinned by the current-development artifact checks.
 FROZEN_V040_SCHEMA_VERSIONS = {"1.0", "1.1", "1.2", "1.3"}
 FORBIDDEN_ARCHIVE_PARTS = {
     ".local",
@@ -130,6 +129,8 @@ def _metadata_version(text: str) -> str:
 
 
 def _assert_safe_archive_names(names: list[str]) -> None:
+    if len(names) != len(set(names)):
+        raise ReleaseArtifactError("Release archive contains duplicate entries")
     for name in names:
         path = PurePosixPath(name)
         if (
@@ -143,6 +144,27 @@ def _assert_safe_archive_names(names: list[str]) -> None:
             or ".." in path.parts
         ):
             raise ReleaseArtifactError(f"Forbidden release archive entry: {name}")
+
+
+def _assert_safe_zip_entries(infos: list[zipfile.ZipInfo]) -> None:
+    """Reject duplicate, unsafe, or non-regular ZIP members."""
+    _assert_safe_archive_names([info.filename for info in infos])
+    for info in infos:
+        if info.is_dir():
+            continue
+        mode_type = stat.S_IFMT(info.external_attr >> 16)
+        if mode_type not in (0, stat.S_IFREG):
+            raise ReleaseArtifactError(f"Release ZIP entry is not a regular file: {info.filename}")
+
+
+def _assert_safe_tar_entries(members: list[tarfile.TarInfo]) -> None:
+    """Reject duplicate, unsafe, or non-file/non-directory tar members."""
+    _assert_safe_archive_names([member.name for member in members])
+    for member in members:
+        if not (member.isfile() or member.isdir()):
+            raise ReleaseArtifactError(
+                f"Release tar entry is not a regular file or directory: {member.name}"
+            )
 
 
 def _assert_safe_archive_payload(name: str, data: bytes) -> None:
@@ -251,8 +273,9 @@ def _validate_artifact_set(
             raise ReleaseArtifactError(f"Missing release artifact: {path}")
 
     with zipfile.ZipFile(wheel) as archive:
-        wheel_names = archive.namelist()
-        _assert_safe_archive_names(wheel_names)
+        wheel_infos = archive.infolist()
+        _assert_safe_zip_entries(wheel_infos)
+        wheel_names = [info.filename for info in wheel_infos]
         for name in wheel_names:
             if not name.endswith("/"):
                 _assert_safe_archive_payload(name, archive.read(name))
@@ -267,23 +290,24 @@ def _validate_artifact_set(
         ) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
-        wheel_schema_names = [
-            name
-            for name in wheel_names
-            if name.endswith("/data/schemas/mvqc-report-1.5.schema.json")
-        ]
-        if len(wheel_schema_names) != 1 or (
-            hashlib.sha256(archive.read(wheel_schema_names[0])).hexdigest() != SCHEMA_HASHES["1.5"]
-        ):
-            raise ReleaseArtifactError("Wheel schema 1.5 is missing or does not match its hash")
+        for schema_version, expected_hash in SCHEMA_HASHES.items():
+            suffix = f"/data/schemas/mvqc-report-{schema_version}.schema.json"
+            wheel_schema_names = [name for name in wheel_names if name.endswith(suffix)]
+            if len(wheel_schema_names) != 1 or (
+                hashlib.sha256(archive.read(wheel_schema_names[0])).hexdigest() != expected_hash
+            ):
+                raise ReleaseArtifactError(
+                    f"Wheel schema {schema_version} is missing or does not match its hash"
+                )
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
     if wheel_version != expected_version:
         raise ReleaseArtifactError(f"Wheel metadata version mismatch: {wheel_version}")
 
     with tarfile.open(sdist, "r:gz") as archive:
-        sdist_names = archive.getnames()
-        _assert_safe_archive_names(sdist_names)
-        for member in archive.getmembers():
+        sdist_members = archive.getmembers()
+        _assert_safe_tar_entries(sdist_members)
+        sdist_names = [member.name for member in sdist_members]
+        for member in sdist_members:
             if member.isfile():
                 stream = archive.extractfile(member)
                 if stream is None:
@@ -334,12 +358,16 @@ def _validate_artifact_set(
     if manifest["plugin"]["version"] != expected_version:
         raise ReleaseArtifactError("Plugin ZIP manifest version mismatch")
     with zipfile.ZipFile(plugin_zip) as archive:
-        _assert_safe_archive_names(archive.namelist())
+        _assert_safe_zip_entries(archive.infolist())
         embedded = json.loads(archive.read(MANIFEST_NAME).decode("utf-8"))
         if embedded != manifest:
             raise ReleaseArtifactError("Plugin ZIP manifest changed while reading")
-        if hashlib.sha256(archive.read(STAGE4C_SCHEMA_NAME)).hexdigest() != SCHEMA_HASHES["1.5"]:
-            raise ReleaseArtifactError("Plugin ZIP schema 1.5 does not match its recorded hash")
+        for schema_version, expected_hash in SCHEMA_HASHES.items():
+            schema_name = SCHEMA_NAMES[schema_version]
+            if hashlib.sha256(archive.read(schema_name)).hexdigest() != expected_hash:
+                raise ReleaseArtifactError(
+                    f"Plugin ZIP schema {schema_version} does not match its recorded hash"
+                )
 
     expected_sidecar = f"{sha256_file(plugin_zip)}  {plugin_zip.name}\n"
     if sidecar.read_text(encoding="ascii") != expected_sidecar:

@@ -1,6 +1,7 @@
 # Stage 4C PDBTM–OPM orientation comparison
 
-Status: implemented and under final validation on `feat/stage4c-source-comparison`.
+Status: **PASS — complete and merged**. v0.5.0 release packaging and exact release-artifact
+acceptance are tracked separately from the completed Stage 4C implementation acceptance.
 
 ## Scientific boundary
 
@@ -64,7 +65,7 @@ evidence, and safe provider identifiers—not paths or raw bytes.
 
 ## Report contract
 
-Schemas 1.0–1.4 remain byte-identical and keep their single-source meanings. Stage 4C adds draft
+Schemas 1.0–1.4 remain byte-identical and keep their single-source meanings. Stage 4C adds
 schema 1.5 with `report_type = orientation_source_comparison`, one shared selected-object identity,
 ordered PDBTM and OPM source records, per-source applicability/provenance, comparison method and
 metrics, reviewed thresholds, warnings/non-comparability reasons, and explicit constants stating
@@ -72,7 +73,7 @@ that no consensus, ranking, preferred source, or biological verdict exists. Comp
 independent of `qc.LAST_REPORT`; existing QC reports are never replaced or modified.
 Applicable sources and the selected-object record share the explicitly named
 `mvqc_atom_identity_coordinates_sha256:v1:legacy_pdb_3dp` snapshot fingerprint contract.
-The draft schema 1.5 SHA-256 is
+The accepted Stage 4C schema 1.5 SHA-256 before v0.5.0 release finalization is
 `1de049797e068fc6d60d7c0c73cfb64add9b24bc6b7c24e7c8cd1078b2ee47e3`.
 
 The deterministic synthetic example is

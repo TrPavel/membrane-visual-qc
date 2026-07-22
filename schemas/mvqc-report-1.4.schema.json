@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:membrane-vqc:schema:report:1.4-draft",
-  "title": "Membrane Visual QC exposure single-structure review report with PDBTM cache acquisition provenance (draft)",
+  "title": "Membrane Visual QC exposure single-structure review report with PDBTM cache acquisition provenance",
   "type": "object",
   "required": [
     "schema_version",

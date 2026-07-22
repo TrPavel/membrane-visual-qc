@@ -1,6 +1,7 @@
 # Stage 4B2 provenance and report schema 1.4
 
-Status: implemented and validated on PR #16; not exposed through PyMOL or the GUI.
+Status: complete and merged. Schema 1.4 provenance is used by the explicit validated-cache PDBTM
+workflow added in Stage 4B3.
 
 ## Scope and boundaries
 

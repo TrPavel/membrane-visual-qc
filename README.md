@@ -23,21 +23,25 @@ original review severities.
 Version `0.4.0` adds the reviewed offline PDBTM API-v1 pair contract, direct coordinate-frame
 applicability, PyMOL commands, the third GUI orientation mode, and released report schema 1.3.
 
-Current `0.5.0.dev0` development adds an explicit PDBTM-versus-OPM geometric comparison area.
-PDBTM may come from a local pair or an explicitly selected validated cache snapshot; OPM is an
-explicit local oriented-PDB file. Both sources must independently match the same immutable current
-object. The comparison performs no fetch, fitting, coordinate mutation, automatic source choice,
-consensus, provider ranking, or biological verdict. See
+Version `0.5.0` completes Stage 4. It adds bounded direct PDBTM retrieval, a validated local cache
+with explicit **Fetch / Refresh** versus **Use cached pair** actions, schema 1.4 acquisition
+provenance, and an explicit PDBTM-versus-OPM geometric comparison area with schema 1.5. PDBTM may
+come from a local pair or an explicitly selected validated cache snapshot; OPM remains an explicit
+local oriented-PDB file and is never fetched. Both sources must independently match the same
+immutable current object. The comparison performs no fitting, coordinate mutation, automatic
+source choice, consensus, provider ranking, or biological verdict. See
 [docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
 
 ## Installation
 
-v0.4.0 is published as a GitHub prerelease for limited public testing. Public users should
-download `MembraneVisualQC-0.4.0.zip` and its checksum from the
+v0.5.0 is being prepared as a GitHub prerelease for limited public testing. Until its release URL
+and assets are published and byte-verified, v0.4.0 remains the latest published package. Public
+users can download `MembraneVisualQC-0.4.0.zip` and its checksum from the
 [v0.4.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0).
-GitHub Releases is the primary public installation route; `dist/MembraneVisualQC-0.4.0.zip` is the
-local release-build path. The wheel and source distribution are GitHub release assets for
-inspection and development; this project is not published to PyPI.
+GitHub Releases is the public installation route. The v0.5.0 Plugin ZIP will be named
+`MembraneVisualQC-0.5.0.zip`; its final size and SHA-256 are **PENDING**. Wheel and source
+distributions are release assets for inspection and development; this project is not published to
+PyPI.
 
 Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The
@@ -111,8 +115,9 @@ states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERR
 Resolved PDBTM reports use immutable schema 1.3 in v0.4.0, whether Context is OFF or ON. Schema
 1.3 requires JSON Schema structural validation followed by the mandatory Stage 4 semantic
 validator for nonlinear scientific invariants. Schemas 1.0–1.3 are immutable release contracts.
-Cached-PDBTM development reports use explicit draft schema 1.4. The independent two-source
-comparison uses additive draft schema 1.5; schemas 1.0–1.4 are not overloaded or edited.
+Cached-PDBTM reports use schema 1.4. The independent two-source comparison uses additive schema
+1.5; schemas 1.0–1.3 remain immutable historical release contracts, and schemas 1.4–1.5 are
+frozen for v0.5.0 publication.
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
@@ -153,13 +158,15 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 
 ## Current limitations
 
-No network retrieval, OPM integration, cross-source comparison, curved or multiple membranes,
-batch CLI, model-to-model comparison, automatic biological verdict, or definitive
-chemical-interaction inference is included in v0.4.0. Ordinary SASA is not lipid accessibility,
+OPM is offline-only. Direct PDBTM retrieval does not support proxies, PAC, CONNECT, redirects, or
+retries. There is no automatic cache migration or garbage collection, batch comparison,
+curved/multiple-membrane model, automatic fitting, automatic source selection, provider ranking,
+consensus, or biological correctness verdict. Comparison thresholds are geometric review bands,
+not biological truth. Ordinary SASA is not lipid accessibility,
 local chemical-context labels are conservative evidence, and reports are visual-QC evidence rather
 than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md).
 
 ## Licence and citation
 
-MIT. No formal citation is available yet; cite `membrane-vqc-pymol v0.4.0` and the exact
+MIT. No formal citation is available yet; cite `membrane-vqc-pymol` and the exact
 version used. The implementation is clean-room and does not copy GPL PyMOL plugin code.

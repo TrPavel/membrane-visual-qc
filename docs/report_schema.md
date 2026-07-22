@@ -1,5 +1,25 @@
 # Report schemas
 
+## v0.5.0 schemas 1.4 and 1.5
+
+Schema 1.4 represents cached PDBTM acquisition and applicability provenance. It records validated
+pair/snapshot identities and bounded safe acquisition evidence without claiming that cache
+self-consistency establishes applicability to a loaded object. Schema 1.5 represents a separate,
+explicit PDBTM–OPM geometric comparison after both sources independently match the same immutable
+selected-object snapshot.
+
+Schema 1.5 reports sign-ambiguous planar geometry, displacement, boundaries, thickness, scope, and
+coverage as review evidence. It never serializes a preferred source, provider ranking, consensus,
+automatic fit, or biological verdict. OPM provenance is local and offline-only. Existing schemas
+1.0–1.3 remain immutable. Schemas 1.4 and 1.5 are being finalized and frozen for v0.5.0; their
+authoritative release SHA-256 values are:
+
+- 1.4: `ee3bc91b2ba2c32814aad61eb69ed8413bae9460c33cb5d69d839335ff6e698e`;
+- 1.5: `9b94df52457668e05e6e8a9cd2a7a6c362d8da59343755875d78516ddd0a7411`.
+
+Their reviewed `-draft` `$id` suffixes remain unchanged because identifiers are semantic. Release
+status is defined by the immutable hashes rather than by rewriting those identifiers.
+
 ## Released schema 1.3 (v0.4.0)
 
 Version `0.4.0` releases `schemas/mvqc-report-1.3.schema.json` for successfully resolved offline
