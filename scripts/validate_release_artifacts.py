@@ -55,6 +55,8 @@ FORBIDDEN_PROVIDER_NAMES = {
     "rcsb_deposited.pdb",
 }
 ALLOWED_SYNTHETIC_PROVIDER_PATHS = {
+    "data/synthetic/bad_core_lys.pdb",
+    "data/synthetic/local_context_review.pdb",
     "data/synthetic/opm_oriented_test.pdb",
     "data/synthetic/pdbtm_api_v1_test.json",
     "data/synthetic/pdbtm_original_test.pdb",
