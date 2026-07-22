@@ -10,21 +10,43 @@ from scripts.build_plugin_zip import (
     MANIFEST_NAME,
     PluginZipError,
     REQUIRED_PACKAGE_FILES,
+    STAGE4C_SCHEMA_NAME,
+    FORBIDDEN_PROVIDER_PAYLOADS,
     build_plugin_zip,
     sha256_file,
     validate_zip_layout,
 )
 
 
+STAGE4C_PACKAGE_FILES = {
+    "membrane_vqc/opm_adapter.py",
+    "membrane_vqc/orientation_comparison.py",
+    "membrane_vqc/comparison_report.py",
+    "membrane_vqc/comparison_worker.py",
+    "membrane_vqc/comparison_gui_worker.py",
+    "membrane_vqc/comparison_pymol.py",
+}
+
+
 def make_project(tmp_path):
     (tmp_path / "membrane_vqc").mkdir()
-    required = {name.removeprefix("membrane_vqc/") for name in REQUIRED_PACKAGE_FILES}
+    required = {
+        name.removeprefix("membrane_vqc/")
+        for name in REQUIRED_PACKAGE_FILES
+        if name != STAGE4C_SCHEMA_NAME
+    }
     for name in (*sorted(required), "core.py"):
-        (tmp_path / "membrane_vqc" / name).write_text(f"# {name}\n", encoding="utf-8")
+        target = tmp_path / "membrane_vqc" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(f"# {name}\n", encoding="utf-8")
     (tmp_path / "membrane_vqc" / "__pycache__").mkdir()
     (tmp_path / "membrane_vqc" / "__pycache__" / "core.pyc").write_bytes(b"cache")
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_core.py").write_text("", encoding="utf-8")
+    (tmp_path / "schemas").mkdir()
+    (tmp_path / "schemas" / "mvqc-report-1.5.schema.json").write_text(
+        '{"schema_version":"1.5"}\n', encoding="utf-8"
+    )
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname = "example"\nversion = "1.2.3"\n', encoding="utf-8"
     )
@@ -54,6 +76,8 @@ def test_builder_produces_expected_minimal_layout_and_hashes(tmp_path):
         assert CHECKSUMS_NAME in names
         assert {name.split("/", 1)[0] for name in names} == {"membrane_vqc"}
         assert "membrane_vqc/core.py" in names
+        assert STAGE4C_PACKAGE_FILES <= set(names)
+        assert STAGE4C_SCHEMA_NAME in names
         assert not any("__pycache__" in name or name.startswith("tests/") for name in names)
         assert all(info.date_time == FIXED_ZIP_TIMESTAMP for info in archive.infolist())
 
@@ -68,6 +92,13 @@ def test_builder_is_byte_for_byte_deterministic(tmp_path):
     second = build_plugin_zip(root, root / "dist" / "second.zip")
 
     assert first.read_bytes() == second.read_bytes()
+
+
+def test_official_opm_payload_identity_is_forbidden():
+    assert (
+        801_495,
+        "5805025619dafa256cb5508021f3406bb97cd84b4366cf62c98f1b46f5ea5561",
+    ) in FORBIDDEN_PROVIDER_PAYLOADS
 
 
 def test_validator_rejects_unexpected_top_level_file(tmp_path):

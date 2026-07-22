@@ -12,6 +12,7 @@ if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
 from membrane_vqc.report import validate_stage4_report_semantics  # noqa: E402
+from membrane_vqc.comparison_report import validate_comparison_report  # noqa: E402
 
 SCHEMA_BY_VERSION = {
     "1.0": Path("schemas/mvqc-report-1.0.schema.json"),
@@ -19,6 +20,7 @@ SCHEMA_BY_VERSION = {
     "1.2": Path("schemas/mvqc-report-1.2.schema.json"),
     "1.3": Path("schemas/mvqc-report-1.3.schema.json"),
     "1.4": Path("schemas/mvqc-report-1.4.schema.json"),
+    "1.5": Path("schemas/mvqc-report-1.5.schema.json"),
 }
 
 
@@ -46,6 +48,8 @@ def validate_reports(schema_path: Path, report_paths: list[Path]) -> None:
     for report_path in report_paths:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         validator.validate(report)
+        if report.get("report_type") == "orientation_source_comparison":
+            validate_comparison_report(report)
         if "evidence" in report.get("orientation", {}):
             validate_stage4_report_semantics(report)
 

@@ -3,11 +3,36 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
+import hashlib
+import json
 import math
 from pathlib import Path
+import platform
 import uuid
 
 from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
+from .constants import PLUGIN_NAME, VERSION
+from .comparison_gui_worker import make_comparison_worker_class
+from .comparison_pymol import (
+    capture_comparison_snapshot,
+    clear_comparison_boundaries,
+    comparison_snapshot_is_current,
+    show_comparison_boundaries,
+)
+from .comparison_report import (
+    ComparisonPayloadDigest,
+    ComparisonReportSource,
+    SelectedObjectEvidence,
+    build_comparison_report,
+    export_comparison_report,
+)
+from .comparison_worker import (
+    ComparisonOperation,
+    ComparisonRequest,
+    ComparisonWorkerFailure,
+    comparable_orientation,
+)
 from .commands import (
     mvqc_check,
     mvqc_check_orientation,
@@ -24,6 +49,8 @@ from .commands import (
 from .pdbtm_cache import PdbtmCacheRepository
 from .pdbtm_errors import Stage4BError
 from .pdbtm_gui_worker import make_worker_class
+from .pdbtm_pymol import read_local_payload
+from .pdbtm_report_provenance import build_pdbtm_acquisition_provenance
 from .pdbtm_provider import canonicalize_record_id
 from .pdbtm_worker import WorkerFailure
 from .qc import format_summary
@@ -173,6 +200,16 @@ class MembraneVQCDialog:
         self._fetch_operations = {}
         self._worker = None
         self._worker_thread = None
+        self._comparison_generation = 0
+        self._comparison_request_seq = 0
+        self._pending_comparison_id = None
+        self._comparison_operation = None
+        self._comparison_worker = None
+        self._comparison_thread = None
+        self._comparison_snapshot = None
+        self._comparison_result = None
+        self._comparison_report = None
+        self._comparison_used_cache = False
         self.window = QtWidgets.QDialog()
         self.window.setWindowTitle("Membrane Visual QC")
         layout = QtWidgets.QFormLayout(self.window)
@@ -211,6 +248,50 @@ class MembraneVQCDialog:
         self.exposure_backend.addItems(["Built-in", "Auto", "FreeSASA reference"])
         self.summary = QtWidgets.QTextEdit()
         self.summary.setReadOnly(True)
+
+        self.comparison_group = QtWidgets.QGroupBox("Compare orientation sources")
+        comparison_layout = QtWidgets.QFormLayout(self.comparison_group)
+        self.comparison_pdbtm_source = QtWidgets.QComboBox()
+        self.comparison_pdbtm_source.addItems([PDBTM_SOURCE_LOCAL, PDBTM_SOURCE_CACHED])
+        self.comparison_record_id = QtWidgets.QLineEdit("")
+        self.comparison_pdbtm_summary = QtWidgets.QLabel("Explicit local PDBTM pair")
+        self.comparison_opm_path = QtWidgets.QLineEdit("")
+        self.browse_comparison_opm = QtWidgets.QPushButton(BROWSE_LABEL)
+        opm_row = QtWidgets.QHBoxLayout()
+        opm_row.addWidget(self.comparison_opm_path)
+        opm_row.addWidget(self.browse_comparison_opm)
+        self.comparison_status = QtWidgets.QLabel("No comparison has been run.")
+        self.comparison_metrics = QtWidgets.QTextEdit()
+        self.comparison_metrics.setReadOnly(True)
+        self.comparison_export_path = QtWidgets.QLineEdit("reports/orientation_comparison.json")
+        self.compare_button = QtWidgets.QPushButton("Compare")
+        self.comparison_cancel_button = QtWidgets.QPushButton("Cancel")
+        self.show_both_button = QtWidgets.QPushButton("Show both boundaries")
+        self.export_comparison_button = QtWidgets.QPushButton("Export comparison report")
+        self.clear_comparison_button = QtWidgets.QPushButton("Clear comparison")
+        comparison_layout.addRow("PDBTM comparison source", self.comparison_pdbtm_source)
+        comparison_layout.addRow("Comparison PDB ID", self.comparison_record_id)
+        comparison_layout.addRow("PDBTM source summary", self.comparison_pdbtm_summary)
+        comparison_layout.addRow("Local OPM file", opm_row)
+        comparison_layout.addRow(
+            QtWidgets.QLabel(
+                "Geometric review only: neither provider is preferred; no fitting, coordinate "
+                "mutation, consensus, ranking, or biological verdict is performed."
+            )
+        )
+        comparison_actions = QtWidgets.QHBoxLayout()
+        for button in (
+            self.compare_button,
+            self.comparison_cancel_button,
+            self.show_both_button,
+            self.export_comparison_button,
+            self.clear_comparison_button,
+        ):
+            comparison_actions.addWidget(button)
+        comparison_layout.addRow(comparison_actions)
+        comparison_layout.addRow("Comparison status", self.comparison_status)
+        comparison_layout.addRow("Comparison metrics", self.comparison_metrics)
+        comparison_layout.addRow("Comparison export", self.comparison_export_path)
 
         if QtGui is not None:
             numeric = QtGui.QDoubleValidator()
@@ -272,6 +353,7 @@ class MembraneVQCDialog:
             self.action_buttons.append(button)
         layout.addRow(buttons)
         layout.addRow("Summary", self.summary)
+        layout.addRow(self.comparison_group)
 
         self.orientation_mode.currentTextChanged.connect(self._update_orientation_mode)
         self.browse_pdbtm_json.clicked.connect(self._browse_pdbtm_json)
@@ -283,8 +365,26 @@ class MembraneVQCDialog:
         self.use_cached_button.clicked.connect(self._on_use_cached_clicked)
         self.open_cache_location_button.clicked.connect(self._on_open_cache_location_clicked)
         self.clear_cached_button.clicked.connect(self._on_clear_cached_clicked)
+        self.browse_comparison_opm.clicked.connect(self._browse_comparison_opm)
+        self.compare_button.clicked.connect(self._on_compare_clicked)
+        self.comparison_cancel_button.clicked.connect(self._on_comparison_cancel_clicked)
+        self.show_both_button.clicked.connect(self._on_show_both_clicked)
+        self.export_comparison_button.clicked.connect(self._on_export_comparison_clicked)
+        self.clear_comparison_button.clicked.connect(self._on_clear_comparison_clicked)
+        for signal in (
+            self.selection.textChanged,
+            self.biological_assembly.textChanged,
+            self.pdbtm_json.textChanged,
+            self.transformed_pdb.textChanged,
+            self.cached_record_id.textChanged,
+            self.comparison_opm_path.textChanged,
+            self.comparison_record_id.textChanged,
+            self.comparison_pdbtm_source.currentTextChanged,
+        ):
+            signal.connect(self._on_comparison_input_changed)
         self.window.finished.connect(self._teardown_worker)
         self._update_orientation_mode()
+        self._sync_comparison_controls()
 
     def show(self):
         self.window.show()
@@ -636,6 +736,8 @@ class MembraneVQCDialog:
         self._invalidate_active_request(request_cancel=True)
         if self._worker_thread is not None:
             self._worker_thread.quit()
+        if hasattr(self, "_comparison_generation"):
+            self._teardown_comparison_worker()
 
     def _canonical_cached_record_id_or_error(self):
         text = str(self.cached_record_id.text()).strip()
@@ -751,6 +853,8 @@ class MembraneVQCDialog:
             "A new validated snapshot is available. Press Use cached pair to select it."
         )
         self._sync_pdbtm_controls()
+        if hasattr(self, "comparison_status"):
+            self._on_comparison_input_changed()
 
     def _on_cancel_clicked(self):
         if self._pending_request_id is None:
@@ -768,6 +872,8 @@ class MembraneVQCDialog:
         canonical = self._canonical_cached_record_id_or_error()
         if canonical is None:
             return
+        if hasattr(self, "comparison_status"):
+            self._on_comparison_input_changed()
         self._invalidate_active_request()
         worker = self._ensure_worker()
         if worker is None:
@@ -796,6 +902,8 @@ class MembraneVQCDialog:
             self._selection_state = SELECTION_CACHED_SELECTION_UNAVAILABLE
             self.cache_status.setText(result.message)
             self._sync_pdbtm_controls()
+            if hasattr(self, "comparison_status"):
+                self._on_comparison_input_changed()
             return
         self._cached_snapshot = result
         self._cached_snapshot_record_id = record_id
@@ -805,6 +913,8 @@ class MembraneVQCDialog:
         self.cache_status.setText("Validated cached pair selected.")
         self._render_cache_metadata(result)
         self._sync_pdbtm_controls()
+        if hasattr(self, "comparison_status"):
+            self._on_comparison_input_changed()
 
     def _render_cache_metadata(self, snapshot):
         core = snapshot.snapshot_core
@@ -866,7 +976,316 @@ class MembraneVQCDialog:
         self.cache_status.setText("Cached record cleared.")
         self.cache_metadata.setPlainText("")
         self._sync_pdbtm_controls()
+        if hasattr(self, "comparison_status"):
+            self._on_comparison_input_changed()
         self._dispatch_inspect()
+
+    def _next_comparison_id(self):
+        self._comparison_request_seq += 1
+        return (
+            f"{self._session_id}:comparison:{self._comparison_generation}:"
+            f"{self._comparison_request_seq}"
+        )
+
+    def _invalidate_comparison(self, *, request_cancel=False, clear_result=True):
+        self._comparison_generation += 1
+        self._pending_comparison_id = None
+        if request_cancel and self._comparison_operation is not None:
+            self._comparison_operation.request_cancel()
+        self._comparison_operation = None
+        if clear_result:
+            self._comparison_snapshot = None
+            self._comparison_result = None
+            self._comparison_report = None
+            self._comparison_used_cache = False
+            try:
+                clear_comparison_boundaries()
+            except Exception:
+                pass
+
+    def _on_comparison_input_changed(self, *_):
+        self._invalidate_comparison(request_cancel=True)
+        self.comparison_status.setText("Comparison inputs changed; run Compare explicitly.")
+        self.comparison_metrics.setPlainText("")
+        self._sync_comparison_controls()
+
+    def _sync_comparison_controls(self):
+        busy = self._pending_comparison_id is not None
+        result_ready = self._comparison_result is not None and self._comparison_report is not None
+        cached = self.comparison_pdbtm_source.currentText() == PDBTM_SOURCE_CACHED
+        cached_ready = self._cached_snapshot is not None
+        self.compare_button.setEnabled(not busy and (not cached or cached_ready))
+        self.comparison_cancel_button.setEnabled(busy)
+        both_imported = result_ready and all(
+            getattr(getattr(self._comparison_result, name, None), "status", None) == "imported"
+            and getattr(getattr(self._comparison_result, name, None), "membrane", None) is not None
+            for name in ("pdbtm", "opm")
+        )
+        self.show_both_button.setEnabled(both_imported and not busy)
+        self.export_comparison_button.setEnabled(result_ready and not busy)
+        self.clear_comparison_button.setEnabled(result_ready or busy)
+        if cached:
+            if cached_ready:
+                self.comparison_pdbtm_summary.setText(
+                    f"Validated cache: {self._cached_snapshot_record_id or 'selected snapshot'}"
+                )
+            else:
+                self.comparison_pdbtm_summary.setText("Validated cache: no selected pair")
+        else:
+            self.comparison_pdbtm_summary.setText("Explicit local JSON + transformed PDB")
+
+    def _ensure_comparison_worker(self):
+        if self._comparison_worker is not None:
+            return self._comparison_worker
+        if self.QtCore is None:
+            return None
+        worker_class = make_comparison_worker_class(self.QtCore)
+        thread = self.QtCore.QThread()
+        worker = worker_class()
+        worker.moveToThread(thread)
+        queued = self.QtCore.Qt.QueuedConnection
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(
+            lambda finished_thread=thread: self._on_comparison_thread_finished(finished_thread),
+            queued,
+        )
+        worker.compare_finished.connect(self._on_comparison_finished, queued)
+        thread.start()
+        self._comparison_worker = worker
+        self._comparison_thread = thread
+        return worker
+
+    def _on_comparison_thread_finished(self, thread):
+        if self._comparison_thread is thread:
+            self._comparison_worker = None
+            self._comparison_thread = None
+        thread.deleteLater()
+
+    def _teardown_comparison_worker(self):
+        self._invalidate_comparison(request_cancel=True)
+        if self._comparison_thread is not None:
+            self._comparison_thread.quit()
+
+    def _comparison_record_id_or_error(self):
+        text = str(self.comparison_record_id.text()).strip()
+        try:
+            return canonicalize_record_id(text)
+        except Stage4BError:
+            self._show_error("Enter the four-character PDB ID for this comparison.")
+            return None
+
+    def _on_compare_clicked(self):
+        selection = self._parse_or_error(parse_selection, self.selection.text())
+        record_id = self._comparison_record_id_or_error()
+        opm_path = str(self.comparison_opm_path.text()).strip()
+        if selection is None or record_id is None:
+            return
+        if not opm_path:
+            self._show_error("Select one explicit local OPM file for comparison.")
+            return
+        cached = self.comparison_pdbtm_source.currentText() == PDBTM_SOURCE_CACHED
+        try:
+            if cached:
+                if self._cached_snapshot is None:
+                    raise ValueError("Select and validate a cached PDBTM pair first.")
+                if self._cached_snapshot_record_id != record_id:
+                    raise ValueError("The selected cached PDBTM pair does not match the record ID.")
+                pdbtm_json, transformed_pdb = self._cached_snapshot.payloads
+            else:
+                pdbtm_json = read_local_payload(
+                    str(self.pdbtm_json.text()).strip(), role="pdbtm_json"
+                )
+                transformed_pdb = read_local_payload(
+                    str(self.transformed_pdb.text()).strip(), role="transformed_pdb"
+                )
+            snapshot = capture_comparison_snapshot(
+                selection,
+                biological_assembly=str(self.biological_assembly.text()).strip() or None,
+            )
+            request = ComparisonRequest(
+                snapshot.structure_context,
+                pdbtm_json,
+                transformed_pdb,
+                Path(opm_path),
+                record_id,
+            )
+        except Exception as exc:
+            self._show_error(str(exc) or exc.__class__.__name__)
+            return
+        self._invalidate_comparison(request_cancel=True)
+        worker = self._ensure_comparison_worker()
+        if worker is None:
+            self._show_error("Qt is not available for orientation comparison.")
+            return
+        request_id = self._next_comparison_id()
+        operation = ComparisonOperation()
+        self._pending_comparison_id = request_id
+        self._comparison_operation = operation
+        self._comparison_snapshot = snapshot
+        self._comparison_used_cache = cached
+        self.comparison_status.setText("Comparing explicit PDBTM and OPM evidence\u2026")
+        self.comparison_metrics.setPlainText("")
+        self._sync_comparison_controls()
+        worker.request_compare.emit(request_id, request, operation)
+
+    def _on_comparison_cancel_clicked(self):
+        if self._pending_comparison_id is None:
+            return
+        self._invalidate_comparison(request_cancel=True)
+        self.comparison_status.setText("Comparison cancelled.")
+        self._sync_comparison_controls()
+
+    def _on_comparison_finished(self, request_id, result):
+        if request_id != self._pending_comparison_id:
+            return
+        self._pending_comparison_id = None
+        self._comparison_operation = None
+        if isinstance(result, ComparisonWorkerFailure):
+            self._comparison_snapshot = None
+            self.comparison_status.setText(result.message)
+            self._sync_comparison_controls()
+            return
+        snapshot = self._comparison_snapshot
+        if snapshot is None or not comparison_snapshot_is_current(
+            snapshot,
+            str(self.selection.text()).strip(),
+            biological_assembly=str(self.biological_assembly.text()).strip() or None,
+        ):
+            self._invalidate_comparison()
+            self.comparison_status.setText(
+                "Selected-object coordinates changed; comparison result was discarded."
+            )
+            self._sync_comparison_controls()
+            return
+        try:
+            report = self._build_gui_comparison_report(result, snapshot)
+        except Exception as exc:
+            self._invalidate_comparison()
+            self.comparison_status.setText(str(exc) or exc.__class__.__name__)
+            self._sync_comparison_controls()
+            return
+        self._comparison_result = result
+        self._comparison_report = report
+        self.comparison_status.setText("Geometric comparison ready; neither source was preferred.")
+        self.comparison_metrics.setPlainText(_comparison_summary(result.comparison))
+        self._sync_comparison_controls()
+
+    def _build_gui_comparison_report(self, result, snapshot):
+        pdbtm_input = comparable_orientation(result.pdbtm, "pdbtm")
+        opm_input = comparable_orientation(result.opm, "opm")
+        record_id = str(self.comparison_record_id.text()).strip().lower()
+        cached_acquisition = None
+        if self._comparison_used_cache:
+            cached_acquisition = build_pdbtm_acquisition_provenance(
+                self._cached_snapshot,
+                consumption_mode="active_cache_read",
+                cache_generation=self._cached_snapshot_generation,
+            ).as_dict()
+        pdbtm_source = _comparison_report_source(
+            "pdbtm",
+            result.pdbtm,
+            pdbtm_input,
+            cached_acquisition,
+            fallback_record_id=record_id,
+            fallback_payloads=(
+                ComparisonPayloadDigest(
+                    "pdbtm_json",
+                    result.pdbtm_json_sha256,
+                    result.pdbtm_json_byte_size,
+                    "application/json",
+                ),
+                ComparisonPayloadDigest(
+                    "transformed_pdb",
+                    result.pdbtm_transformed_pdb_sha256,
+                    result.pdbtm_transformed_pdb_byte_size,
+                    "chemical/x-pdb",
+                ),
+            ),
+        )
+        opm_source = _comparison_report_source(
+            "opm",
+            result.opm,
+            opm_input,
+            None,
+            fallback_record_id=record_id,
+            fallback_payloads=(
+                ComparisonPayloadDigest(
+                    "opm_pdb", result.opm_sha256, result.opm_byte_size, "chemical/x-pdb"
+                ),
+            ),
+        )
+        current_scope = pdbtm_input.scope or opm_input.scope
+        snapshot_chains, snapshot_atom_count = _snapshot_identity_counts(
+            snapshot.structure_context.pdb_payload
+        )
+        return build_comparison_report(
+            generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            software_name=PLUGIN_NAME,
+            software_version=VERSION,
+            software_commit="unavailable",
+            python_version=platform.python_version(),
+            pymol_version="unavailable",
+            platform=platform.platform(),
+            selected_object=SelectedObjectEvidence(
+                (current_scope.structure_id if current_scope else None) or record_id,
+                current_scope.model_id
+                if current_scope
+                else str(snapshot.structure_context.model_id),
+                current_scope.biological_assembly
+                if current_scope
+                else snapshot.structure_context.biological_assembly,
+                current_scope.chains if current_scope else snapshot_chains,
+                snapshot.structure_context.coordinate_frame,
+                snapshot.coordinate_fingerprint,
+                snapshot_atom_count,
+            ),
+            first_source=pdbtm_source,
+            second_source=opm_source,
+            comparison=result.comparison,
+        )
+
+    def _on_show_both_clicked(self):
+        if self._comparison_result is None or self._comparison_snapshot is None:
+            return
+        if not comparison_snapshot_is_current(
+            self._comparison_snapshot,
+            str(self.selection.text()).strip(),
+            biological_assembly=str(self.biological_assembly.text()).strip() or None,
+        ):
+            self._on_comparison_input_changed()
+            return
+        try:
+            show_comparison_boundaries(
+                self._comparison_result.pdbtm.membrane,
+                self._comparison_result.opm.membrane,
+                self._comparison_snapshot,
+                str(self.selection.text()).strip(),
+            )
+            self.comparison_status.setText(
+                "Both provider boundaries are shown for geometric review."
+            )
+        except Exception as exc:
+            try:
+                clear_comparison_boundaries()
+            except Exception:
+                pass
+            self._show_error(str(exc) or exc.__class__.__name__)
+
+    def _on_export_comparison_clicked(self):
+        if self._comparison_report is None:
+            return
+        try:
+            output = parse_export_path(self.comparison_export_path.text())
+            export_comparison_report(self._comparison_report, output)
+            self.comparison_status.setText(f"Comparison report exported: {output.name}")
+        except Exception as exc:
+            self._show_error(str(exc) or exc.__class__.__name__)
+
+    def _on_clear_comparison_clicked(self):
+        self._invalidate_comparison(request_cancel=True)
+        self.comparison_status.setText("Comparison output cleared.")
+        self.comparison_metrics.setPlainText("")
+        self._sync_comparison_controls()
 
     def _on_open_cache_location_clicked(self):
         try:
@@ -901,6 +1320,16 @@ class MembraneVQCDialog:
         )
         if path:
             self.transformed_pdb.setText(path)
+
+    def _browse_comparison_opm(self):
+        path, _ = self.QtWidgets.QFileDialog.getOpenFileName(
+            self.window,
+            "Select local OPM-oriented PDB",
+            "",
+            "OPM PDB (*.pdb *.ent);;All files (*)",
+        )
+        if path:
+            self.comparison_opm_path.setText(path)
 
     def _parse_or_error(self, parser, *values):
         try:
@@ -943,6 +1372,92 @@ def _orientation_source(value) -> str:
         if source:
             return source
     return "unavailable"
+
+
+def _comparison_report_source(
+    source_key,
+    imported,
+    comparison_input,
+    cached_acquisition,
+    *,
+    fallback_record_id=None,
+    fallback_payloads=(),
+):
+    evidence = imported.evidence
+    source = imported.source
+    if evidence is None:
+        evidence_dict = {
+            "status": imported.status,
+            "messages": [message.as_dict() for message in imported.messages],
+            "source": None if source is None else source.as_dict(),
+        }
+        adapter_name = "pdbtm_api_v1_offline" if source_key == "pdbtm" else "opm_pdb_offline"
+        adapter_version = "1"
+    else:
+        evidence_dict = evidence.as_dict()
+        adapter_name = evidence.adapter_name
+        adapter_version = evidence.adapter_version
+    evidence_id = hashlib.sha256(
+        json.dumps(evidence_dict, sort_keys=True, separators=(",", ":"), allow_nan=False).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    payloads = (
+        tuple(
+            ComparisonPayloadDigest(item.role, item.sha256, item.byte_size, item.media_type)
+            for item in source.raw_payloads
+        )
+        if source is not None
+        else tuple(fallback_payloads)
+    )
+    if not payloads:
+        raise ValueError(f"{source_key} result has no payload identity.")
+    return ComparisonReportSource(
+        source_key,
+        source.name if source is not None else ("PDBTM" if source_key == "pdbtm" else "OPM"),
+        adapter_name,
+        adapter_version,
+        (source.record_id if source is not None else None) or fallback_record_id,
+        source.resource_version if source is not None else None,
+        source.software_version if source is not None else None,
+        evidence_id,
+        comparison_input,
+        payloads,
+        cached_acquisition,
+    )
+
+
+def _comparison_summary(comparison) -> str:
+    if not comparison.comparable or comparison.metrics is None:
+        reasons = ", ".join(comparison.reasons) or "insufficient information"
+        return f"Not comparable: {reasons}. No source was preferred."
+    metrics = comparison.metrics
+    return (
+        f"Band: {comparison.band}\n"
+        f"Normal-axis angle: {metrics.normal_axis_angle_degrees:.3f}\u00b0\n"
+        f"Centre displacement: {metrics.center_displacement_angstrom:.3f} \u00c5\n"
+        f"Along reviewed direction: "
+        f"{metrics.center_along_reviewed_direction_angstrom:.3f} \u00c5\n"
+        f"Perpendicular displacement: "
+        f"{metrics.center_perpendicular_to_reviewed_direction_angstrom:.3f} \u00c5\n"
+        f"Thickness difference: {metrics.thickness_difference_angstrom:.3f} \u00c5\n"
+        "Geometric review only; no source was preferred and no biological verdict was made."
+    )
+
+
+def _snapshot_identity_counts(payload: bytes) -> tuple[tuple[str, ...], int]:
+    """Return path-free full-object ATOM count and legacy chain set from one snapshot."""
+    atom_lines = [line for line in payload.splitlines() if line.startswith(b"ATOM  ")]
+    if not atom_lines:
+        raise ValueError("Selected-object snapshot contains no ATOM records.")
+    chains = tuple(
+        sorted(
+            {(line[21:22].decode("ascii").strip() or "_") for line in atom_lines if len(line) >= 22}
+        )
+    )
+    if not chains:
+        raise ValueError("Selected-object snapshot has no readable legacy chain identifiers.")
+    return chains, len(atom_lines)
 
 
 def _pdbtm_status_and_details(evidence) -> tuple[str, str]:

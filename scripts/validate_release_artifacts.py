@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 from scripts.build_plugin_zip import (  # noqa: E402
     FORBIDDEN_PROVIDER_PAYLOADS,
     MANIFEST_NAME,
+    STAGE4C_SCHEMA_NAME,
     project_version,
     sha256_file,
     validate_zip_layout,
@@ -33,6 +34,7 @@ SCHEMA_HASHES = {
     "1.2": "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430",
     "1.3": "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc",
     "1.4": "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530",
+    "1.5": "1de049797e068fc6d60d7c0c73cfb64add9b24bc6b7c24e7c8cd1078b2ee47e3",
 }
 # Schemas that actually existed, frozen, at the v0.4.0 tag. 1.4 postdates that
 # release and is still an editable draft (see its own $id suffix and
@@ -68,6 +70,14 @@ STAGE4B2_RUNTIME_MODULES = {
 STAGE4B3_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_worker.py",
     "membrane_vqc/pdbtm_gui_worker.py",
+}
+STAGE4C_RUNTIME_MODULES = {
+    "membrane_vqc/opm_adapter.py",
+    "membrane_vqc/orientation_comparison.py",
+    "membrane_vqc/comparison_report.py",
+    "membrane_vqc/comparison_worker.py",
+    "membrane_vqc/comparison_gui_worker.py",
+    "membrane_vqc/comparison_pymol.py",
 }
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
@@ -225,6 +235,12 @@ def _validate_artifact_set(
     project_root = project_root.resolve()
     dist_dir = dist_dir.resolve()
     _validate_version_agreement(project_root, expected_version)
+    for schema_version, expected_hash in SCHEMA_HASHES.items():
+        schema_path = project_root / "schemas" / f"mvqc-report-{schema_version}.schema.json"
+        if not schema_path.is_file() or sha256_file(schema_path) != expected_hash:
+            raise ReleaseArtifactError(
+                f"Schema {schema_version} does not match its recorded current-development hash"
+            )
 
     wheel = dist_dir / f"membrane_vqc_pymol-{expected_version}-py3-none-any.whl"
     sdist = dist_dir / f"membrane_vqc_pymol-{expected_version}.tar.gz"
@@ -244,10 +260,22 @@ def _validate_artifact_set(
         if wheel_names.count(metadata_name) != 1:
             raise ReleaseArtifactError(f"Wheel must contain exactly {metadata_name}")
         missing_wheel = (
-            STAGE4B1_RUNTIME_MODULES | STAGE4B2_RUNTIME_MODULES | STAGE4B3_RUNTIME_MODULES
+            STAGE4B1_RUNTIME_MODULES
+            | STAGE4B2_RUNTIME_MODULES
+            | STAGE4B3_RUNTIME_MODULES
+            | STAGE4C_RUNTIME_MODULES
         ) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
+        wheel_schema_names = [
+            name
+            for name in wheel_names
+            if name.endswith("/data/schemas/mvqc-report-1.5.schema.json")
+        ]
+        if len(wheel_schema_names) != 1 or (
+            hashlib.sha256(archive.read(wheel_schema_names[0])).hexdigest() != SCHEMA_HASHES["1.5"]
+        ):
+            raise ReleaseArtifactError("Wheel schema 1.5 is missing or does not match its hash")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
     if wheel_version != expected_version:
         raise ReleaseArtifactError(f"Wheel metadata version mismatch: {wheel_version}")
@@ -275,6 +303,16 @@ def _validate_artifact_set(
         if root != expected_root:
             raise ReleaseArtifactError(f"Sdist root mismatch: {root}")
         relative_names = {name.removeprefix(f"{root}/") for name in sdist_names}
+        for schema_version, expected_hash in SCHEMA_HASHES.items():
+            schema_name = f"{root}/schemas/mvqc-report-{schema_version}.schema.json"
+            schema_stream = archive.extractfile(schema_name)
+            if (
+                schema_stream is None
+                or hashlib.sha256(schema_stream.read()).hexdigest() != expected_hash
+            ):
+                raise ReleaseArtifactError(
+                    f"Sdist schema {schema_version} does not match its recorded hash"
+                )
     if sdist_version != expected_version:
         raise ReleaseArtifactError(f"Sdist metadata version mismatch: {sdist_version}")
     required_sdist = {
@@ -284,6 +322,7 @@ def _validate_artifact_set(
         *STAGE4B1_RUNTIME_MODULES,
         *STAGE4B2_RUNTIME_MODULES,
         *STAGE4B3_RUNTIME_MODULES,
+        *STAGE4C_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
     }
@@ -299,6 +338,8 @@ def _validate_artifact_set(
         embedded = json.loads(archive.read(MANIFEST_NAME).decode("utf-8"))
         if embedded != manifest:
             raise ReleaseArtifactError("Plugin ZIP manifest changed while reading")
+        if hashlib.sha256(archive.read(STAGE4C_SCHEMA_NAME)).hexdigest() != SCHEMA_HASHES["1.5"]:
+            raise ReleaseArtifactError("Plugin ZIP schema 1.5 does not match its recorded hash")
 
     expected_sidecar = f"{sha256_file(plugin_zip)}  {plugin_zip.name}\n"
     if sidecar.read_text(encoding="ascii") != expected_sidecar:

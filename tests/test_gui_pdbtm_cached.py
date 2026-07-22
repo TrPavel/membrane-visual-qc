@@ -314,6 +314,24 @@ def test_use_cached_pair_failure_clears_a_previously_valid_selection():
     assert dialog._selection_state == gui.SELECTION_CACHED_SELECTION_UNAVAILABLE
 
 
+def test_cached_revalidation_invalidates_any_prior_source_comparison():
+    dialog = cached_dialog()
+    dialog.comparison_status = FakeText("ready")
+    invalidations = []
+    dialog._on_comparison_input_changed = lambda: invalidations.append("invalidated")
+
+    dialog._on_use_cached_clicked()
+    request_id = dialog._pending_request_id
+    from membrane_vqc.pdbtm_worker import WorkerFailure
+
+    dialog._on_use_cached_finished(
+        request_id,
+        WorkerFailure("CACHE_CORRUPT", "Cached pair failed validation.", True, False),
+    )
+
+    assert invalidations == ["invalidated", "invalidated"]
+
+
 def test_run_qc_refuses_a_snapshot_left_over_from_a_failed_revalidation(monkeypatch):
     """Defense in depth: Run QC must gate on selection state, not snapshot presence alone."""
     dialog = cached_dialog()

@@ -23,6 +23,13 @@ original review severities.
 Version `0.4.0` adds the reviewed offline PDBTM API-v1 pair contract, direct coordinate-frame
 applicability, PyMOL commands, the third GUI orientation mode, and released report schema 1.3.
 
+Current `0.5.0.dev0` development adds an explicit PDBTM-versus-OPM geometric comparison area.
+PDBTM may come from a local pair or an explicitly selected validated cache snapshot; OPM is an
+explicit local oriented-PDB file. Both sources must independently match the same immutable current
+object. The comparison performs no fetch, fitting, coordinate mutation, automatic source choice,
+consensus, provider ranking, or biological verdict. See
+[docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
+
 ## Installation
 
 v0.4.0 is published as a GitHub prerelease for limited public testing. Public users should
@@ -104,6 +111,8 @@ states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERR
 Resolved PDBTM reports use immutable schema 1.3 in v0.4.0, whether Context is OFF or ON. Schema
 1.3 requires JSON Schema structural validation followed by the mandatory Stage 4 semantic
 validator for nonlinear scientific invariants. Schemas 1.0–1.3 are immutable release contracts.
+Cached-PDBTM development reports use explicit draft schema 1.4. The independent two-source
+comparison uses additive draft schema 1.5; schemas 1.0–1.4 are not overloaded or edited.
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
