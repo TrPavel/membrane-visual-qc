@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:membrane-vqc:schema:batch-plan:1.0",
+  "title": "Membrane Visual QC batch plan 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "jobs", "execution"],
+  "properties": {
+    "contract": {"const": "mvqc-batch-plan-1.0"},
+    "cache_root": {"$ref": "#/$defs/path"},
+    "jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {"$ref": "#/$defs/job"}
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["failure_policy", "overwrite"],
+      "properties": {
+        "failure_policy": {"enum": ["continue_on_error", "fail_fast"]},
+        "overwrite": {"enum": ["refuse", "same_batch"]}
+      }
+    }
+  },
+  "$defs": {
+    "path": {"type": "string", "minLength": 1, "maxLength": 512, "pattern": "^(?![/\\\\]|[A-Za-z]:|.*://|.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)|.*:)[^\\u0000-\\u001f]+$"},
+    "jobId": {"type": "string", "pattern": "^(?!batch-result$)[a-z][a-z0-9_-]{0,63}$"},
+    "input": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "selection"],
+          "properties": {
+            "kind": {"const": "pymol"},
+            "selection": {"type": "string", "minLength": 1, "maxLength": 256}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "path"],
+          "properties": {"kind": {"const": "file"}, "path": {"$ref": "#/$defs/path"}}
+        }
+      ]
+    },
+    "localPdbtm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "record_id", "pdbtm_json", "transformed_pdb"],
+      "properties": {
+        "kind": {"const": "local"},
+        "record_id": {"type": "string", "pattern": "^[0-9a-z]{4}$"},
+        "pdbtm_json": {"$ref": "#/$defs/path"},
+        "transformed_pdb": {"$ref": "#/$defs/path"},
+        "biological_assembly": {"type": "string", "minLength": 1, "maxLength": 64}
+      }
+    },
+    "cachedPdbtm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "record_id", "snapshot_id"],
+      "properties": {
+        "kind": {"const": "cache"},
+        "record_id": {"type": "string", "pattern": "^[0-9a-z]{4}$"},
+        "snapshot_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "biological_assembly": {"type": "string", "minLength": 1, "maxLength": 64}
+      }
+    },
+    "analysis": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["mode", "zmin", "zmax"],
+          "properties": {"mode": {"const": "legacy_global_z"}, "zmin": {"type": "number"}, "zmax": {"type": "number"}}
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["mode", "orientation_json"],
+          "properties": {"mode": {"const": "planar_orientation"}, "orientation_json": {"$ref": "#/$defs/path"}}
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["mode", "pdbtm_json", "transformed_pdb", "record_id"],
+          "properties": {
+            "mode": {"const": "pdbtm_local"}, "record_id": {"type": "string", "pattern": "^[0-9a-z]{4}$"},
+            "pdbtm_json": {"$ref": "#/$defs/path"}, "transformed_pdb": {"$ref": "#/$defs/path"},
+            "biological_assembly": {"type": "string", "minLength": 1, "maxLength": 64}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["mode", "record_id", "snapshot_id"],
+          "properties": {
+            "mode": {"const": "pdbtm_cache"}, "record_id": {"type": "string", "pattern": "^[0-9a-z]{4}$"},
+            "snapshot_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "biological_assembly": {"type": "string", "minLength": 1, "maxLength": 64}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["mode", "pdbtm", "opm_pdb"],
+          "properties": {
+            "mode": {"const": "pdbtm_opm_comparison"},
+            "pdbtm": {"oneOf": [{"$ref": "#/$defs/localPdbtm"}, {"$ref": "#/$defs/cachedPdbtm"}]},
+            "opm_pdb": {"$ref": "#/$defs/path"}
+          }
+        }
+      ]
+    },
+    "job": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "input", "analysis", "output"],
+      "properties": {
+        "id": {"$ref": "#/$defs/jobId"}, "input": {"$ref": "#/$defs/input"}, "analysis": {"$ref": "#/$defs/analysis"},
+        "output": {
+          "type": "object", "additionalProperties": false, "required": ["write_csv"],
+          "properties": {"write_csv": {"type": "boolean"}}
+        },
+        "context": {
+          "type": "object", "additionalProperties": false, "required": ["enabled"],
+          "properties": {
+            "enabled": {"type": "boolean"}, "quality": {"enum": ["Fast", "Standard", "High"]},
+            "backend": {"enum": ["Built-in", "FreeSASA"]}
+          }
+        },
+        "ligand": {
+          "type": "object", "additionalProperties": false, "required": ["selection", "cutoff"],
+          "properties": {"selection": {"type": "string", "maxLength": 256}, "cutoff": {"type": "number", "exclusiveMinimum": 0, "maximum": 100}}
+        }
+      }
+    }
+  }
+}

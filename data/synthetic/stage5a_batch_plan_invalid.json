@@ -1,0 +1,12 @@
+{
+  "contract": "mvqc-batch-plan-1.0",
+  "jobs": [
+    {
+      "id": "rejected-traversal",
+      "input": {"kind": "file", "path": "../outside.pdb"},
+      "analysis": {"mode": "legacy_global_z", "zmin": -15.0, "zmax": 15.0},
+      "output": {"write_csv": false}
+    }
+  ],
+  "execution": {"failure_policy": "continue_on_error", "overwrite": "refuse"}
+}

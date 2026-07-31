@@ -91,6 +91,24 @@ def _loads_document(text: str, *, source_name: str) -> Any:
         ) from exc
 
 
+def load_orientation_bytes(data: bytes, *, source_name: str) -> LoadedOrientation:
+    """Parse exact UTF-8 orientation bytes with the accepted strict JSON rules."""
+    if not isinstance(data, bytes):
+        raise OrientationError("orientation input must contain exact bytes")
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise OrientationError(f"orientation file {source_name} is not valid UTF-8") from exc
+    document = _loads_document(text, source_name=source_name)
+    membrane = parse_orientation(document)
+    return LoadedOrientation(
+        membrane=membrane,
+        orientation_path=Path(source_name).name,
+        sha256=hashlib.sha256(data).hexdigest(),
+        schema_version=str(document.get("schema_version")),
+    )
+
+
 def _validate_json_value(value: Any, *, path: str) -> None:
     if value is None or isinstance(value, (str, bool)):
         return
@@ -259,18 +277,7 @@ def load_orientation_file(path: str | Path) -> LoadedOrientation:
         payload = source.read_bytes()
     except OSError as exc:
         raise OrientationError(f"could not read orientation file {source}: {exc}") from exc
-    try:
-        text = payload.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise OrientationError(f"orientation file {source} is not valid UTF-8") from exc
-
-    membrane = parse_orientation(_loads_document(text, source_name=str(source)))
-    return LoadedOrientation(
-        membrane=membrane,
-        orientation_path=source.name,
-        sha256=hashlib.sha256(payload).hexdigest(),
-        schema_version=SCHEMA_VERSION,
-    )
+    return load_orientation_bytes(payload, source_name=str(source))
 
 
 def load_planar_membrane(path: str | Path) -> PlanarMembrane:

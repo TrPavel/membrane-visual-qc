@@ -391,6 +391,27 @@ def mvqc_export(path: str = "reports/mvqc_report.json"):
     return written
 
 
+def mvqc_batch_run(
+    plan: str = "",
+    output_dir: str = "",
+    fail_fast: int = 0,
+    quiet: int = 1,
+    run_id: str = "",
+):
+    """Run one validated, local-only batch plan sequentially on the PyMOL main thread."""
+    if not str(plan).strip() or not str(output_dir).strip():
+        raise ValueError("plan and output_dir are required")
+    from .batch_executor import run_pymol_batch
+
+    return run_pymol_batch(
+        str(plan).strip(),
+        str(output_dir).strip(),
+        fail_fast=int(fail_fast),
+        quiet=int(quiet),
+        run_id=str(run_id).strip() or None,
+    )
+
+
 def register_commands(cmd_obj=None) -> None:
     """Register all PyMOL commands with cmd.extend."""
     if cmd_obj is None:
@@ -405,6 +426,7 @@ def register_commands(cmd_obj=None) -> None:
     cmd_obj.extend("mvqc_color_hydropathy", mvqc_color_hydropathy)
     cmd_obj.extend("mvqc_ligand_shell", mvqc_ligand_shell)
     cmd_obj.extend("mvqc_export", mvqc_export)
+    cmd_obj.extend("mvqc_batch_run", mvqc_batch_run)
     cmd_obj.extend("mvqc_clear", mvqc_clear)
 
 

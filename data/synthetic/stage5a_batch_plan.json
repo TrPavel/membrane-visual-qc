@@ -1,0 +1,37 @@
+{
+  "contract": "mvqc-batch-plan-1.0",
+  "cache_root": "stage5a-synthetic-cache",
+  "jobs": [
+    {
+      "id": "legacy",
+      "input": {"kind": "file", "path": "pdbtm_original_test.pdb"},
+      "analysis": {"mode": "legacy_global_z", "zmin": -15.0, "zmax": 15.0},
+      "output": {"write_csv": true}
+    },
+    {
+      "id": "planar",
+      "input": {"kind": "file", "path": "pdbtm_original_test.pdb"},
+      "analysis": {"mode": "planar_orientation", "orientation_json": "stage5a_orientation.json"},
+      "output": {"write_csv": true}
+    },
+    {
+      "id": "pdbtm-local",
+      "input": {"kind": "file", "path": "pdbtm_original_test.pdb"},
+      "analysis": {"mode": "pdbtm_local", "record_id": "test", "pdbtm_json": "pdbtm_api_v1_test.json", "transformed_pdb": "pdbtm_transformed_test.pdb"},
+      "output": {"write_csv": true}
+    },
+    {
+      "id": "pdbtm-cache",
+      "input": {"kind": "file", "path": "pdbtm_original_1tes.pdb"},
+      "analysis": {"mode": "pdbtm_cache", "record_id": "1tes", "snapshot_id": "a3d2352559891a8b544ff1666129fdb1d03e20a4ceb80be9144f1622d2b97c58"},
+      "output": {"write_csv": true}
+    },
+    {
+      "id": "comparison",
+      "input": {"kind": "file", "path": "pdbtm_original_test.pdb"},
+      "analysis": {"mode": "pdbtm_opm_comparison", "pdbtm": {"kind": "local", "record_id": "test", "pdbtm_json": "pdbtm_api_v1_test.json", "transformed_pdb": "pdbtm_transformed_test.pdb"}, "opm_pdb": "opm_oriented_test.pdb"},
+      "output": {"write_csv": false}
+    }
+  ],
+  "execution": {"failure_policy": "continue_on_error", "overwrite": "refuse"}
+}

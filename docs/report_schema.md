@@ -1,5 +1,13 @@
 # Report schemas
 
+## Batch contracts are separate
+
+Stage 5A adds `schemas/mvqc-batch-plan-1.0.schema.json` and
+`schemas/mvqc-batch-result-1.0.schema.json`. They describe execution requests and an operational
+artifact index; they are not scientific report schema 1.6. Every successful batch job still emits
+and validates its ordinary existing report schema (1.1–1.5). Report schemas 1.0–1.5 and their
+released meanings remain unchanged.
+
 ## v0.5.0 schemas 1.4 and 1.5
 
 Schema 1.4 represents cached PDBTM acquisition and applicability provenance. It records validated

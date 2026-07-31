@@ -32,6 +32,11 @@ immutable current object. The comparison performs no fitting, coordinate mutatio
 source choice, consensus, provider ranking, or biological verdict. See
 [docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
 
+Active `0.6.0.dev0` development adds Stage 5A: strict, versioned batch plans and deterministic
+result manifests for sequential, main-thread execution of the five existing analysis modes. Batch
+execution is local-only, never fetches PDBTM or OPM, and does not add a GUI queue or scientific
+verdict. See [docs/stage5a_batch_review.md](docs/stage5a_batch_review.md).
+
 ## Installation
 
 v0.5.0 is published as a GitHub prerelease for limited public testing. Download
@@ -87,6 +92,7 @@ software behaviour, not biology.
 - `mvqc_color_hydropathy selection=all`
 - `mvqc_ligand_shell protein=all, ligand=organic, cutoff=5.0`
 - `mvqc_export path=reports/mvqc_report.json`
+- `mvqc_batch_run plan=data/synthetic/stage5a_batch_plan.json, output_dir=reports/batch, fail_fast=0, quiet=1`
 - `mvqc_clear`
 
 `mvqc_clear` removes only plugin-owned names beginning with `mvqc_`. A failed analysis
@@ -117,6 +123,11 @@ validator for nonlinear scientific invariants. Schemas 1.0–1.3 are immutable r
 Cached-PDBTM reports use schema 1.4. The independent two-source comparison uses additive schema
 1.5; schemas 1.0–1.3 remain immutable historical release contracts, and schemas 1.4–1.5 are
 frozen for v0.5.0 publication.
+
+Stage 5A's `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts are operational batch
+contracts, not report schema 1.6. Validate a plan without PyMOL using
+`python -m membrane_vqc.batch_cli validate PLAN.json`; execution still requires PyMOL and runs
+sequentially on its main thread.
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably
@@ -158,7 +169,7 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 ## Current limitations
 
 OPM is offline-only. Direct PDBTM retrieval does not support proxies, PAC, CONNECT, redirects, or
-retries. There is no automatic cache migration or garbage collection, batch comparison,
+retries. There is no automatic cache migration or garbage collection, GUI batch queue/history,
 curved/multiple-membrane model, automatic fitting, automatic source selection, provider ranking,
 consensus, or biological correctness verdict. Comparison thresholds are geometric review bands,
 not biological truth. Ordinary SASA is not lipid accessibility,

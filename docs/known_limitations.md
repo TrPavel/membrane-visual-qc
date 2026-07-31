@@ -10,7 +10,8 @@
   redirects, and retries are unsupported.
 - The validated cache has no automatic migration or garbage collection. Fetch/Refresh, use, and
   clear remain explicit user actions.
-- There is no batch comparison or automatic source selection.
+- Stage 5A has a local, sequential batch comparison mode, but no GUI queue, scheduling, history,
+  resume manager, or automatic source selection.
 - There is no automatic fitting, alignment, consensus orientation, provider ranking, or preferred
   source.
 - Only one planar membrane per source is represented; curved, multiple, intersecting, and double
@@ -20,6 +21,19 @@
 - Official PDBTM and OPM provider payloads are not redistributed in Git or release archives.
 
 Membrane Visual QC is an inspection helper, not a definitive validator of membrane protein correctness.
+
+## Stage 5A batch limitations
+
+- Execution requires PyMOL and runs sequentially on its main thread; the standalone CLI validates
+  plans only.
+- Cached PDBTM jobs require an exact, already validated snapshot. A missing or corrupt snapshot
+  fails closed and never triggers a fetch or active-snapshot fallback. OPM remains local-only.
+- Cancellation is cooperative between jobs and at existing safe single-operation checkpoints; it
+  does not terminate threads or interrupt PyMOL commands forcibly.
+- Result manifests are timestamp-bearing operational indexes. Their canonical identity core omits
+  the run ID and timestamps, but the complete manifest bytes are not promised identical per run.
+- There is no GUI batch queue, history browser, cache manager, automatic fitting, consensus,
+  ranking, preferred source, or biological verdict.
 
 ## Released v0.1 limitations
 

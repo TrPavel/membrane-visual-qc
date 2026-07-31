@@ -1,0 +1,13 @@
+{
+  "center": [10.0, -5.0, 3.0],
+  "confidence": "validation_fixture",
+  "geometry": "planar",
+  "interface_width": 3.0,
+  "lower_offset": -15.0,
+  "metadata": {"fixture": "stage5a"},
+  "normal": [1.0, 0.0, 0.0],
+  "schema_version": "1.0",
+  "source": "synthetic_rigid_transform",
+  "source_version": "stage5a-validation-1",
+  "upper_offset": 15.0
+}
