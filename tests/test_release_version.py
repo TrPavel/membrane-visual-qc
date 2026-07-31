@@ -30,6 +30,7 @@ from scripts.validate_release_artifacts import (
     validate_current_development_artifacts,
     validate_release_candidate_artifacts,
     verify_frozen_v040_evidence,
+    verify_frozen_v050_evidence,
 )
 
 
@@ -141,7 +142,7 @@ def test_version_agreement_rejects_package_from_wrong_origin(tmp_path, monkeypat
     monkeypatch.setenv("PYTHONPATH", str(ROOT))
 
     with pytest.raises(ReleaseArtifactError, match="resolved outside") as captured:
-        _validate_version_agreement(project, "0.5.0.dev0")
+        _validate_version_agreement(project, "0.6.0.dev0")
 
     assert str(ROOT / "membrane_vqc") in str(captured.value)
     assert str(project / "membrane_vqc") in str(captured.value)
@@ -238,6 +239,46 @@ def test_frozen_v040_evidence_is_verified_independently():
     # Schema 1.4 is still an editable draft (postdates v0.4.0) and must NOT be
     # required to stay byte-identical by this frozen-evidence gate.
     assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3"}
+
+
+def test_frozen_v050_evidence_is_verified_independently_of_active_version(tmp_path):
+    for directory in ("reports", "docs", "schemas"):
+        shutil.copytree(ROOT / directory, tmp_path / directory)
+    result = verify_frozen_v050_evidence(tmp_path)
+
+    assert project_version(ROOT) == "0.6.0.dev0"
+    assert result["version"] == "0.5.0"
+    assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
+    assert set(result["reports"]) == {
+        "reports/pdbtm_local_v050_mvqc.json",
+        "reports/pdbtm_acquisition_v050_mvqc.json",
+        "reports/source_comparison_synthetic_mvqc.json",
+    }
+    assert result["release"]["prerelease"] is True
+    assert result["release"]["pypi_published"] is False
+    assert result["tag"]["target"] == result["release_pr"]["squash_commit"]
+
+
+def test_frozen_v050_evidence_rejects_report_byte_changes(tmp_path):
+    for directory in ("reports", "docs", "schemas"):
+        shutil.copytree(ROOT / directory, tmp_path / directory)
+    report = tmp_path / "reports" / "pdbtm_local_v050_mvqc.json"
+    report.write_bytes(report.read_bytes() + b"\n")
+
+    with pytest.raises(ReleaseArtifactError, match="Frozen v0.5.0 report changed"):
+        verify_frozen_v050_evidence(tmp_path)
+
+
+def test_frozen_v050_evidence_rejects_publication_identity_changes(tmp_path):
+    for directory in ("reports", "docs", "schemas"):
+        shutil.copytree(ROOT / directory, tmp_path / directory)
+    evidence_path = tmp_path / "docs" / "v0.5.0_release_evidence.json"
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence["tag"]["target"] = "0" * 40
+    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+
+    with pytest.raises(ReleaseArtifactError, match="publication evidence changed"):
+        verify_frozen_v050_evidence(tmp_path)
 
 
 def test_stage4c_schema_is_current_only_and_frozen_scope_stays_unchanged():

@@ -8,14 +8,12 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Preparing the completed Stage 4 implementation for the v0.5.0 GitHub prerelease. Final release
-  artifact identities, validation totals, publication date, and tag evidence remain **PENDING**
-  until the exact release artifact has passed acceptance and publication verification.
+- Reopened development as `0.6.0.dev0` after publishing v0.5.0. This identity-only reset adds no
+  runtime or scientific behavior.
 
-## [0.5.0] - PENDING
+## [0.5.0] - 2026-07-31
 
-Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
-publication is planned.
+Status: published GitHub prerelease for limited public testing. No PyPI publication was made.
 
 ### Added
 

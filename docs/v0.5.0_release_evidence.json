@@ -1,0 +1,43 @@
+{
+  "version": "0.5.0",
+  "release_pr": {
+    "number": 19,
+    "final_head": "bc0dae3bdf380c278ad3cd7dd1cf47b18467553e",
+    "squash_commit": "8ddf5ee621f14d1993ad2779f345b8da19fd589f"
+  },
+  "post_merge_workflow": {
+    "id": 30631158437,
+    "artifact_id": 8793382353,
+    "outer_size": 571626,
+    "outer_sha256": "fbbbbc8f604eb29b0fb285f318d33bf91f6707e5b4e947c462b3df8b8a63bc54"
+  },
+  "tag": {
+    "name": "v0.5.0",
+    "object": "37e83223be8cf2531ce829ac276e9feaf0b09b0b",
+    "target": "8ddf5ee621f14d1993ad2779f345b8da19fd589f"
+  },
+  "release": {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.5.0",
+    "published_at": "2026-07-31T12:41:19Z",
+    "prerelease": true,
+    "pypi_published": false
+  },
+  "assets": {
+    "MembraneVisualQC-0.5.0.zip": {
+      "size": 158285,
+      "sha256": "ffd2a8d7eeeb1c6e638fa350c452c1f752e275655d19d2634e783c9658132431"
+    },
+    "MembraneVisualQC-0.5.0.zip.sha256": {
+      "size": 93,
+      "sha256": "6283862eeb6926e12767dda7247afd76b33f1989ac65f57410082d8474eab011"
+    },
+    "membrane_vqc_pymol-0.5.0-py3-none-any.whl": {
+      "size": 162567,
+      "sha256": "5811aae44c9afee7703cf30333a11da03fdd66787905ffb22ad4386b701060ff"
+    },
+    "membrane_vqc_pymol-0.5.0.tar.gz": {
+      "size": 257776,
+      "sha256": "3b54087434e3fd2f53cf2a8b9545c9f7477318004ca4a689df83f4559e82fcf0"
+    }
+  }
+}
