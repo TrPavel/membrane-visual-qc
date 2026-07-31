@@ -13,6 +13,7 @@ import uuid
 
 from .constants import DEFAULT_LIGAND_CUTOFF, DEFAULT_ZMAX, DEFAULT_ZMIN
 from .constants import PLUGIN_NAME, VERSION
+from .batch_gui import BatchReviewPanel
 from .comparison_gui_worker import make_comparison_worker_class
 from .comparison_pymol import (
     capture_comparison_snapshot,
@@ -213,7 +214,20 @@ class MembraneVQCDialog:
         self._comparison_used_cache = False
         self.window = QtWidgets.QDialog()
         self.window.setWindowTitle(DIALOG_TITLE)
-        layout = QtWidgets.QFormLayout(self.window)
+        self.tabs = None
+        self.single_page = None
+        if all(
+            hasattr(QtWidgets, name)
+            for name in ("QTabWidget", "QVBoxLayout", "QWidget", "QTableWidget")
+        ):
+            root_layout = QtWidgets.QVBoxLayout(self.window)
+            self.tabs = QtWidgets.QTabWidget(self.window)
+            root_layout.addWidget(self.tabs)
+            self.single_page = QtWidgets.QWidget(self.tabs)
+            layout = QtWidgets.QFormLayout(self.single_page)
+            self.tabs.addTab(self.single_page, "Single structure")
+        else:
+            layout = QtWidgets.QFormLayout(self.window)
 
         self.selection = QtWidgets.QLineEdit("all")
         self.orientation_mode = QtWidgets.QComboBox()
@@ -383,11 +397,24 @@ class MembraneVQCDialog:
             self.comparison_pdbtm_source.currentTextChanged,
         ):
             signal.connect(self._on_comparison_input_changed)
-        self.window.finished.connect(self._teardown_worker)
+        self.batch_panel = None
+        if self.tabs is not None:
+            self.batch_panel = BatchReviewPanel(
+                QtWidgets,
+                QtGui,
+                QtCore,
+                self.window,
+                set_single_run_busy=self._set_batch_busy,
+                execution_allowed=self._batch_execution_allowed,
+            )
+            self.tabs.addTab(self.batch_panel.widget, "Batch review")
+        self.window.finished.connect(self._on_dialog_finished)
         self._update_orientation_mode()
         self._sync_comparison_controls()
 
     def show(self):
+        if self.batch_panel is not None:
+            self.batch_panel.reactivate()
         self.window.show()
 
     def raise_(self):
@@ -739,6 +766,24 @@ class MembraneVQCDialog:
             self._worker_thread.quit()
         if hasattr(self, "_comparison_generation"):
             self._teardown_comparison_worker()
+
+    def _on_dialog_finished(self, *_):
+        if self.batch_panel is not None:
+            self.batch_panel.shutdown()
+        self._teardown_worker()
+
+    def _batch_execution_allowed(self):
+        return self._pending_request_id is None and self._pending_comparison_id is None
+
+    def _set_batch_busy(self, busy):
+        if self.single_page is not None:
+            self.single_page.setEnabled(not busy)
+        else:
+            self._set_busy(busy)
+            self.comparison_group.setEnabled(not busy)
+        if not busy:
+            self._sync_pdbtm_controls()
+            self._sync_comparison_controls()
 
     def _canonical_cached_record_id_or_error(self):
         text = str(self.cached_record_id.text()).strip()

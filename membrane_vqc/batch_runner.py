@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import copy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -238,6 +239,270 @@ def _rollback_outputs(published: list[Path], backups: Mapping[str, Path], root: 
             raise BatchExecutionFailed("ROLLBACK_FAILED") from error
 
 
+class BatchRunSession:
+    """One validated batch run advanced exactly one job at a time."""
+
+    def __init__(
+        self,
+        plan: dict[str, object],
+        plan_bytes: bytes,
+        output_root: str | Path,
+        executor: JobExecutor,
+        *,
+        software_version: str,
+        software_commit: str | None,
+        cancel_requested: CancelCheck | None = None,
+        run_id: str | None = None,
+        now: Callable[[], str] = _utc_now,
+    ) -> None:
+        validate_plan(plan)
+        if run_id is not None:
+            validate_run_id(run_id)
+        self.plan = copy.deepcopy(plan)
+        self.plan_bytes = bytes(plan_bytes)
+        self.output_root = Path(output_root)
+        self.executor = executor
+        self.software_version = software_version
+        self.software_commit = software_commit
+        self.cancel_requested = cancel_requested
+        self.explicit_run_id = run_id
+        self.now = now
+        self.results: list[dict[str, object]] = []
+        self.failed_fast = False
+        self.cancelled = False
+        self.total_output = 0
+        self.index = 0
+        self.started = False
+        self.finalized = False
+        self.result: dict[str, object] | None = None
+        self.root: Path | None = None
+        self.stage_root: Path | None = None
+        self.plan_sha = hashlib.sha256(self.plan_bytes).hexdigest()
+        self.started_at: str | None = None
+        self.run_id: str | None = None
+        self.execution = dict(self.plan["execution"])
+        self.overwrite = self.execution["overwrite"]
+        self.owned: dict[str, dict[str, object]] = {}
+        self.published: list[Path] = []
+        self.backups: dict[str, Path] = {}
+        self.lock_descriptor: int | None = None
+        self.lock_path: Path | None = None
+        self.preserve_stage = False
+
+    @property
+    def total_jobs(self) -> int:
+        return len(self.plan["jobs"])
+
+    @property
+    def done(self) -> bool:
+        return self.index >= self.total_jobs
+
+    @property
+    def current_job(self) -> dict[str, object] | None:
+        return None if self.done else self.plan["jobs"][self.index]
+
+    def start(self) -> "BatchRunSession":
+        if self.started:
+            raise BatchExecutionFailed("SESSION_ALREADY_STARTED")
+        self.root = prepare_output_root(self.output_root)
+        self.started_at = self.now()
+        self.run_id = (
+            self.explicit_run_id
+            or hashlib.sha256(
+                self.plan_sha.encode("ascii")
+                + self.started_at.encode("ascii")
+                + secrets.token_bytes(32)
+            ).hexdigest()
+        )
+        self.lock_descriptor, self.lock_path = _acquire_lock(self.root)
+        try:
+            self.owned = (
+                _existing_owned_paths(self.root, self.run_id, self.plan_sha)
+                if self.overwrite == "same_batch"
+                else {}
+            )
+            destinations: list[str] = [MANIFEST_NAME]
+            for job in self.plan["jobs"]:
+                destinations.append(safe_output_name(job["id"], ".json"))
+                if job["output"]["write_csv"]:
+                    destinations.append(safe_output_name(job["id"], ".csv"))
+            if len(destinations) != len(set(destinations)):
+                raise BatchInputRejected("OUTPUT_NAME_COLLISION")
+            for relative in sorted(set(destinations)):
+                target = self.root / relative
+                if target.exists() and relative not in self.owned:
+                    raise BatchInputRejected("OUTPUT_COLLISION")
+            self.stage_root = Path(tempfile.mkdtemp(prefix=".mvqc-batch-", dir=self.root))
+            if self.overwrite == "same_batch" and self.owned:
+                self.backups = _backup_owned_outputs(self.owned, self.root, self.stage_root)
+            self.started = True
+            return self
+        except Exception:
+            self._cleanup()
+            raise
+
+    def execute_next(self) -> dict[str, object]:
+        if not self.started or self.finalized:
+            raise BatchExecutionFailed("SESSION_NOT_ACTIVE")
+        if self.done:
+            raise BatchExecutionFailed("SESSION_COMPLETE")
+        job = self.plan["jobs"][self.index]
+        if self.failed_fast:
+            job_result = _empty_job(job, "SKIPPED_DEPENDENCY")
+        elif self.cancelled or (self.cancel_requested is not None and self.cancel_requested()):
+            self.cancelled = True
+            job_result = _empty_job(job, "CANCELLED")
+        else:
+            job_result = self._execute_job(job)
+        self.results.append(job_result)
+        self.index += 1
+        return copy.deepcopy(job_result)
+
+    def _execute_job(self, job: dict[str, object]) -> dict[str, object]:
+        assert self.root is not None and self.stage_root is not None
+        try:
+            executed = self.executor(job)
+            if type(executed) is not ExecutedReport:
+                raise BatchExecutionFailed("EXECUTOR_CONTRACT_INVALID")
+            if executed.coordinate_preserved is not True:
+                raise BatchExecutionFailed("COORDINATES_CHANGED")
+            report = executed.report
+            schema = _validate_scientific_report(report)
+            status, review_count, warning_count = _scientific_status(report)
+            report_name = safe_output_name(job["id"], ".json")
+            staged_report = self.stage_root / report_name
+            csv_identity = None
+            staged_outputs = [staged_report]
+            if schema == "1.5":
+                atomic_write_bytes(staged_report, canonical_json_bytes(report, pretty=True))
+            else:
+                written = export_report(
+                    report, staged_report, write_csv=bool(job["output"]["write_csv"])
+                )
+                if len(written) == 2:
+                    staged_outputs.append(written[1])
+            job_output_size = sum(path.stat().st_size for path in staged_outputs)
+            if self.total_output + job_output_size > MAX_TOTAL_OUTPUT_BYTES:
+                raise BatchExecutionFailed("OUTPUT_LIMIT_EXCEEDED")
+            self.published.extend(_publish_job(staged_outputs, self.root))
+            self.total_output += job_output_size
+            if len(staged_outputs) == 2:
+                csv_identity = _file_identity(self.root / staged_outputs[1].name, self.root)
+            return {
+                "job_id": job["id"],
+                "mode": job["analysis"]["mode"],
+                "status": status,
+                "error_code": None,
+                "report": _file_identity(self.root / report_name, self.root),
+                "report_schema": schema,
+                "csv": csv_identity,
+                "warnings_count": warning_count,
+                "review_items_count": review_count,
+                "coordinate_preserved": True,
+            }
+        except BatchInputRejected as error:
+            self.failed_fast = self.execution["failure_policy"] == "fail_fast"
+            return _empty_job(job, "INPUT_REJECTED", error.code)
+        except BatchExecutionFailed as error:
+            self.failed_fast = self.execution["failure_policy"] == "fail_fast"
+            return _empty_job(job, "ANALYSIS_ERROR", error.code)
+        except BatchCancelled:
+            self.cancelled = True
+            return _empty_job(job, "CANCELLED")
+        except Exception:
+            self.failed_fast = self.execution["failure_policy"] == "fail_fast"
+            return _empty_job(job, "ANALYSIS_ERROR", "ANALYSIS_FAILED")
+
+    def finalize(self) -> dict[str, object]:
+        if not self.started or self.finalized or not self.done:
+            raise BatchExecutionFailed("SESSION_NOT_FINALIZABLE")
+        assert self.root is not None and self.stage_root is not None
+        assert self.run_id is not None and self.started_at is not None
+        try:
+            counts = Counter(item["status"] for item in self.results)
+            count_object = {
+                "total": len(self.results),
+                **{status: counts[status] for status in STATUSES},
+            }
+            if self.cancelled:
+                overall = "CANCELLED"
+            elif self.failed_fast:
+                overall = "FAILED_FAST"
+            elif counts["ANALYSIS_ERROR"] or counts["INPUT_REJECTED"]:
+                overall = "COMPLETED_WITH_ERRORS"
+            else:
+                overall = "COMPLETED"
+            result: dict[str, object] = {
+                "contract": RESULT_CONTRACT,
+                "plan_sha256": self.plan_sha,
+                "run_id": self.run_id,
+                "software": {
+                    "version": self.software_version,
+                    "commit": self.software_commit,
+                },
+                "started_at": self.started_at,
+                "completed_at": self.now(),
+                "execution": self.execution,
+                "jobs": self.results,
+                "counts": count_object,
+                "overall_status": overall,
+                "identity_core_sha256": "0" * 64,
+            }
+            result["identity_core_sha256"] = identity_core_sha256(result)
+            validate_result(result)
+            if self.overwrite == "same_batch" and self.owned and overall != "COMPLETED":
+                raise BatchExecutionFailed("SAME_BATCH_ROLLED_BACK")
+            staged_manifest = self.stage_root / MANIFEST_NAME
+            atomic_write_bytes(staged_manifest, canonical_json_bytes(result, pretty=True))
+            self.published.extend(_publish_job([staged_manifest], self.root))
+            self.result = copy.deepcopy(result)
+            self.finalized = True
+            return copy.deepcopy(result)
+        except Exception:
+            self._rollback_failure()
+            raise
+        finally:
+            self._cleanup()
+
+    def abort(self) -> None:
+        """Fail closed after an unexpected orchestrator error."""
+        if self.started and not self.finalized:
+            self._rollback_failure()
+        self._cleanup()
+
+    def _rollback_failure(self) -> None:
+        assert self.root is not None
+        if self.backups:
+            try:
+                _rollback_outputs(self.published, self.backups, self.root)
+                self.published.clear()
+                self.backups.clear()
+            except BatchExecutionFailed:
+                self.preserve_stage = True
+                raise
+        elif MANIFEST_NAME not in self.owned:
+            for path in reversed(self.published):
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+            self.published.clear()
+
+    def _cleanup(self) -> None:
+        if self.stage_root is not None and not self.preserve_stage:
+            shutil.rmtree(self.stage_root, ignore_errors=True)
+            self.stage_root = None
+        if self.lock_descriptor is not None:
+            os.close(self.lock_descriptor)
+            self.lock_descriptor = None
+        if self.lock_path is not None:
+            try:
+                self.lock_path.unlink()
+            except OSError:
+                pass
+            self.lock_path = None
+
+
 def run_batch(
     plan: dict[str, object],
     plan_bytes: bytes,
@@ -250,170 +515,23 @@ def run_batch(
     run_id: str | None = None,
     now: Callable[[], str] = _utc_now,
 ) -> dict[str, object]:
-    """Execute validated jobs sequentially and atomically finalize one manifest."""
-    validate_plan(plan)
-    if run_id is not None:
-        validate_run_id(run_id)
-    root = prepare_output_root(output_root)
-    plan_sha = hashlib.sha256(plan_bytes).hexdigest()
-    started = now()
-    run_id = (
-        run_id
-        or hashlib.sha256(
-            plan_sha.encode("ascii") + started.encode("ascii") + secrets.token_bytes(32)
-        ).hexdigest()
+    """Drive the shared stepwise engine synchronously for command/headless use."""
+    session = BatchRunSession(
+        plan,
+        plan_bytes,
+        output_root,
+        executor,
+        software_version=software_version,
+        software_commit=software_commit,
+        cancel_requested=cancel_requested,
+        run_id=run_id,
+        now=now,
     )
-    execution = dict(plan["execution"])
-    overwrite = execution["overwrite"]
-    lock_descriptor, lock_path = _acquire_lock(root)
+    session.start()
     try:
-        owned = _existing_owned_paths(root, run_id, plan_sha) if overwrite == "same_batch" else {}
-        destinations: list[str] = [MANIFEST_NAME]
-        for job in plan["jobs"]:
-            destinations.append(safe_output_name(job["id"], ".json"))
-            if job["output"]["write_csv"]:
-                destinations.append(safe_output_name(job["id"], ".csv"))
-        if len(destinations) != len(set(destinations)):
-            raise BatchInputRejected("OUTPUT_NAME_COLLISION")
-        for relative in sorted(set(destinations)):
-            target = root / relative
-            if target.exists() and relative not in owned:
-                raise BatchInputRejected("OUTPUT_COLLISION")
+        while not session.done:
+            session.execute_next()
+        return session.finalize()
     except Exception:
-        os.close(lock_descriptor)
-        try:
-            lock_path.unlink()
-        except OSError:
-            pass
+        session.abort()
         raise
-
-    results: list[dict[str, object]] = []
-    failed_fast = False
-    cancelled = False
-    total_output = 0
-    stage_root = Path(tempfile.mkdtemp(prefix=".mvqc-batch-", dir=root))
-    published: list[Path] = []
-    backups: dict[str, Path] = {}
-    preserve_stage = False
-    try:
-        if overwrite == "same_batch" and owned:
-            backups = _backup_owned_outputs(owned, root, stage_root)
-        for index, job in enumerate(plan["jobs"]):
-            if failed_fast:
-                results.append(_empty_job(job, "SKIPPED_DEPENDENCY"))
-                continue
-            if cancelled or (cancel_requested is not None and cancel_requested()):
-                cancelled = True
-                results.append(_empty_job(job, "CANCELLED"))
-                continue
-            try:
-                executed = executor(job)
-                if type(executed) is not ExecutedReport:
-                    raise BatchExecutionFailed("EXECUTOR_CONTRACT_INVALID")
-                if executed.coordinate_preserved is not True:
-                    raise BatchExecutionFailed("COORDINATES_CHANGED")
-                report = executed.report
-                schema = _validate_scientific_report(report)
-                status, review_count, warning_count = _scientific_status(report)
-                report_name = safe_output_name(job["id"], ".json")
-                staged_report = stage_root / report_name
-                csv_identity = None
-                staged_outputs = [staged_report]
-                if schema == "1.5":
-                    atomic_write_bytes(staged_report, canonical_json_bytes(report, pretty=True))
-                else:
-                    written = export_report(
-                        report, staged_report, write_csv=bool(job["output"]["write_csv"])
-                    )
-                    if len(written) == 2:
-                        staged_csv = written[1]
-                        staged_outputs.append(staged_csv)
-                job_output_size = sum(path.stat().st_size for path in staged_outputs)
-                if total_output + job_output_size > MAX_TOTAL_OUTPUT_BYTES:
-                    raise BatchExecutionFailed("OUTPUT_LIMIT_EXCEEDED")
-                published.extend(_publish_job(staged_outputs, root))
-                total_output += job_output_size
-                destination_report = root / report_name
-                if len(staged_outputs) == 2:
-                    csv_identity = _file_identity(root / staged_outputs[1].name, root)
-                results.append(
-                    {
-                        "job_id": job["id"],
-                        "mode": job["analysis"]["mode"],
-                        "status": status,
-                        "error_code": None,
-                        "report": _file_identity(destination_report, root),
-                        "report_schema": schema,
-                        "csv": csv_identity,
-                        "warnings_count": warning_count,
-                        "review_items_count": review_count,
-                        "coordinate_preserved": True,
-                    }
-                )
-            except BatchInputRejected as error:
-                results.append(_empty_job(job, "INPUT_REJECTED", error.code))
-                failed_fast = execution["failure_policy"] == "fail_fast"
-            except BatchExecutionFailed as error:
-                results.append(_empty_job(job, "ANALYSIS_ERROR", error.code))
-                failed_fast = execution["failure_policy"] == "fail_fast"
-            except BatchCancelled:
-                results.append(_empty_job(job, "CANCELLED"))
-                cancelled = True
-            except Exception:
-                results.append(_empty_job(job, "ANALYSIS_ERROR", "ANALYSIS_FAILED"))
-                failed_fast = execution["failure_policy"] == "fail_fast"
-        counts = Counter(item["status"] for item in results)
-        count_object = {"total": len(results), **{status: counts[status] for status in STATUSES}}
-        if cancelled:
-            overall = "CANCELLED"
-        elif failed_fast:
-            overall = "FAILED_FAST"
-        elif counts["ANALYSIS_ERROR"] or counts["INPUT_REJECTED"]:
-            overall = "COMPLETED_WITH_ERRORS"
-        else:
-            overall = "COMPLETED"
-        result: dict[str, object] = {
-            "contract": RESULT_CONTRACT,
-            "plan_sha256": plan_sha,
-            "run_id": run_id,
-            "software": {"version": software_version, "commit": software_commit},
-            "started_at": started,
-            "completed_at": now(),
-            "execution": execution,
-            "jobs": results,
-            "counts": count_object,
-            "overall_status": overall,
-            "identity_core_sha256": "0" * 64,
-        }
-        result["identity_core_sha256"] = identity_core_sha256(result)
-        validate_result(result)
-        if overwrite == "same_batch" and owned and overall != "COMPLETED":
-            raise BatchExecutionFailed("SAME_BATCH_ROLLED_BACK")
-        staged_manifest = stage_root / MANIFEST_NAME
-        atomic_write_bytes(staged_manifest, canonical_json_bytes(result, pretty=True))
-        published.extend(_publish_job([staged_manifest], root))
-        return result
-    except Exception:
-        if backups:
-            try:
-                _rollback_outputs(published, backups, root)
-                published.clear()
-                backups.clear()
-            except BatchExecutionFailed:
-                preserve_stage = True
-                raise
-        elif MANIFEST_NAME not in owned:
-            for path in reversed(published):
-                try:
-                    path.unlink()
-                except OSError:
-                    pass
-        raise
-    finally:
-        if not preserve_stage:
-            shutil.rmtree(stage_root, ignore_errors=True)
-        os.close(lock_descriptor)
-        try:
-            lock_path.unlink()
-        except OSError:
-            pass

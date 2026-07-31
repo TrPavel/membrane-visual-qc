@@ -32,10 +32,13 @@ immutable current object. The comparison performs no fitting, coordinate mutatio
 source choice, consensus, provider ranking, or biological verdict. See
 [docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
 
-Active `0.6.0.dev0` development adds Stage 5A: strict, versioned batch plans and deterministic
-result manifests for sequential, main-thread execution of the five existing analysis modes. Batch
-execution is local-only, never fetches PDBTM or OPM, and does not add a GUI queue or scientific
-verdict. See [docs/stage5a_batch_review.md](docs/stage5a_batch_review.md).
+Active `0.6.0.dev0` development includes Stage 5A's strict batch contracts and Stage 5B's
+**Batch review** GUI. The GUI validates an explicit plan, displays its ordered queue, advances one
+PyMOL job per queued main-thread event, supports cooperative cancellation, retains at most 20
+current-session runs, and verifies an explicitly selected result bundle before browsing it. It
+never scans for plans or history, fetches PDBTM or OPM, edits a plan, or makes a biological
+verdict. See [docs/stage5a_batch_review.md](docs/stage5a_batch_review.md) and
+[docs/stage5b_gui_batch.md](docs/stage5b_gui_batch.md).
 
 ## Installation
 
@@ -169,8 +172,8 @@ Graphical Plugin Manager installation and GUI validation passed on Windows with 
 ## Current limitations
 
 OPM is offline-only. Direct PDBTM retrieval does not support proxies, PAC, CONNECT, redirects, or
-retries. There is no automatic cache migration or garbage collection, GUI batch queue/history,
-curved/multiple-membrane model, automatic fitting, automatic source selection, provider ranking,
+retries. There is no automatic cache migration or garbage collection, persistent batch history,
+visual batch-plan editor, curved/multiple-membrane model, automatic fitting, automatic source selection, provider ranking,
 consensus, or biological correctness verdict. Comparison thresholds are geometric review bands,
 not biological truth. Ordinary SASA is not lipid accessibility,
 local chemical-context labels are conservative evidence, and reports are visual-QC evidence rather

@@ -23,7 +23,9 @@ from scripts.validate_release_artifacts import (
     STAGE4B3_RUNTIME_MODULES,
     STAGE4C_RUNTIME_MODULES,
     STAGE5A_RUNTIME_MODULES,
+    STAGE5B_RUNTIME_MODULES,
     BATCH_CONTRACT_FILES,
+    BATCH_CONTRACT_HASHES,
     _assert_safe_archive_names,
     _assert_safe_archive_payload,
     _assert_safe_tar_entries,
@@ -37,6 +39,12 @@ from scripts.validate_release_artifacts import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_stage5a_batch_contracts_keep_their_immutable_hashes():
+    assert BATCH_CONTRACT_FILES == set(BATCH_CONTRACT_HASHES)
+    for relative, expected in BATCH_CONTRACT_HASHES.items():
+        assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == expected
 
 
 def test_wheel_data_files_declare_every_pinned_report_schema():
@@ -73,6 +81,20 @@ def test_release_validator_rejects_known_provider_payload_content(monkeypatch):
 def test_release_validator_rejects_unknown_provider_shaped_payload(name, payload):
     with pytest.raises(ReleaseArtifactError, match="Provider-shaped"):
         _assert_safe_archive_payload(name, payload)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "membrane_vqc/batch-result.json",
+        "membrane_vqc/job.csv",
+        "membrane_vqc/.mvqc-batch-stage/job.json",
+        "membrane_vqc/session-history.json",
+    ],
+)
+def test_release_validator_rejects_generated_batch_and_session_outputs(name):
+    with pytest.raises(ReleaseArtifactError, match="Generated batch/session"):
+        _assert_safe_archive_names([name])
 
 
 def _copy_project_with_version(tmp_path, version):
@@ -178,6 +200,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
             | STAGE4B3_RUNTIME_MODULES
             | STAGE4C_RUNTIME_MODULES
             | STAGE5A_RUNTIME_MODULES
+            | STAGE5B_RUNTIME_MODULES
         ):
             archive.writestr(module, "")
         for schema_version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5"):
@@ -224,6 +247,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
                 | STAGE4B3_RUNTIME_MODULES
                 | STAGE4C_RUNTIME_MODULES
                 | STAGE5A_RUNTIME_MODULES
+                | STAGE5B_RUNTIME_MODULES
             )
         }
     )

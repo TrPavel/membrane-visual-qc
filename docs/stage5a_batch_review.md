@@ -64,6 +64,12 @@ Or run headlessly from the checkout root:
 pymol -cq tests/pymol_smoke/run_batch_plan.py -- PLAN.json OUTPUT_DIR
 ```
 
+Stage 5B also consumes this contract in **Plugin > Membrane Visual QC > Batch review**. Choose a
+plan and output directory explicitly, press **Validate**, inspect the ordered queue, and then press
+**Run batch**. Validation alone never executes a job. The GUI drives the same runner one job per
+queued main-thread timer event; it does not duplicate the five scientific paths. See
+[stage5b_gui_batch.md](stage5b_gui_batch.md).
+
 The retained five-mode plan names an exact deterministic synthetic snapshot. Materialize the
 untracked cache and a self-contained copy of the fixtures before executing it:
 

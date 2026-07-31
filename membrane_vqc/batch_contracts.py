@@ -18,6 +18,7 @@ from .batch_paths import BatchPathError, validate_relative_path
 PLAN_CONTRACT = "mvqc-batch-plan-1.0"
 RESULT_CONTRACT = "mvqc-batch-result-1.0"
 MAX_PLAN_BYTES = 1024 * 1024
+MAX_RESULT_BYTES = 4 * 1024 * 1024
 MAX_JOBS = 100
 MAX_JOB_ID = 64
 MAX_ERROR_TEXT = 512
@@ -124,6 +125,29 @@ def load_plan(path: str | Path) -> tuple[dict[str, object], bytes]:
         raise BatchContractError("plan must be strict UTF-8 JSON") from error
     validate_plan(plan)
     return plan, data
+
+
+def load_result(path: str | Path) -> tuple[dict[str, object], bytes]:
+    """Read, strictly parse, and validate one bounded batch-result document."""
+    result_path = Path(path)
+    size = result_path.stat().st_size
+    if size < 2 or size > MAX_RESULT_BYTES:
+        raise BatchContractError(f"result must be between 2 and {MAX_RESULT_BYTES} bytes")
+    data = result_path.read_bytes()
+    if len(data) != size or len(data) < 2 or len(data) > MAX_RESULT_BYTES:
+        raise BatchContractError("result changed while it was being read")
+    if data.startswith(b"\xef\xbb\xbf"):
+        raise BatchContractError("result must be UTF-8 without a BOM")
+    try:
+        result = json.loads(
+            data.decode("utf-8"), object_pairs_hook=_pairs, parse_constant=_reject_constant
+        )
+    except BatchContractError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise BatchContractError("result must be strict UTF-8 JSON") from error
+    validate_result(result)
+    return result, data
 
 
 def _mapping(value: object, *, field: str, required: set[str], optional: set[str] = set()):

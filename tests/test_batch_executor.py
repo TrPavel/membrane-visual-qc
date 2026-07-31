@@ -171,6 +171,24 @@ def test_partial_load_failure_still_removes_exact_temporary_object(tmp_path):
     assert "user_object" in cmd.objects
 
 
+def test_preflight_rejection_clears_stale_plugin_state_and_last_report(tmp_path):
+    from membrane_vqc import qc
+
+    cmd = FakeCmd()
+    cmd.objects["mvqc_slab_lower"] = list(cmd.objects["user_object"])
+    plan = _plan({"kind": "file", "path": "missing.pdb"})
+    previous = qc.LAST_REPORT
+    qc.LAST_REPORT = {"stale": True}
+    try:
+        with pytest.raises(BatchInputRejected):
+            PymolBatchExecutor(plan, tmp_path, cmd)(plan["jobs"][0])
+        assert "mvqc_slab_lower" not in cmd.objects
+        assert "user_object" in cmd.objects
+        assert qc.LAST_REPORT is None
+    finally:
+        qc.LAST_REPORT = previous
+
+
 def test_cleanup_failure_cannot_return_success(tmp_path, monkeypatch):
     coordinate = tmp_path / "input.pdb"
     coordinate.write_text("ATOM fixture\n", encoding="ascii")

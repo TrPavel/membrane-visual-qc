@@ -10,8 +10,8 @@
   redirects, and retries are unsupported.
 - The validated cache has no automatic migration or garbage collection. Fetch/Refresh, use, and
   clear remain explicit user actions.
-- Stage 5A has a local, sequential batch comparison mode, but no GUI queue, scheduling, history,
-  resume manager, or automatic source selection.
+- Stage 5B adds a local GUI queue and bounded current-session history, but no persistent history,
+  resume manager, scheduler, or automatic source selection.
 - There is no automatic fitting, alignment, consensus orientation, provider ranking, or preferred
   source.
 - Only one planar membrane per source is represented; curved, multiple, intersecting, and double
@@ -22,7 +22,7 @@
 
 Membrane Visual QC is an inspection helper, not a definitive validator of membrane protein correctness.
 
-## Stage 5A batch limitations
+## Stage 5A/5B batch limitations
 
 - Execution requires PyMOL and runs sequentially on its main thread; the standalone CLI validates
   plans only.
@@ -32,8 +32,11 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
   does not terminate threads or interrupt PyMOL commands forcibly.
 - Result manifests are timestamp-bearing operational indexes. Their canonical identity core omits
   the run ID and timestamps, but the complete manifest bytes are not promised identical per run.
-- There is no GUI batch queue, history browser, cache manager, automatic fitting, consensus,
-  ranking, preferred source, or biological verdict.
+- The GUI is a validator, queue runner, and integrity-checked result browser, not a visual plan
+  editor. History is limited to 20 entries in the current dialog session and is not discovered or
+  persisted. Missing or changed referenced outputs cannot be revealed.
+- There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
+  source, or biological verdict. Stage 5C has not started.
 
 ## Released v0.1 limitations
 
