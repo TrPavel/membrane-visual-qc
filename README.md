@@ -34,14 +34,13 @@ source choice, consensus, provider ranking, or biological verdict. See
 
 ## Installation
 
-v0.5.0 is being prepared as a GitHub prerelease for limited public testing. Until its release URL
-and assets are published and byte-verified, v0.4.0 remains the latest published package. Public
-users can download `MembraneVisualQC-0.4.0.zip` and its checksum from the
-[v0.4.0 GitHub release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.4.0).
-GitHub Releases is the public installation route. The v0.5.0 Plugin ZIP will be named
-`MembraneVisualQC-0.5.0.zip`; its final size and SHA-256 are **PENDING**. Wheel and source
-distributions are release assets for inspection and development; this project is not published to
-PyPI.
+v0.5.0 is published as a GitHub prerelease for limited public testing. Download
+`MembraneVisualQC-0.5.0.zip` and its checksum from the
+[v0.5.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.5.0).
+The Plugin ZIP is 158,285 bytes with SHA-256
+`ffd2a8d7eeeb1c6e638fa350c452c1f752e275655d19d2634e783c9658132431`.
+Wheel and source distributions are release assets for inspection and development; this project is
+not published to PyPI. Active source development has version `0.6.0.dev0` and is not a release.
 
 Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The

@@ -1,15 +1,26 @@
 # Development state
 
-Snapshot date: 2026-07-22 (Europe/Moscow).
+Snapshot date: 2026-07-31 (Europe/Moscow).
 
 Stage 4A, Stage 4B1–4B4, and Stage 4C are complete and merged into `main`. The repository is now
-preparing v0.5.0 as a GitHub prerelease for limited public testing. Stage 4 provides offline PDBTM
+on active development version `0.6.0.dev0` after publishing v0.5.0 as a GitHub prerelease for
+limited public testing. Stage 4 provides offline PDBTM
 pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch versus Use
 behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit schema 1.5
 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose a source,
-create consensus, rank providers, or make a biological verdict. Final release validation totals,
-artifact hashes, PR/merge/tag identities, and publication evidence are **PENDING**. PyPI is not
-used.
+create consensus, rank providers, or make a biological verdict. Exact v0.5.0 release, tag,
+post-merge artifact, and downloaded-asset identities are frozen in
+`docs/v0.5.0_release_evidence.json`. PyPI is not used.
+
+## Post-v0.5.0 development reset
+
+The active package and build identity is `0.6.0.dev0`. The reset changes only version-bearing
+development surfaces, CI artifact expectations, and publication evidence; it introduces no
+runtime or scientific behavior. Schemas 1.0–1.5 and the three retained v0.5.0 reports remain
+byte-identical. `frozen-v0.4.0` and `frozen-v0.5.0` validator modes are independent of the active
+development version. The latter pins the v0.5.0 report and schema hashes, release squash commit,
+annotated tag object and target, prerelease URL/date, post-merge workflow/artifact, and all four
+authoritative release-asset identities.
 
 ### Historical pre-merge Stage 4C snapshot
 

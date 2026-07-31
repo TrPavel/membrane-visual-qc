@@ -63,6 +63,66 @@ ALLOWED_SYNTHETIC_PROVIDER_PATHS = {
     "data/synthetic/pdbtm_transformed_test.pdb",
 }
 FROZEN_V040_VERSION = "0.4.0"
+FROZEN_V050_VERSION = "0.5.0"
+FROZEN_V050_SCHEMA_VERSIONS = set(SCHEMA_HASHES)
+FROZEN_V050_RELEASE_EVIDENCE = "docs/v0.5.0_release_evidence.json"
+FROZEN_V050_REPORTS = {
+    "reports/pdbtm_local_v050_mvqc.json": {
+        "schema": "1.3",
+        "size": 10222,
+        "sha256": "6035e828fa8f0d559d3f0ebe4d2c583bab15b773f44a631b9214ab80e64484e6",
+    },
+    "reports/pdbtm_acquisition_v050_mvqc.json": {
+        "schema": "1.4",
+        "size": 13851,
+        "sha256": "3724848b7baca9c05482d919c8d300bc39ef829d050cad203062f734df8cf3da",
+    },
+    "reports/source_comparison_synthetic_mvqc.json": {
+        "schema": "1.5",
+        "size": 5827,
+        "sha256": "91910518eefbc82b9716c2bff368a32c878661dfaa8dad0f12e9bc0bd6b6f2ed",
+    },
+}
+FROZEN_V050_ASSETS = {
+    "MembraneVisualQC-0.5.0.zip": {
+        "size": 158285,
+        "sha256": "ffd2a8d7eeeb1c6e638fa350c452c1f752e275655d19d2634e783c9658132431",
+    },
+    "MembraneVisualQC-0.5.0.zip.sha256": {
+        "size": 93,
+        "sha256": "6283862eeb6926e12767dda7247afd76b33f1989ac65f57410082d8474eab011",
+    },
+    "membrane_vqc_pymol-0.5.0-py3-none-any.whl": {
+        "size": 162567,
+        "sha256": "5811aae44c9afee7703cf30333a11da03fdd66787905ffb22ad4386b701060ff",
+    },
+    "membrane_vqc_pymol-0.5.0.tar.gz": {
+        "size": 257776,
+        "sha256": "3b54087434e3fd2f53cf2a8b9545c9f7477318004ca4a689df83f4559e82fcf0",
+    },
+}
+FROZEN_V050_RELEASE = {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.5.0",
+    "published_at": "2026-07-31T12:41:19Z",
+    "prerelease": True,
+    "pypi_published": False,
+}
+FROZEN_V050_TAG = {
+    "name": "v0.5.0",
+    "object": "37e83223be8cf2531ce829ac276e9feaf0b09b0b",
+    "target": "8ddf5ee621f14d1993ad2779f345b8da19fd589f",
+}
+FROZEN_V050_RELEASE_PR = {
+    "number": 19,
+    "final_head": "bc0dae3bdf380c278ad3cd7dd1cf47b18467553e",
+    "squash_commit": "8ddf5ee621f14d1993ad2779f345b8da19fd589f",
+}
+FROZEN_V050_POST_MERGE = {
+    "id": 30631158437,
+    "artifact_id": 8793382353,
+    "outer_size": 571626,
+    "outer_sha256": "fbbbbc8f604eb29b0fb285f318d33bf91f6707e5b4e947c462b3df8b8a63bc54",
+}
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
     "membrane_vqc/pdbtm_cache_contract.py",
@@ -495,6 +555,62 @@ def verify_frozen_v040_evidence(project_root: Path = ROOT) -> dict[str, object]:
     }
 
 
+def verify_frozen_v050_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify published v0.5.0 evidence without consulting the active version."""
+    project_root = project_root.resolve()
+
+    schema_results = {}
+    for schema_version in FROZEN_V050_SCHEMA_VERSIONS:
+        path = project_root / "schemas" / f"mvqc-report-{schema_version}.schema.json"
+        actual = sha256_file(path)
+        if actual != SCHEMA_HASHES[schema_version]:
+            raise ReleaseArtifactError(f"Frozen v0.5.0 schema {schema_version} changed: {actual}")
+        schema_results[schema_version] = actual
+
+    report_results = {}
+    for relative, expected in FROZEN_V050_REPORTS.items():
+        path = project_root / relative
+        raw = path.read_bytes()
+        actual = {"size": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+        if actual != {key: expected[key] for key in ("size", "sha256")}:
+            raise ReleaseArtifactError(f"Frozen v0.5.0 report changed: {relative}: {actual}")
+        report = json.loads(raw)
+        if report.get("schema_version") != expected["schema"]:
+            raise ReleaseArtifactError(f"Frozen v0.5.0 report schema changed: {relative}")
+        software = report.get("software", {})
+        if software.get("version") != FROZEN_V050_VERSION:
+            raise ReleaseArtifactError(f"Frozen v0.5.0 report version changed: {relative}")
+        if report.get("version", FROZEN_V050_VERSION) != FROZEN_V050_VERSION:
+            raise ReleaseArtifactError(f"Frozen v0.5.0 legacy report version changed: {relative}")
+        if _contains_absolute_windows_path(report):
+            raise ReleaseArtifactError(f"Absolute local path in frozen v0.5.0 report: {relative}")
+        report_results[relative] = {**actual, "schema": expected["schema"]}
+
+    evidence_path = project_root / FROZEN_V050_RELEASE_EVIDENCE
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    expected_sections = {
+        "version": FROZEN_V050_VERSION,
+        "release_pr": FROZEN_V050_RELEASE_PR,
+        "post_merge_workflow": FROZEN_V050_POST_MERGE,
+        "tag": FROZEN_V050_TAG,
+        "release": FROZEN_V050_RELEASE,
+        "assets": FROZEN_V050_ASSETS,
+    }
+    if evidence != expected_sections:
+        raise ReleaseArtifactError("Frozen v0.5.0 publication evidence changed")
+
+    return {
+        "version": FROZEN_V050_VERSION,
+        "schemas": schema_results,
+        "reports": report_results,
+        "assets": evidence["assets"],
+        "release": evidence["release"],
+        "tag": evidence["tag"],
+        "release_pr": evidence["release_pr"],
+        "post_merge_workflow": evidence["post_merge_workflow"],
+    }
+
+
 # Backwards-compatible API name for callers that validate the active build.
 validate_release_artifacts = validate_current_development_artifacts
 
@@ -503,7 +619,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--mode",
-        choices=("current-development", "frozen-v0.4.0", "release-candidate"),
+        choices=(
+            "current-development",
+            "frozen-v0.4.0",
+            "frozen-v0.5.0",
+            "release-candidate",
+        ),
         default="current-development",
     )
     parser.add_argument("--version", default=None)
@@ -518,6 +639,10 @@ def main() -> int:
         if args.version is not None:
             parser.error("--version is only valid with --mode release-candidate")
         result = verify_frozen_v040_evidence(args.project_root)
+    elif args.mode == "frozen-v0.5.0":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v050_evidence(args.project_root)
     else:
         if args.version is None:
             parser.error("--mode release-candidate requires --version")

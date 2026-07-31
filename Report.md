@@ -2,15 +2,16 @@
 
 ## Current status
 
-Stage 4A, Stage 4B1–4B4, and Stage 4C are complete. The repository is preparing v0.5.0 as a GitHub
-prerelease for limited public testing. The release includes offline PDBTM pairs, bounded direct
+Stage 4A, Stage 4B1–4B4, and Stage 4C are complete. v0.5.0 was published as a GitHub prerelease
+for limited public testing on 2026-07-31. The release includes offline PDBTM pairs, bounded direct
 PDBTM retrieval, a validated local cache, schema 1.4 acquisition provenance, offline-only OPM
 input, and explicit schema 1.5 PDBTM–OPM geometric comparison. It performs no automatic fitting,
 coordinate mutation, source selection, provider ranking, consensus, or biological verdict.
 
-Final v0.5.0 test totals, artifact identities, release PR/commit/tag data, publication URL, and
-downloaded-asset verification are **PENDING** exact-artifact acceptance and publication. Historical
-v0.1.0–v0.4.0 and `0.5.0.dev0` evidence below remains intentionally unchanged. PyPI is not used.
+The exact v0.5.0 publication evidence is frozen in `docs/v0.5.0_release_evidence.json`; downloaded
+assets were byte-verified against the authoritative post-merge workflow. Active development is
+`0.6.0.dev0`. Historical v0.1.0–v0.5.0 evidence below remains intentionally unchanged. PyPI is
+not used.
 
 ## Environment
 

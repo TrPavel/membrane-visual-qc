@@ -11,7 +11,7 @@ selected-object snapshot.
 Schema 1.5 reports sign-ambiguous planar geometry, displacement, boundaries, thickness, scope, and
 coverage as review evidence. It never serializes a preferred source, provider ranking, consensus,
 automatic fit, or biological verdict. OPM provenance is local and offline-only. Existing schemas
-1.0–1.3 remain immutable. Schemas 1.4 and 1.5 are being finalized and frozen for v0.5.0; their
+1.0–1.3 remain immutable. Schemas 1.4 and 1.5 are frozen for v0.5.0; their
 authoritative release SHA-256 values are:
 
 - 1.4: `ee3bc91b2ba2c32814aad61eb69ed8413bae9460c33cb5d69d839335ff6e698e`;
