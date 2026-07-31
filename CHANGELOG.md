@@ -8,6 +8,12 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Added
 
+- Added Stage 5B's dedicated **Batch review** tab with explicit plan/output selection, validation,
+  ordered queue status, a one-job-per-event main-thread pump, cooperative cancellation, bounded
+  session-only history, and explicit result/output reveal actions.
+- Added strict read-only batch-result browsing that revalidates the result contract, identity core,
+  aggregate counts, referenced report schemas and semantics, relative paths, reparse boundaries,
+  sizes, and SHA-256 identities without loading structures or changing `LAST_REPORT`.
 - Added Stage 5A versioned `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts, a PyMOL-free
   validation CLI, and sequential main-thread PyMOL execution for legacy global-z, local planar,
   local PDBTM, exact cached PDBTM snapshot, and local PDBTM–OPM comparison jobs.
@@ -20,6 +26,8 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Batch execution performs no network retrieval, rejects traversal/URL/UNC/device/reparse paths,
   pre-resolves exact cache snapshots, refuses unrelated output collisions, and never serializes
   absolute paths or raw exceptions into the result manifest.
+- Result open/reveal is user-initiated, uses Qt local-file URLs, and repeats path and content
+  verification immediately before opening. Missing or changed outputs remain unavailable.
 
 ### Changed
 

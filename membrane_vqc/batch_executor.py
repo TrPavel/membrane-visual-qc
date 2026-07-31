@@ -226,8 +226,6 @@ class PymolBatchExecutor:
 
     def __call__(self, job: dict[str, object]) -> ExecutedReport:
         prepared = self.prepared[job["id"]]
-        if prepared.error_code:
-            raise BatchInputRejected(prepared.error_code)
         temp_name = None
         private_input_root: Path | None = None
         private_input_path: Path | None = None
@@ -235,6 +233,10 @@ class PymolBatchExecutor:
         executed_report: ExecutedReport | None = None
         primary_error: Exception | None = None
         try:
+            clear_owned(self.cmd)
+            qc.LAST_REPORT = None
+            if prepared.error_code:
+                raise BatchInputRejected(prepared.error_code)
             if job["input"]["kind"] == "file":
                 suffix = hashlib.sha256(
                     (job["id"] + prepared.bytes_by_name["input"].hex()).encode("ascii")

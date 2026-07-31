@@ -12,15 +12,19 @@ create consensus, rank providers, or make a biological verdict. Exact v0.5.0 rel
 post-merge artifact, and downloaded-asset identities are frozen in
 `docs/v0.5.0_release_evidence.json`. PyPI is not used.
 
-## Stage 5A batch review
+## Stage 5A and Stage 5B batch review
 
 Stage 5A is implemented on the active `0.6.0.dev0` development line. It introduces two separate
 operational contracts, pure validation without a PyMOL import, and sequential PyMOL-main-thread
 execution for the five already accepted modes. All inputs are explicit and local; exact cached
 snapshots are resolved before the first job and no batch path can fetch PDBTM or OPM. The result
 manifest preserves ordered operational status and output identities without becoming a scientific
-certificate. No GUI batch/history/cache-manager work, provider, report schema, tag, release, or
-PyPI publication is part of this stage.
+certificate. Stage 5B consumes those unchanged contracts through a dedicated GUI tab. It uses the
+same stepwise runner as the headless command, schedules exactly one scientific job per Qt timer
+turn on PyMOL's main thread, supports cooperative cancellation, keeps at most 20 history entries
+in dialog memory, and validates all available result artifacts before browsing or explicit reveal.
+It adds no cache manager, provider, report schema, tag, release, or PyPI publication. Stage 5C has
+not started.
 
 ## Post-v0.5.0 development reset
 

@@ -156,9 +156,21 @@ STAGE5A_RUNTIME_MODULES = {
     "membrane_vqc/batch_paths.py",
     "membrane_vqc/batch_runner.py",
 }
+STAGE5B_RUNTIME_MODULES = {
+    "membrane_vqc/batch_gui.py",
+    "membrane_vqc/batch_result_browser.py",
+}
 BATCH_CONTRACT_FILES = {
     "schemas/mvqc-batch-plan-1.0.schema.json",
     "schemas/mvqc-batch-result-1.0.schema.json",
+}
+BATCH_CONTRACT_HASHES = {
+    "schemas/mvqc-batch-plan-1.0.schema.json": (
+        "996eff32e5a8e240be447ef2efa42e27e59095806c2725d42ed8d331a9bc766d"
+    ),
+    "schemas/mvqc-batch-result-1.0.schema.json": (
+        "e61dfb6e2a635d4cf76a6f2a07ccbbcc2aea170c9e62dc50d36e07180f98163a"
+    ),
 }
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
@@ -228,6 +240,13 @@ def _assert_safe_archive_names(names: list[str]) -> None:
         if canonical_key in canonical_names:
             raise ReleaseArtifactError("Release archive contains duplicate entries")
         canonical_names.add(canonical_key)
+        if (
+            path.name.casefold() == "batch-result.json"
+            or path.suffix.casefold() == ".csv"
+            or any(part.casefold().startswith(".mvqc-batch") for part in path.parts)
+            or any("session-history" in part.casefold() for part in path.parts)
+        ):
+            raise ReleaseArtifactError(f"Generated batch/session output is forbidden: {name}")
         if (
             "\\" in name
             or bool(re.match(r"^[A-Za-z]:", name))
@@ -368,9 +387,12 @@ def _validate_artifact_set(
             raise ReleaseArtifactError(
                 f"Schema {schema_version} does not match its recorded current-development hash"
             )
-    batch_contract_hashes = {
-        relative: sha256_file(project_root / relative) for relative in BATCH_CONTRACT_FILES
-    }
+    for relative, expected_hash in BATCH_CONTRACT_HASHES.items():
+        path = project_root / relative
+        if not path.is_file() or sha256_file(path) != expected_hash:
+            raise ReleaseArtifactError(
+                f"Batch contract does not match its recorded immutable hash: {relative}"
+            )
 
     wheel = dist_dir / f"membrane_vqc_pymol-{expected_version}-py3-none-any.whl"
     sdist = dist_dir / f"membrane_vqc_pymol-{expected_version}.tar.gz"
@@ -396,6 +418,7 @@ def _validate_artifact_set(
             | STAGE4B3_RUNTIME_MODULES
             | STAGE4C_RUNTIME_MODULES
             | STAGE5A_RUNTIME_MODULES
+            | STAGE5B_RUNTIME_MODULES
         ) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
@@ -415,7 +438,7 @@ def _validate_artifact_set(
                 raise ReleaseArtifactError(f"Wheel is missing batch contract: {relative}")
             if (
                 hashlib.sha256(archive.read(matches[0])).hexdigest()
-                != batch_contract_hashes[relative]
+                != BATCH_CONTRACT_HASHES[relative]
             ):
                 raise ReleaseArtifactError(f"Wheel batch contract differs from source: {relative}")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
@@ -456,7 +479,7 @@ def _validate_artifact_set(
                 raise ReleaseArtifactError(
                     f"Sdist schema {schema_version} does not match its recorded hash"
                 )
-        for relative, expected_hash in batch_contract_hashes.items():
+        for relative, expected_hash in BATCH_CONTRACT_HASHES.items():
             stream = archive.extractfile(f"{root}/{relative}")
             if stream is None or hashlib.sha256(stream.read()).hexdigest() != expected_hash:
                 raise ReleaseArtifactError(f"Sdist batch contract differs from source: {relative}")
@@ -471,6 +494,7 @@ def _validate_artifact_set(
         *STAGE4B3_RUNTIME_MODULES,
         *STAGE4C_RUNTIME_MODULES,
         *STAGE5A_RUNTIME_MODULES,
+        *STAGE5B_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
         *BATCH_CONTRACT_FILES,
@@ -497,7 +521,7 @@ def _validate_artifact_set(
             relative = f"schemas/mvqc-batch-{contract}.schema.json"
             if (
                 hashlib.sha256(archive.read(archive_name)).hexdigest()
-                != batch_contract_hashes[relative]
+                != BATCH_CONTRACT_HASHES[relative]
             ):
                 raise ReleaseArtifactError(
                     f"Plugin ZIP batch contract differs from source: {relative}"

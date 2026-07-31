@@ -54,6 +54,8 @@ REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/batch_executor.py",
     f"{PACKAGE_NAME}/batch_paths.py",
     f"{PACKAGE_NAME}/batch_runner.py",
+    f"{PACKAGE_NAME}/batch_gui.py",
+    f"{PACKAGE_NAME}/batch_result_browser.py",
     *SCHEMA_NAMES.values(),
     *BATCH_CONTRACT_NAMES.values(),
 }
