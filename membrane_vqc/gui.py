@@ -419,9 +419,7 @@ class MembraneVQCDialog:
                 set_single_run_busy=self._set_batch_busy,
                 execution_allowed=self._batch_execution_allowed,
             )
-            self.tabs.addTab(
-                _wrap_scrollable(QtWidgets, self.batch_panel.widget), "Batch review"
-            )
+            self.tabs.addTab(_wrap_scrollable(QtWidgets, self.batch_panel.widget), "Batch review")
         self.window.finished.connect(self._on_dialog_finished)
         self._update_orientation_mode()
         self._sync_comparison_controls()
