@@ -21,6 +21,10 @@ SCHEMA_NAMES = {
     version: f"{PACKAGE_NAME}/schemas/mvqc-report-{version}.schema.json"
     for version in SCHEMA_VERSIONS
 }
+BATCH_CONTRACT_NAMES = {
+    "plan-1.0": f"{PACKAGE_NAME}/schemas/mvqc-batch-plan-1.0.schema.json",
+    "result-1.0": f"{PACKAGE_NAME}/schemas/mvqc-batch-result-1.0.schema.json",
+}
 # Backwards-compatible name retained for callers that refer to the Stage 4C schema directly.
 STAGE4C_SCHEMA_NAME = SCHEMA_NAMES["1.5"]
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
@@ -44,7 +48,14 @@ REQUIRED_PACKAGE_FILES = {
     f"{PACKAGE_NAME}/comparison_worker.py",
     f"{PACKAGE_NAME}/comparison_gui_worker.py",
     f"{PACKAGE_NAME}/comparison_pymol.py",
+    f"{PACKAGE_NAME}/batch_cli.py",
+    f"{PACKAGE_NAME}/batch_comparison.py",
+    f"{PACKAGE_NAME}/batch_contracts.py",
+    f"{PACKAGE_NAME}/batch_executor.py",
+    f"{PACKAGE_NAME}/batch_paths.py",
+    f"{PACKAGE_NAME}/batch_runner.py",
     *SCHEMA_NAMES.values(),
+    *BATCH_CONTRACT_NAMES.values(),
 }
 FORBIDDEN_PROVIDER_PAYLOADS = {
     (283_537, "38b2f724c4271a00bf2b83aa16015783610178f18d8954a88cb932b9152f36e0"),
@@ -114,6 +125,12 @@ def collect_plugin_files(project_root: Path) -> list[tuple[str, Path]]:
         schema_path = project_root / "schemas" / f"mvqc-report-{version}.schema.json"
         if not schema_path.is_file() or schema_path.is_symlink():
             raise PluginZipError(f"Missing report schema {version}: {schema_path}")
+        files.append((archive_name, schema_path))
+
+    for contract, archive_name in BATCH_CONTRACT_NAMES.items():
+        schema_path = project_root / "schemas" / f"mvqc-batch-{contract}.schema.json"
+        if not schema_path.is_file() or schema_path.is_symlink():
+            raise PluginZipError(f"Missing batch contract {contract}: {schema_path}")
         files.append((archive_name, schema_path))
 
     names = {name for name, _ in files}

@@ -6,6 +6,7 @@ import zipfile
 import pytest
 
 from scripts.build_plugin_zip import (
+    BATCH_CONTRACT_NAMES,
     CHECKSUMS_NAME,
     FIXED_ZIP_TIMESTAMP,
     MANIFEST_NAME,
@@ -49,6 +50,10 @@ def make_project(tmp_path):
         (tmp_path / "schemas" / f"mvqc-report-{version}.schema.json").write_text(
             f'{{"schema_version":"{version}"}}\n', encoding="utf-8"
         )
+    for contract in BATCH_CONTRACT_NAMES:
+        (tmp_path / "schemas" / f"mvqc-batch-{contract}.schema.json").write_text(
+            f'{{"contract":"mvqc-batch-{contract}"}}\n', encoding="utf-8"
+        )
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname = "example"\nversion = "1.2.3"\n', encoding="utf-8"
     )
@@ -80,6 +85,7 @@ def test_builder_produces_expected_minimal_layout_and_hashes(tmp_path):
         assert "membrane_vqc/core.py" in names
         assert STAGE4C_PACKAGE_FILES <= set(names)
         assert set(SCHEMA_NAMES.values()) <= set(names)
+        assert set(BATCH_CONTRACT_NAMES.values()) <= set(names)
         assert not any("__pycache__" in name or name.startswith("tests/") for name in names)
         assert all(info.date_time == FIXED_ZIP_TIMESTAMP for info in archive.infolist())
 

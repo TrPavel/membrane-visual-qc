@@ -29,6 +29,7 @@ class ComparisonRequest:
     pdbtm_transformed_pdb_payload: bytes
     opm_path: Path
     expected_record_id: str
+    opm_payload: bytes | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.structure_context, StructureContext):
@@ -41,6 +42,8 @@ class ComparisonRequest:
             raise ValueError("opm_path must not be empty.")
         path = Path(path_text)
         object.__setattr__(self, "opm_path", path)
+        if self.opm_payload is not None and not isinstance(self.opm_payload, bytes):
+            raise ValueError("opm_payload must contain exact bytes when supplied.")
         record_id = str(self.expected_record_id).strip().lower()
         if not _RECORD_ID.fullmatch(record_id):
             raise ValueError("expected_record_id must be a four-character PDB identifier.")
@@ -124,7 +127,11 @@ class ComparisonWorkerOrchestrator:
         operation = operation or ComparisonOperation()
         if operation.is_cancelled():
             return _cancelled()
-        payload = _read_opm_payload(request.opm_path)
+        payload = (
+            _validate_opm_payload(request.opm_payload)
+            if request.opm_payload is not None
+            else _read_opm_payload(request.opm_path)
+        )
         if isinstance(payload, ComparisonWorkerFailure):
             return payload
         if operation.is_cancelled():
@@ -209,6 +216,10 @@ def _read_opm_payload(path: Path) -> bytes | ComparisonWorkerFailure:
         return ComparisonWorkerFailure(
             "OPM_FILE_UNREADABLE", "The selected OPM file could not be read."
         )
+    return _validate_opm_payload(payload)
+
+
+def _validate_opm_payload(payload: bytes) -> bytes | ComparisonWorkerFailure:
     if len(payload) > MAX_OPM_PAYLOAD_BYTES:
         return ComparisonWorkerFailure(
             "OPM_PAYLOAD_TOO_LARGE", "The selected OPM file exceeds the 5 MiB limit."

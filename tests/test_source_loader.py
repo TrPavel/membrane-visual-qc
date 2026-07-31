@@ -31,4 +31,5 @@ def test_source_loader_registers_commands_through_package_import(monkeypatch):
         "mvqc_ligand_shell",
         "mvqc_export",
         "mvqc_clear",
+        "mvqc_batch_run",
     }.issubset(fake_cmd.registered)

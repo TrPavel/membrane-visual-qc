@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.build_plugin_zip import (  # noqa: E402
+    BATCH_CONTRACT_NAMES,
     FORBIDDEN_PROVIDER_PAYLOADS,
     MANIFEST_NAME,
     SCHEMA_NAMES,
@@ -60,6 +61,7 @@ ALLOWED_SYNTHETIC_PROVIDER_PATHS = {
     "data/synthetic/opm_oriented_test.pdb",
     "data/synthetic/pdbtm_api_v1_test.json",
     "data/synthetic/pdbtm_original_test.pdb",
+    "data/synthetic/pdbtm_original_1tes.pdb",
     "data/synthetic/pdbtm_transformed_test.pdb",
 }
 FROZEN_V040_VERSION = "0.4.0"
@@ -145,6 +147,18 @@ STAGE4C_RUNTIME_MODULES = {
     "membrane_vqc/comparison_worker.py",
     "membrane_vqc/comparison_gui_worker.py",
     "membrane_vqc/comparison_pymol.py",
+}
+STAGE5A_RUNTIME_MODULES = {
+    "membrane_vqc/batch_cli.py",
+    "membrane_vqc/batch_comparison.py",
+    "membrane_vqc/batch_contracts.py",
+    "membrane_vqc/batch_executor.py",
+    "membrane_vqc/batch_paths.py",
+    "membrane_vqc/batch_runner.py",
+}
+BATCH_CONTRACT_FILES = {
+    "schemas/mvqc-batch-plan-1.0.schema.json",
+    "schemas/mvqc-batch-result-1.0.schema.json",
 }
 FROZEN_V040_REPORT = "reports/pdbtm_synthetic_mvqc.json"
 FROZEN_V040_FILE_HASHES = {
@@ -354,6 +368,9 @@ def _validate_artifact_set(
             raise ReleaseArtifactError(
                 f"Schema {schema_version} does not match its recorded current-development hash"
             )
+    batch_contract_hashes = {
+        relative: sha256_file(project_root / relative) for relative in BATCH_CONTRACT_FILES
+    }
 
     wheel = dist_dir / f"membrane_vqc_pymol-{expected_version}-py3-none-any.whl"
     sdist = dist_dir / f"membrane_vqc_pymol-{expected_version}.tar.gz"
@@ -378,6 +395,7 @@ def _validate_artifact_set(
             | STAGE4B2_RUNTIME_MODULES
             | STAGE4B3_RUNTIME_MODULES
             | STAGE4C_RUNTIME_MODULES
+            | STAGE5A_RUNTIME_MODULES
         ) - set(wheel_names)
         if missing_wheel:
             raise ReleaseArtifactError(f"Wheel is missing: {', '.join(sorted(missing_wheel))}")
@@ -390,6 +408,16 @@ def _validate_artifact_set(
                 raise ReleaseArtifactError(
                     f"Wheel schema {schema_version} is missing or does not match its hash"
                 )
+        for relative in BATCH_CONTRACT_FILES:
+            suffix = f"/data/{relative}"
+            matches = [name for name in wheel_names if name.endswith(suffix)]
+            if len(matches) != 1:
+                raise ReleaseArtifactError(f"Wheel is missing batch contract: {relative}")
+            if (
+                hashlib.sha256(archive.read(matches[0])).hexdigest()
+                != batch_contract_hashes[relative]
+            ):
+                raise ReleaseArtifactError(f"Wheel batch contract differs from source: {relative}")
         wheel_version = _metadata_version(archive.read(metadata_name).decode("utf-8"))
     if wheel_version != expected_version:
         raise ReleaseArtifactError(f"Wheel metadata version mismatch: {wheel_version}")
@@ -428,6 +456,10 @@ def _validate_artifact_set(
                 raise ReleaseArtifactError(
                     f"Sdist schema {schema_version} does not match its recorded hash"
                 )
+        for relative, expected_hash in batch_contract_hashes.items():
+            stream = archive.extractfile(f"{root}/{relative}")
+            if stream is None or hashlib.sha256(stream.read()).hexdigest() != expected_hash:
+                raise ReleaseArtifactError(f"Sdist batch contract differs from source: {relative}")
     if sdist_version != expected_version:
         raise ReleaseArtifactError(f"Sdist metadata version mismatch: {sdist_version}")
     required_sdist = {
@@ -438,8 +470,10 @@ def _validate_artifact_set(
         *STAGE4B2_RUNTIME_MODULES,
         *STAGE4B3_RUNTIME_MODULES,
         *STAGE4C_RUNTIME_MODULES,
+        *STAGE5A_RUNTIME_MODULES,
         "membrane_vqc/report.py",
         *{f"schemas/mvqc-report-{item}.schema.json" for item in SCHEMA_HASHES},
+        *BATCH_CONTRACT_FILES,
     }
     missing_sdist = required_sdist - relative_names
     if missing_sdist:
@@ -458,6 +492,15 @@ def _validate_artifact_set(
             if hashlib.sha256(archive.read(schema_name)).hexdigest() != expected_hash:
                 raise ReleaseArtifactError(
                     f"Plugin ZIP schema {schema_version} does not match its recorded hash"
+                )
+        for contract, archive_name in BATCH_CONTRACT_NAMES.items():
+            relative = f"schemas/mvqc-batch-{contract}.schema.json"
+            if (
+                hashlib.sha256(archive.read(archive_name)).hexdigest()
+                != batch_contract_hashes[relative]
+            ):
+                raise ReleaseArtifactError(
+                    f"Plugin ZIP batch contract differs from source: {relative}"
                 )
 
     expected_sidecar = f"{sha256_file(plugin_zip)}  {plugin_zip.name}\n"

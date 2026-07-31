@@ -6,6 +6,21 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Added
+
+- Added Stage 5A versioned `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts, a PyMOL-free
+  validation CLI, and sequential main-thread PyMOL execution for legacy global-z, local planar,
+  local PDBTM, exact cached PDBTM snapshot, and local PDBTM–OPM comparison jobs.
+- Added cooperative between-job cancellation, continue-on-error and fail-fast policies,
+  deterministic relative output names, atomic file publication, coordinate-preservation checks,
+  strict local-path/privacy boundaries, synthetic examples, and Windows CI coverage.
+
+### Security
+
+- Batch execution performs no network retrieval, rejects traversal/URL/UNC/device/reparse paths,
+  pre-resolves exact cache snapshots, refuses unrelated output collisions, and never serializes
+  absolute paths or raw exceptions into the result manifest.
+
 ### Changed
 
 - Reopened development as `0.6.0.dev0` after publishing v0.5.0. This identity-only reset adds no

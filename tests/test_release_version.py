@@ -22,6 +22,8 @@ from scripts.validate_release_artifacts import (
     STAGE4B2_RUNTIME_MODULES,
     STAGE4B3_RUNTIME_MODULES,
     STAGE4C_RUNTIME_MODULES,
+    STAGE5A_RUNTIME_MODULES,
+    BATCH_CONTRACT_FILES,
     _assert_safe_archive_names,
     _assert_safe_archive_payload,
     _assert_safe_tar_entries,
@@ -40,10 +42,14 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_wheel_data_files_declare_every_pinned_report_schema():
     configuration = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
-    assert set(configuration["tool"]["setuptools"]["data-files"]["schemas"]) == {
-        f"schemas/mvqc-report-{version}.schema.json"
-        for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
-    }
+    assert (
+        set(configuration["tool"]["setuptools"]["data-files"]["schemas"])
+        == {
+            f"schemas/mvqc-report-{version}.schema.json"
+            for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
+        }
+        | BATCH_CONTRACT_FILES
+    )
 
 
 def test_release_validator_rejects_known_provider_payload_content(monkeypatch):
@@ -171,6 +177,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
             | STAGE4B2_RUNTIME_MODULES
             | STAGE4B3_RUNTIME_MODULES
             | STAGE4C_RUNTIME_MODULES
+            | STAGE5A_RUNTIME_MODULES
         ):
             archive.writestr(module, "")
         for schema_version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5"):
@@ -178,6 +185,11 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
                 f"membrane_vqc_pymol-{version}.data/data/schemas/"
                 f"mvqc-report-{schema_version}.schema.json",
                 (project / "schemas" / f"mvqc-report-{schema_version}.schema.json").read_bytes(),
+            )
+        for relative in sorted(BATCH_CONTRACT_FILES):
+            archive.writestr(
+                f"membrane_vqc_pymol-{version}.data/data/{relative}",
+                (project / relative).read_bytes(),
             )
         archive.writestr(
             f"membrane_vqc_pymol-{version}.dist-info/METADATA",
@@ -198,6 +210,10 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
             ).read_text(encoding="utf-8")
             for version in ("1.0", "1.1", "1.2", "1.3", "1.4", "1.5")
         },
+        **{
+            relative: (project / relative).read_text(encoding="utf-8")
+            for relative in BATCH_CONTRACT_FILES
+        },
     }
     required.update(
         {
@@ -207,6 +223,7 @@ def test_release_version_is_consistent_across_representative_artifacts(tmp_path)
                 | STAGE4B2_RUNTIME_MODULES
                 | STAGE4B3_RUNTIME_MODULES
                 | STAGE4C_RUNTIME_MODULES
+                | STAGE5A_RUNTIME_MODULES
             )
         }
     )
