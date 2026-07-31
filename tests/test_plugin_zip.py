@@ -1,5 +1,6 @@
 import hashlib
 import json
+import stat
 import zipfile
 
 import pytest
@@ -10,7 +11,7 @@ from scripts.build_plugin_zip import (
     MANIFEST_NAME,
     PluginZipError,
     REQUIRED_PACKAGE_FILES,
-    STAGE4C_SCHEMA_NAME,
+    SCHEMA_NAMES,
     FORBIDDEN_PROVIDER_PAYLOADS,
     build_plugin_zip,
     sha256_file,
@@ -33,7 +34,7 @@ def make_project(tmp_path):
     required = {
         name.removeprefix("membrane_vqc/")
         for name in REQUIRED_PACKAGE_FILES
-        if name != STAGE4C_SCHEMA_NAME
+        if name not in SCHEMA_NAMES.values()
     }
     for name in (*sorted(required), "core.py"):
         target = tmp_path / "membrane_vqc" / name
@@ -44,9 +45,10 @@ def make_project(tmp_path):
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "test_core.py").write_text("", encoding="utf-8")
     (tmp_path / "schemas").mkdir()
-    (tmp_path / "schemas" / "mvqc-report-1.5.schema.json").write_text(
-        '{"schema_version":"1.5"}\n', encoding="utf-8"
-    )
+    for version in SCHEMA_NAMES:
+        (tmp_path / "schemas" / f"mvqc-report-{version}.schema.json").write_text(
+            f'{{"schema_version":"{version}"}}\n', encoding="utf-8"
+        )
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nname = "example"\nversion = "1.2.3"\n', encoding="utf-8"
     )
@@ -58,7 +60,7 @@ def test_builder_rejects_known_provider_payload_content(tmp_path, monkeypatch):
     payload = b"official-provider-body-for-test"
     identity = (len(payload), hashlib.sha256(payload).hexdigest())
     monkeypatch.setattr("scripts.build_plugin_zip.FORBIDDEN_PROVIDER_PAYLOADS", {identity})
-    (root / "membrane_vqc" / "renamed.json").write_bytes(payload)
+    (root / "membrane_vqc" / "renamed.txt").write_bytes(payload)
 
     with pytest.raises(PluginZipError, match="Official provider payload"):
         build_plugin_zip(root)
@@ -77,7 +79,7 @@ def test_builder_produces_expected_minimal_layout_and_hashes(tmp_path):
         assert {name.split("/", 1)[0] for name in names} == {"membrane_vqc"}
         assert "membrane_vqc/core.py" in names
         assert STAGE4C_PACKAGE_FILES <= set(names)
-        assert STAGE4C_SCHEMA_NAME in names
+        assert set(SCHEMA_NAMES.values()) <= set(names)
         assert not any("__pycache__" in name or name.startswith("tests/") for name in names)
         assert all(info.date_time == FIXED_ZIP_TIMESTAMP for info in archive.infolist())
 
@@ -148,3 +150,28 @@ def test_manifest_is_stable_json_and_lists_only_package_files(tmp_path):
     assert [entry["path"] for entry in manifest["files"]] == sorted(
         [*REQUIRED_PACKAGE_FILES, "membrane_vqc/core.py"]
     )
+
+
+def test_validator_rejects_duplicate_entries(tmp_path):
+    output = build_plugin_zip(make_project(tmp_path))
+    with zipfile.ZipFile(output, "a") as archive:
+        archive.writestr("membrane_vqc/core.py", "duplicate")
+
+    with pytest.raises(PluginZipError, match="duplicate"):
+        validate_zip_layout(output)
+
+
+def test_validator_rejects_symlink_entry(tmp_path):
+    output = build_plugin_zip(make_project(tmp_path))
+    invalid = tmp_path / "symlink.zip"
+    with zipfile.ZipFile(output) as source, zipfile.ZipFile(invalid, "w") as target:
+        link = zipfile.ZipInfo("membrane_vqc/link.py")
+        link.create_system = 3
+        link.external_attr = (stat.S_IFLNK | 0o777) << 16
+        entries = [(info, source.read(info.filename)) for info in source.infolist()]
+        entries.append((link, b"core.py"))
+        for info, data in sorted(entries, key=lambda item: item[0].filename):
+            target.writestr(info, data)
+
+    with pytest.raises(PluginZipError, match="not a regular file"):
+        validate_zip_layout(invalid)

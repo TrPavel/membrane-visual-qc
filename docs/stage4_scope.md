@@ -1,6 +1,8 @@
 # Stage 4 scope and implementation boundary
 
-Status: Stage 4A1 offline core is merged; Stage 4A2 offline PyMOL/GUI integration is in development.
+Status: **COMPLETE**. Stage 4A, Stage 4B1–4B4, and Stage 4C are merged and accepted. The detailed
+sections below preserve the original staged design and acceptance criteria as historical context;
+later implementation documents and v0.5.0 release notes describe the completed behavior.
 
 ## Goal and subdivision
 

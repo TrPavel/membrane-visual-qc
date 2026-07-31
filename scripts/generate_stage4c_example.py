@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import re
 
 from membrane_vqc.comparison_report import (
     ComparisonPayloadDigest,
@@ -20,10 +21,12 @@ from membrane_vqc.comparison_worker import (
 )
 from membrane_vqc.opm_adapter import fingerprint_structure_context
 from membrane_vqc.orientation_sources import StructureContext
+from membrane_vqc.constants import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SYNTHETIC = ROOT / "data" / "synthetic"
+_COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 
 
 def _source(source_key: str, imported: object) -> ComparisonReportSource:
@@ -51,7 +54,19 @@ def _source(source_key: str, imported: object) -> ComparisonReportSource:
     )
 
 
-def build_example() -> dict[str, object]:
+def build_example(
+    *,
+    software_commit: str,
+    software_version: str = VERSION,
+    generated_at: str = "2026-07-22T12:00:00Z",
+    python_version: str = "3.10.20",
+    pymol_version: str = "3.1.8",
+    platform: str = "Windows-10-build-26200",
+) -> dict[str, object]:
+    """Build the deterministic comparison example for an exact Git commit."""
+
+    if not _COMMIT.fullmatch(software_commit):
+        raise ValueError("software_commit must be an exact 40-character lowercase Git SHA")
     current_payload = (SYNTHETIC / "pdbtm_original_test.pdb").read_bytes()
     context = StructureContext(
         current_payload,
@@ -75,13 +90,13 @@ def build_example() -> dict[str, object]:
         raise RuntimeError("Synthetic OPM evidence was not applicable.")
     atom_count = sum(line.startswith(b"ATOM  ") for line in current_payload.splitlines())
     return build_comparison_report(
-        generated_at="2026-07-22T12:00:00Z",
+        generated_at=generated_at,
         software_name="Membrane Visual QC",
-        software_version="0.5.0.dev0",
-        software_commit="synthetic-example",
-        python_version="3.10.20",
-        pymol_version="3.1.8",
-        platform="Windows-10-build-26200",
+        software_version=software_version,
+        software_commit=software_commit,
+        python_version=python_version,
+        pymol_version=pymol_version,
+        platform=platform,
         selected_object=SelectedObjectEvidence(
             "test",
             "1",
@@ -98,9 +113,32 @@ def build_example() -> dict[str, object]:
 
 
 def main() -> int:
-    print(
-        json.dumps(build_example(), indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--software-version", default=VERSION)
+    parser.add_argument("--software-commit", required=True)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    if not _COMMIT.fullmatch(args.software_commit):
+        parser.error("--software-commit must be an exact 40-character lowercase Git SHA")
+    rendered = (
+        json.dumps(
+            build_example(
+                software_version=args.software_version,
+                software_commit=args.software_commit,
+            ),
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n"
     )
+    if args.output is None:
+        print(rendered, end="")
+    else:
+        args.output.write_text(rendered, encoding="utf-8", newline="\n")
     return 0
 
 

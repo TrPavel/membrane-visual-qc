@@ -2,9 +2,15 @@
 
 ## Current status
 
-Stage 3 is complete and merged into `main`. v0.3.0 is published as a prerelease for limited public
-testing from annotated tag `v0.3.0`. Stage 4 has not started, v0.1.0 and v0.2.0 remain immutable,
-and PyPI is not used.
+Stage 4A, Stage 4B1–4B4, and Stage 4C are complete. The repository is preparing v0.5.0 as a GitHub
+prerelease for limited public testing. The release includes offline PDBTM pairs, bounded direct
+PDBTM retrieval, a validated local cache, schema 1.4 acquisition provenance, offline-only OPM
+input, and explicit schema 1.5 PDBTM–OPM geometric comparison. It performs no automatic fitting,
+coordinate mutation, source selection, provider ranking, consensus, or biological verdict.
+
+Final v0.5.0 test totals, artifact identities, release PR/commit/tag data, publication URL, and
+downloaded-asset verification are **PENDING** exact-artifact acceptance and publication. Historical
+v0.1.0–v0.4.0 and `0.5.0.dev0` evidence below remains intentionally unchanged. PyPI is not used.
 
 ## Environment
 

@@ -8,15 +8,21 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Reopened source development as `0.5.0.dev0` after publishing v0.4.0. This lifecycle reset does
-  not change released reports or schemas.
+- Preparing the completed Stage 4 implementation for the v0.5.0 GitHub prerelease. Final release
+  artifact identities, validation totals, publication date, and tag evidence remain **PENDING**
+  until the exact release artifact has passed acceptance and publication verification.
+
+## [0.5.0] - PENDING
+
+Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
+publication is planned.
 
 ### Added
 
 - Added Stage 4C's explicit offline PDBTM-versus-OPM geometric comparison: a pure-Python OPM DUM
   boundary adapter, identity-only selected-object applicability, sign-ambiguous planar comparison,
   four comparison-owned PyMOL boundary objects, a dedicated cancellable GUI workflow, and additive
-  draft report schema 1.5. The workflow never fetches implicitly, fits or mutates coordinates,
+  report schema 1.5, frozen for v0.5.0. The workflow never fetches implicitly, fits or mutates coordinates,
   selects a preferred source, invents consensus, ranks providers, or makes a biological verdict.
 - Closed the remaining Stage 4B4 manual graphical gate for the exact 110,358-byte Stage 4B3 ZIP;
   Plugin Manager install/restart, all three existing modes, cached/local behavior, schema 1.3/1.4
@@ -27,7 +33,7 @@ The format follows Keep a Changelog style, and this project intends to use seman
   clear, and cancellation/delivery state machine.
 - Added adversarial transport/cache tests, an ordinary-test non-loopback network guard, a blocking
   Windows Python 3.10 core job, and artifact gates that exclude official provider and cache data.
-- Added report schema 1.4 (draft) and `membrane_vqc.pdbtm_report_provenance`: a pure, I/O-free
+- Added report schema 1.4, frozen for v0.5.0, and `membrane_vqc.pdbtm_report_provenance`: a pure, I/O-free
   conversion from an already-validated Stage 4B1 cache read result to a typed, immutable
   `orientation.acquisition` provenance block (provider identity, pair/snapshot IDs, per-payload
   acquisition evidence, and pair self-consistency), plus a `build_report(pdbtm_acquisition=...)`

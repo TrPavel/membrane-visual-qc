@@ -17,6 +17,7 @@ report_path = Path(os.environ["MVQC_COMPARISON_REPORT"]).resolve()
 png_path = Path(os.environ["MVQC_COMPARISON_PNG"]).resolve()
 sys.path.insert(0, str(artifact_root))
 
+from membrane_vqc import __version__  # noqa: E402
 from membrane_vqc.comparison_pymol import (  # noqa: E402
     capture_comparison_snapshot,
     clear_comparison_boundaries,
@@ -71,6 +72,8 @@ def report_source(source_key, imported):
 
 
 assert Path(sys.modules["membrane_vqc"].__file__).resolve().is_relative_to(artifact_root)
+expected_version = os.environ.get("MVQC_EXPECTED_VERSION", __version__)
+assert __version__ == expected_version
 cmd.reinitialize()
 cmd.load(str(fixture_root / "pdbtm_original_test.pdb"), "stage4c_test")
 before = tuple(tuple(float(value) for value in row) for row in cmd.get_coords("stage4c_test"))
@@ -94,7 +97,7 @@ scope = opm_input.scope
 report = build_comparison_report(
     generated_at="2026-07-22T12:00:00Z",
     software_name="Membrane Visual QC",
-    software_version="0.5.0.dev0",
+    software_version=expected_version,
     software_commit="exact-artifact-smoke",
     python_version=sys.version.split()[0],
     pymol_version=str(cmd.get_version()[0]),

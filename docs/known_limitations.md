@@ -1,5 +1,24 @@
 # Known Limitations
 
+## v0.5.0 limitations
+
+- v0.5.0 is intended as a GitHub prerelease for limited public testing; PyPI publication is not
+  provided.
+- OPM support is offline-only and requires an explicit local oriented-PDB file. There is no live
+  OPM retrieval.
+- PDBTM retrieval is direct HTTPS only. Proxy discovery, PAC, CONNECT, proxy credentials,
+  redirects, and retries are unsupported.
+- The validated cache has no automatic migration or garbage collection. Fetch/Refresh, use, and
+  clear remain explicit user actions.
+- There is no batch comparison or automatic source selection.
+- There is no automatic fitting, alignment, consensus orientation, provider ranking, or preferred
+  source.
+- Only one planar membrane per source is represented; curved, multiple, intersecting, and double
+  membranes are unsupported.
+- Comparison thresholds are conservative geometric review bands, not biological truth. The
+  software makes no biological correctness verdict.
+- Official PDBTM and OPM provider payloads are not redistributed in Git or release archives.
+
 Membrane Visual QC is an inspection helper, not a definitive validator of membrane protein correctness.
 
 ## Released v0.1 limitations

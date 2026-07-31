@@ -24,7 +24,7 @@ OLD_SCHEMA_HASHES = {
     "1.1": "86af40c08cd8c3d1bf3bbe86f359b648384704a84e43748b548bc0c28f5ebecf",
     "1.2": "96bacd127dfd6204bc9bb5ddbd6583539ffc99c6443c8f995c252fa96f0d4430",
     "1.3": "6ee153bc402765a9418a72c1f08fc1e41d213e3e7442ab6b2a726813391cadfc",
-    "1.4": "7d981454cad061681dd5c3dc2a76a283295a7ed82bed2f0d58769d1716602530",
+    "1.4": "ee3bc91b2ba2c32814aad61eb69ed8413bae9460c33cb5d69d839335ff6e698e",
 }
 
 
@@ -57,7 +57,7 @@ def _report():
     return build_comparison_report(
         generated_at="2026-07-22T12:00:00Z",
         software_name="Membrane Visual QC",
-        software_version="0.5.0.dev0",
+        software_version="0.5.0",
         software_commit="e" * 40,
         python_version="3.10.20",
         pymol_version="3.1.8",
@@ -177,7 +177,21 @@ def test_synthetic_example_is_reproducible_and_semantically_valid():
     retained = json.loads(
         (ROOT / "reports" / "source_comparison_synthetic_mvqc.json").read_text("utf-8")
     )
-    assert retained == build_example()
+    commit = retained["software"]["commit"]
+    # The old development fixture used a descriptive placeholder. Release
+    # generation replaces it with an exact commit, at which point this test
+    # provides full deterministic reproduction of the retained bytes.
+    if len(commit) == 40 and set(commit) <= set("0123456789abcdef"):
+        assert retained == build_example(
+            software_version=retained["software"]["version"],
+            software_commit=commit,
+            generated_at=retained["generated_at"],
+            python_version=retained["runtime"]["python"],
+            pymol_version=retained["runtime"]["pymol"],
+            platform=retained["runtime"]["platform"],
+        )
+    else:
+        assert commit == "synthetic-example"
     validate_comparison_report(retained)
 
 

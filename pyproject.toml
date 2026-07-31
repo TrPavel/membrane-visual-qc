@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "membrane-vqc-pymol"
-version = "0.5.0.dev0"
+version = "0.5.0"
 description = "A lightweight PyMOL plugin for visual QC of membrane protein structures."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -30,7 +30,14 @@ dev = ["build", "jsonschema", "mypy", "pytest", "pytest-cov", "ruff"]
 include = ["membrane_vqc*"]
 
 [tool.setuptools.data-files]
-"schemas" = ["schemas/mvqc-report-1.5.schema.json"]
+"schemas" = [
+  "schemas/mvqc-report-1.0.schema.json",
+  "schemas/mvqc-report-1.1.schema.json",
+  "schemas/mvqc-report-1.2.schema.json",
+  "schemas/mvqc-report-1.3.schema.json",
+  "schemas/mvqc-report-1.4.schema.json",
+  "schemas/mvqc-report-1.5.schema.json",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
