@@ -125,6 +125,51 @@ FROZEN_V050_POST_MERGE = {
     "outer_size": 571626,
     "outer_sha256": "fbbbbc8f604eb29b0fb285f318d33bf91f6707e5b4e947c462b3df8b8a63bc54",
 }
+FROZEN_V060_VERSION = "0.6.0"
+FROZEN_V060_RELEASE_EVIDENCE = "docs/v0.6.0_release_evidence.json"
+# v0.6.0 (Stage 5A/5B) adds no report schema and no new retained report; schemas
+# 1.0-1.5 stay byte-identical to the frozen-v0.5.0 gate above, so there is no
+# separate report/schema set to freeze here. Only publication evidence is new.
+FROZEN_V060_ASSETS = {
+    "MembraneVisualQC-0.6.0.zip": {
+        "size": 192168,
+        "sha256": "7126e51acc6514e3fb73ed0113200d8da376ca75e5f128aef556db2194046960",
+    },
+    "MembraneVisualQC-0.6.0.zip.sha256": {
+        "size": 93,
+        "sha256": "231a0f42cda4a5714821616a884afab6b412bfe438bbb1954cc1d89d7fb4860f",
+    },
+    "membrane_vqc_pymol-0.6.0-py3-none-any.whl": {
+        "size": 196640,
+        "sha256": "3e344871206ca353d7690cfc561165a7e197e9a1a27fa5a424b357b3501b9994",
+    },
+    "membrane_vqc_pymol-0.6.0.tar.gz": {
+        "size": 304479,
+        "sha256": "c39ed66b2a93b9e244c74bc7ea04277d1e6725f3581f95d76668a2a094f8b48d",
+    },
+}
+FROZEN_V060_RELEASE = {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.6.0",
+    "published_at": "2026-07-31T23:08:14Z",
+    "prerelease": True,
+    "pypi_published": False,
+}
+FROZEN_V060_TAG = {
+    "name": "v0.6.0",
+    "object": "a17286ff9a88809ce85e4beb355392b67fc305a8",
+    "target": "58e89fed284139ea6e5d6be05a35fdeada591037",
+}
+FROZEN_V060_RELEASE_PR = {
+    "number": 23,
+    "final_head": "ba18eaf343343cb6ff1cf79221e02331b02d7712",
+    "squash_commit": "58e89fed284139ea6e5d6be05a35fdeada591037",
+}
+FROZEN_V060_POST_MERGE = {
+    "id": 30671684595,
+    "artifact_id": 8809005376,
+    "outer_size": 684562,
+    "outer_sha256": "54c61714f2ccf3c37dab01e0b184779ae13bd251b173b60578fe4f19ae7f1f5e",
+}
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
     "membrane_vqc/pdbtm_cache_contract.py",
@@ -678,6 +723,33 @@ def verify_frozen_v050_evidence(project_root: Path = ROOT) -> dict[str, object]:
     }
 
 
+def verify_frozen_v060_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify published v0.6.0 publication evidence without consulting the active version."""
+    project_root = project_root.resolve()
+
+    evidence_path = project_root / FROZEN_V060_RELEASE_EVIDENCE
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    expected_sections = {
+        "version": FROZEN_V060_VERSION,
+        "release_pr": FROZEN_V060_RELEASE_PR,
+        "post_merge_workflow": FROZEN_V060_POST_MERGE,
+        "tag": FROZEN_V060_TAG,
+        "release": FROZEN_V060_RELEASE,
+        "assets": FROZEN_V060_ASSETS,
+    }
+    if evidence != expected_sections:
+        raise ReleaseArtifactError("Frozen v0.6.0 publication evidence changed")
+
+    return {
+        "version": FROZEN_V060_VERSION,
+        "assets": evidence["assets"],
+        "release": evidence["release"],
+        "tag": evidence["tag"],
+        "release_pr": evidence["release_pr"],
+        "post_merge_workflow": evidence["post_merge_workflow"],
+    }
+
+
 # Backwards-compatible API name for callers that validate the active build.
 validate_release_artifacts = validate_current_development_artifacts
 
@@ -690,6 +762,7 @@ def main() -> int:
             "current-development",
             "frozen-v0.4.0",
             "frozen-v0.5.0",
+            "frozen-v0.6.0",
             "release-candidate",
         ),
         default="current-development",
@@ -710,6 +783,10 @@ def main() -> int:
         if args.version is not None:
             parser.error("--version is only valid with --mode release-candidate")
         result = verify_frozen_v050_evidence(args.project_root)
+    elif args.mode == "frozen-v0.6.0":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v060_evidence(args.project_root)
     else:
         if args.version is None:
             parser.error("--mode release-candidate requires --version")
