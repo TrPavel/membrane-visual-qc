@@ -121,6 +121,46 @@ def _drive(predicate, timeout=5.0):
         QtWidgets.QApplication.processEvents()
 
 
+def test_real_qt_tabs_are_scrollable_and_shrink_below_content_height():
+    application = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+
+    for _ in range(2):
+        dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+        dialog.show()
+        QtWidgets.QApplication.processEvents()
+
+        assert dialog.tabs.count() == 2
+        single_page_tab = dialog.tabs.widget(0)
+        batch_review_tab = dialog.tabs.widget(1)
+        assert isinstance(single_page_tab, QtWidgets.QScrollArea)
+        assert isinstance(batch_review_tab, QtWidgets.QScrollArea)
+        assert single_page_tab.widgetResizable() is True
+        assert batch_review_tab.widgetResizable() is True
+        assert single_page_tab.widget() is dialog.single_page
+        assert batch_review_tab.widget() is dialog.batch_panel.widget
+
+        oversized_content_height = max(
+            dialog.single_page.sizeHint().height(),
+            dialog.batch_panel.widget.sizeHint().height(),
+        )
+        target_height = 400
+        assert oversized_content_height > target_height
+        dialog.window.resize(dialog.window.width(), target_height)
+        QtWidgets.QApplication.processEvents()
+        assert dialog.window.height() <= target_height + 1
+
+        # Bottom controls remain part of the (scrollable) layout, not clipped out of it.
+        for control in (dialog.action_buttons[0], dialog.summary):
+            assert control.isVisibleTo(dialog.single_page)
+        for control in (dialog.batch_panel.run_button, dialog.batch_panel.open_manifest_button):
+            assert control.isVisibleTo(dialog.batch_panel.widget)
+
+        dialog.window.close()
+        QtWidgets.QApplication.processEvents()
+
+    application.processEvents()
+
+
 def test_real_qt_dialog_and_main_thread_batch_lifecycle(monkeypatch, tmp_path):
     application = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     import membrane_vqc.batch_gui as module

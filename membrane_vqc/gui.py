@@ -180,6 +180,18 @@ def show_dialog():
     return _DIALOG
 
 
+def _wrap_scrollable(QtWidgets, content):
+    """Wrap tab content in a vertically resizable QScrollArea.
+
+    Keeps the dialog's minimum height small instead of the sum of every
+    row's size hint, without imposing any fixed/minimum pixel height.
+    """
+    scroll = QtWidgets.QScrollArea()
+    scroll.setWidgetResizable(True)
+    scroll.setWidget(content)
+    return scroll
+
+
 class MembraneVQCDialog:
     """Small wrapper class so imports stay lazy outside PyMOL."""
 
@@ -218,14 +230,14 @@ class MembraneVQCDialog:
         self.single_page = None
         if all(
             hasattr(QtWidgets, name)
-            for name in ("QTabWidget", "QVBoxLayout", "QWidget", "QTableWidget")
+            for name in ("QTabWidget", "QVBoxLayout", "QWidget", "QTableWidget", "QScrollArea")
         ):
             root_layout = QtWidgets.QVBoxLayout(self.window)
             self.tabs = QtWidgets.QTabWidget(self.window)
             root_layout.addWidget(self.tabs)
             self.single_page = QtWidgets.QWidget(self.tabs)
             layout = QtWidgets.QFormLayout(self.single_page)
-            self.tabs.addTab(self.single_page, "Single structure")
+            self.tabs.addTab(_wrap_scrollable(QtWidgets, self.single_page), "Single structure")
         else:
             layout = QtWidgets.QFormLayout(self.window)
 
@@ -407,7 +419,9 @@ class MembraneVQCDialog:
                 set_single_run_busy=self._set_batch_busy,
                 execution_allowed=self._batch_execution_allowed,
             )
-            self.tabs.addTab(self.batch_panel.widget, "Batch review")
+            self.tabs.addTab(
+                _wrap_scrollable(QtWidgets, self.batch_panel.widget), "Batch review"
+            )
         self.window.finished.connect(self._on_dialog_finished)
         self._update_orientation_mode()
         self._sync_comparison_controls()
