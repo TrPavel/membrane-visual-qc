@@ -2,22 +2,20 @@
 
 ## Current status
 
-Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete. v0.5.0 was published as a
-GitHub prerelease for limited public testing on 2026-07-31. The repository is now preparing
-`0.6.0` as a GitHub prerelease. It adds Stage 5A's strict batch-plan/result contracts and Stage
-5B's **Batch review** GUI: an explicit-plan queue runner, cooperative cancellation, bounded
-session-only history, an integrity-checked result browser, and a scrollable dialog layout for
-constrained-height screens. It performs no automatic fitting, coordinate mutation, source
-selection, provider ranking, consensus, or biological verdict.
+Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete. v0.6.0 was published as a
+GitHub prerelease for limited public testing on 2026-07-31. It adds Stage 5A's strict
+batch-plan/result contracts and Stage 5B's **Batch review** GUI: an explicit-plan queue runner,
+cooperative cancellation, bounded session-only history, an integrity-checked result browser, and a
+scrollable dialog layout for constrained-height screens. It performs no automatic fitting,
+coordinate mutation, source selection, provider ranking, consensus, or biological verdict.
 
-The exact v0.5.0 publication evidence is frozen in `docs/v0.5.0_release_evidence.json`; downloaded
-assets were byte-verified against the authoritative post-merge workflow. The `0.6.0.dev0`
-development artifact (commit `9a528c4`, CI run `30656333770`) passed full 20-point manual
-acceptance and a post-fix responsive-GUI smoke test on a real PyMOL session before this
-version-identity promotion; see `docs/stage5b_graphical_acceptance.md`. Final v0.6.0 tag, release,
-and publication evidence remain **PENDING** until the exact release artifact has passed
-publication verification. Historical v0.1.0–v0.5.0 evidence below remains intentionally unchanged.
-PyPI is not used.
+The exact v0.6.0 publication evidence is frozen in `docs/v0.6.0_release_evidence.json`; downloaded
+assets were byte-verified against the authoritative post-merge workflow. The pre-promotion
+`0.6.0.dev0` development artifact (commit `9a528c4`, CI run `30656333770`) passed full 20-point
+manual acceptance and a post-fix responsive-GUI smoke test on a real PyMOL session; the published
+stable `MembraneVisualQC-0.6.0.zip` artifact additionally passed manual smoke-test acceptance after
+publication. See `docs/stage5b_graphical_acceptance.md`. Active development is `0.7.0.dev0`.
+Historical v0.1.0–v0.6.0 evidence below remains intentionally unchanged. PyPI is not used.
 
 ## Environment
 
