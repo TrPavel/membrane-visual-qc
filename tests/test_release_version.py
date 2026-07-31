@@ -287,7 +287,7 @@ def test_frozen_v050_evidence_is_verified_independently_of_active_version(tmp_pa
         shutil.copytree(ROOT / directory, tmp_path / directory)
     result = verify_frozen_v050_evidence(tmp_path)
 
-    assert project_version(ROOT) == "0.6.0.dev0"
+    assert project_version(ROOT) == "0.6.0"
     assert result["version"] == "0.5.0"
     assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
     assert set(result["reports"]) == {

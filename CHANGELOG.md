@@ -6,6 +6,17 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+### Changed
+
+- Preparing the completed Stage 5A/5B batch review implementation for the v0.6.0 GitHub
+  prerelease. Final release artifact identity, tag, and publication evidence remain **PENDING**
+  until the exact release artifact has passed tagging and publication verification.
+
+## [0.6.0] - PENDING
+
+Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
+publication is planned.
+
 ### Added
 
 - Added Stage 5B's dedicated **Batch review** tab with explicit plan/output selection, validation,
@@ -20,6 +31,9 @@ The format follows Keep a Changelog style, and this project intends to use seman
 - Added cooperative between-job cancellation, continue-on-error and fail-fast policies,
   deterministic relative output names, atomic file publication, coordinate-preservation checks,
   strict local-path/privacy boundaries, synthetic examples, and Windows CI coverage.
+- Wrapped the Single structure and Batch review tabs in a vertically resizable `QScrollArea` so the
+  dialog stays usable on constrained-height screens and under Windows display scaling. No layout
+  content, control, or behavior changed.
 
 ### Security
 
@@ -28,11 +42,6 @@ The format follows Keep a Changelog style, and this project intends to use seman
   absolute paths or raw exceptions into the result manifest.
 - Result open/reveal is user-initiated, uses Qt local-file URLs, and repeats path and content
   verification immediately before opening. Missing or changed outputs remain unavailable.
-
-### Changed
-
-- Reopened development as `0.6.0.dev0` after publishing v0.5.0. This identity-only reset adds no
-  runtime or scientific behavior.
 
 ## [0.5.0] - 2026-07-31
 
