@@ -97,10 +97,10 @@ def resolve_input_directory(root: Path, relative: object, *, field: str) -> Path
 
 def resolve_existing_root(path: str | Path) -> Path:
     """Resolve one existing local directory without following link/reparse components."""
-    lexical = Path(path).absolute()
-    windows_text = str(PureWindowsPath(lexical))
-    if windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
+    raw_windows_text = str(PureWindowsPath(str(path)))
+    if raw_windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
         raise BatchPathError("local root must not be a UNC or device path")
+    lexical = Path(path).absolute()
     if ".." in lexical.parts:
         raise BatchPathError("local root must not contain traversal components")
     cursor = Path(lexical.anchor) if lexical.anchor else Path()
@@ -117,10 +117,10 @@ def resolve_existing_root(path: str | Path) -> Path:
 def prepare_output_root(path: str | Path) -> Path:
     """Create or validate one explicit output directory with no link components."""
     root = Path(path)
-    lexical = root.absolute()
-    windows_text = str(PureWindowsPath(lexical))
-    if windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
+    raw_windows_text = str(PureWindowsPath(str(path)))
+    if raw_windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
         raise BatchPathError("output root must not be a UNC or device path")
+    lexical = root.absolute()
     if ".." in lexical.parts:
         raise BatchPathError("output root must not contain traversal components")
     cursor = Path(lexical.anchor) if lexical.anchor else Path()
