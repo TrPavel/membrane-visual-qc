@@ -1,40 +1,43 @@
 # Development state
 
-Snapshot date: 2026-07-31 (Europe/Moscow).
+Snapshot date: 2026-08-01 (Europe/Moscow).
 
-Stage 4A, Stage 4B1–4B4, and Stage 4C are complete and merged into `main`. The repository is now
-on active development version `0.6.0.dev0` after publishing v0.5.0 as a GitHub prerelease for
-limited public testing. Stage 4 provides offline PDBTM
-pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch versus Use
-behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit schema 1.5
-PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose a source,
-create consensus, rank providers, or make a biological verdict. Exact v0.5.0 release, tag,
-post-merge artifact, and downloaded-asset identities are frozen in
-`docs/v0.5.0_release_evidence.json`. PyPI is not used.
+Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. The
+repository is preparing `0.6.0` as a GitHub prerelease for limited public testing, after publishing
+v0.5.0. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only
+OPM adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or
+mutate coordinates, choose a source, create consensus, rank providers, or make a biological
+verdict. Exact v0.5.0 release, tag, post-merge artifact, and downloaded-asset identities are frozen
+in `docs/v0.5.0_release_evidence.json`. Final v0.6.0 tag and publication evidence are **PENDING**.
+PyPI is not used.
 
 ## Stage 5A and Stage 5B batch review
 
-Stage 5A is implemented on the active `0.6.0.dev0` development line. It introduces two separate
-operational contracts, pure validation without a PyMOL import, and sequential PyMOL-main-thread
-execution for the five already accepted modes. All inputs are explicit and local; exact cached
-snapshots are resolved before the first job and no batch path can fetch PDBTM or OPM. The result
-manifest preserves ordered operational status and output identities without becoming a scientific
-certificate. Stage 5B consumes those unchanged contracts through a dedicated GUI tab. It uses the
-same stepwise runner as the headless command, schedules exactly one scientific job per Qt timer
-turn on PyMOL's main thread, supports cooperative cancellation, keeps at most 20 history entries
-in dialog memory, and validates all available result artifacts before browsing or explicit reveal.
-It adds no cache manager, provider, report schema, tag, release, or PyPI publication. Stage 5C has
-not started.
+Stage 5A introduces two separate operational contracts, pure validation without a PyMOL import, and
+sequential PyMOL-main-thread execution for the five already accepted modes. All inputs are explicit
+and local; exact cached snapshots are resolved before the first job and no batch path can fetch
+PDBTM or OPM. The result manifest preserves ordered operational status and output identities
+without becoming a scientific certificate. Stage 5B consumes those unchanged contracts through a
+dedicated GUI tab. It uses the same stepwise runner as the headless command, schedules exactly one
+scientific job per Qt timer turn on PyMOL's main thread, supports cooperative cancellation, keeps
+at most 20 history entries in dialog memory, and validates all available result artifacts before
+browsing or explicit reveal. A `QScrollArea` wrapper on the Single structure and Batch review tabs
+keeps the dialog usable on constrained-height screens and under Windows display scaling, without
+changing any layout content, control, or behavior. It adds no cache manager, provider, report
+schema, tag, release, or PyPI publication. Stage 5C has not started.
 
-## Post-v0.5.0 development reset
+## v0.6.0 release preparation
 
-The active package and build identity is `0.6.0.dev0`. The reset changes only version-bearing
-development surfaces, CI artifact expectations, and publication evidence; it introduces no
-runtime or scientific behavior. Schemas 1.0–1.5 and the three retained v0.5.0 reports remain
-byte-identical. `frozen-v0.4.0` and `frozen-v0.5.0` validator modes are independent of the active
-development version. The latter pins the v0.5.0 report and schema hashes, release squash commit,
-annotated tag object and target, prerelease URL/date, post-merge workflow/artifact, and all four
-authoritative release-asset identities.
+The active package and build identity is `0.6.0`. This prepare step changes only version-bearing
+development surfaces, documentation, and the graphical acceptance record; it introduces no runtime
+or scientific behavior. Schemas 1.0–1.5 and the three retained v0.5.0 reports remain byte-identical.
+`frozen-v0.4.0` and `frozen-v0.5.0` validator modes are independent of the active development
+version. Graphical acceptance passed against the `0.6.0.dev0` development artifact (commit
+`9a528c4`, CI run `30656333770`) before this version-identity promotion; see
+`docs/stage5b_graphical_acceptance.md`. Final v0.6.0 tag, release, and publication evidence will be
+frozen in `docs/v0.6.0_release_evidence.json` after the tag and GitHub Release are published,
+following the same two-step pattern used for v0.5.0.
 
 ### Historical pre-merge Stage 4C snapshot
 

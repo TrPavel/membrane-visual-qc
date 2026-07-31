@@ -32,23 +32,24 @@ immutable current object. The comparison performs no fitting, coordinate mutatio
 source choice, consensus, provider ranking, or biological verdict. See
 [docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
 
-Active `0.6.0.dev0` development includes Stage 5A's strict batch contracts and Stage 5B's
-**Batch review** GUI. The GUI validates an explicit plan, displays its ordered queue, advances one
-PyMOL job per queued main-thread event, supports cooperative cancellation, retains at most 20
-current-session runs, and verifies an explicitly selected result bundle before browsing it. It
-never scans for plans or history, fetches PDBTM or OPM, edits a plan, or makes a biological
-verdict. See [docs/stage5a_batch_review.md](docs/stage5a_batch_review.md) and
+Version `0.6.0` adds Stage 5A's strict batch contracts and Stage 5B's **Batch review** GUI. The
+GUI validates an explicit plan, displays its ordered queue, advances one PyMOL job per queued
+main-thread event, supports cooperative cancellation, retains at most 20 current-session runs, and
+verifies an explicitly selected result bundle before browsing it. It never scans for plans or
+history, fetches PDBTM or OPM, edits a plan, or makes a biological verdict. See
+[docs/stage5a_batch_review.md](docs/stage5a_batch_review.md) and
 [docs/stage5b_gui_batch.md](docs/stage5b_gui_batch.md).
 
 ## Installation
 
-v0.5.0 is published as a GitHub prerelease for limited public testing. Download
+v0.6.0 is being prepared as a GitHub prerelease for limited public testing. Until its release URL
+and assets are published and byte-verified, v0.5.0 remains the latest published package. Download
 `MembraneVisualQC-0.5.0.zip` and its checksum from the
 [v0.5.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.5.0).
-The Plugin ZIP is 158,285 bytes with SHA-256
-`ffd2a8d7eeeb1c6e638fa350c452c1f752e275655d19d2634e783c9658132431`.
-Wheel and source distributions are release assets for inspection and development; this project is
-not published to PyPI. Active source development has version `0.6.0.dev0` and is not a release.
+GitHub Releases is the public installation route. The v0.6.0 Plugin ZIP will be named
+`MembraneVisualQC-0.6.0.zip`; its final size and SHA-256 are **PENDING**. Wheel and source
+distributions are release assets for inspection and development; this project is not published to
+PyPI.
 
 Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The

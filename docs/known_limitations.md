@@ -1,5 +1,21 @@
 # Known Limitations
 
+## v0.6.0 limitations
+
+- Execution requires PyMOL and runs sequentially on its main thread; the standalone CLI validates
+  plans only.
+- Cached PDBTM jobs require an exact, already validated snapshot. A missing or corrupt snapshot
+  fails closed and never triggers a fetch or active-snapshot fallback. OPM remains local-only.
+- Cancellation is cooperative between jobs and at existing safe single-operation checkpoints; it
+  does not terminate threads or interrupt PyMOL commands forcibly.
+- Result manifests are timestamp-bearing operational indexes. Their canonical identity core omits
+  the run ID and timestamps, but the complete manifest bytes are not promised identical per run.
+- The GUI is a validator, queue runner, and integrity-checked result browser, not a visual plan
+  editor. History is limited to 20 entries in the current dialog session and is not discovered or
+  persisted. Missing or changed referenced outputs cannot be revealed.
+- There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
+  source, or biological verdict. Stage 5C has not started.
+
 ## v0.5.0 limitations
 
 - v0.5.0 is intended as a GitHub prerelease for limited public testing; PyPI publication is not
@@ -21,22 +37,6 @@
 - Official PDBTM and OPM provider payloads are not redistributed in Git or release archives.
 
 Membrane Visual QC is an inspection helper, not a definitive validator of membrane protein correctness.
-
-## Stage 5A/5B batch limitations
-
-- Execution requires PyMOL and runs sequentially on its main thread; the standalone CLI validates
-  plans only.
-- Cached PDBTM jobs require an exact, already validated snapshot. A missing or corrupt snapshot
-  fails closed and never triggers a fetch or active-snapshot fallback. OPM remains local-only.
-- Cancellation is cooperative between jobs and at existing safe single-operation checkpoints; it
-  does not terminate threads or interrupt PyMOL commands forcibly.
-- Result manifests are timestamp-bearing operational indexes. Their canonical identity core omits
-  the run ID and timestamps, but the complete manifest bytes are not promised identical per run.
-- The GUI is a validator, queue runner, and integrity-checked result browser, not a visual plan
-  editor. History is limited to 20 entries in the current dialog session and is not discovered or
-  persisted. Missing or changed referenced outputs cannot be revealed.
-- There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
-  source, or biological verdict. Stage 5C has not started.
 
 ## Released v0.1 limitations
 
