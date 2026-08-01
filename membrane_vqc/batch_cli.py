@@ -6,8 +6,9 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
-from .batch_contracts import MAX_JOBS, MAX_PLAN_BYTES, PLAN_CONTRACT, load_plan
+from .batch_contracts import BatchContractError, MAX_JOBS, MAX_PLAN_BYTES, PLAN_CONTRACT, load_plan
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -16,7 +17,14 @@ def main(argv: list[str] | None = None) -> int:
     validate = subparsers.add_parser("validate", help="validate without importing PyMOL")
     validate.add_argument("plan", type=Path)
     args = parser.parse_args(argv)
-    plan, data = load_plan(args.plan)
+    # Only the plan's own documented, expected failure modes (contract violation
+    # or an unusable path) are handled here; anything else is a real internal
+    # bug and must keep its traceback rather than being silently swallowed.
+    try:
+        plan, data = load_plan(args.plan)
+    except (BatchContractError, OSError) as error:
+        print(f"mvqc_batch_cli: invalid plan '{args.plan}': {error}", file=sys.stderr)
+        return 1
     print(
         json.dumps(
             {

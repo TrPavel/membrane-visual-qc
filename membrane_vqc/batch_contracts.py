@@ -12,7 +12,7 @@ import re
 import sys
 from typing import Mapping
 
-from .batch_paths import BatchPathError, validate_relative_path
+from .batch_paths import BatchPathError, describe_filesystem_error, validate_relative_path
 
 
 PLAN_CONTRACT = "mvqc-batch-plan-1.0"
@@ -107,10 +107,20 @@ def validate_json_schema(value: object, name: str) -> None:
 def load_plan(path: str | Path) -> tuple[dict[str, object], bytes]:
     """Read, strictly parse, and validate one bounded batch-plan document."""
     plan_path = Path(path)
-    size = plan_path.stat().st_size
+    try:
+        size = plan_path.stat().st_size
+    except OSError as error:
+        raise BatchContractError(
+            f"plan could not be read ({describe_filesystem_error(error)})"
+        ) from error
     if size < 2 or size > MAX_PLAN_BYTES:
         raise BatchContractError(f"plan must be between 2 and {MAX_PLAN_BYTES} bytes")
-    data = plan_path.read_bytes()
+    try:
+        data = plan_path.read_bytes()
+    except OSError as error:
+        raise BatchContractError(
+            f"plan could not be read ({describe_filesystem_error(error)})"
+        ) from error
     if len(data) < 2 or len(data) > MAX_PLAN_BYTES:
         raise BatchContractError(f"plan must be between 2 and {MAX_PLAN_BYTES} bytes")
     if data.startswith(b"\xef\xbb\xbf"):
@@ -130,10 +140,20 @@ def load_plan(path: str | Path) -> tuple[dict[str, object], bytes]:
 def load_result(path: str | Path) -> tuple[dict[str, object], bytes]:
     """Read, strictly parse, and validate one bounded batch-result document."""
     result_path = Path(path)
-    size = result_path.stat().st_size
+    try:
+        size = result_path.stat().st_size
+    except OSError as error:
+        raise BatchContractError(
+            f"result could not be read ({describe_filesystem_error(error)})"
+        ) from error
     if size < 2 or size > MAX_RESULT_BYTES:
         raise BatchContractError(f"result must be between 2 and {MAX_RESULT_BYTES} bytes")
-    data = result_path.read_bytes()
+    try:
+        data = result_path.read_bytes()
+    except OSError as error:
+        raise BatchContractError(
+            f"result could not be read ({describe_filesystem_error(error)})"
+        ) from error
     if len(data) != size or len(data) < 2 or len(data) > MAX_RESULT_BYTES:
         raise BatchContractError("result changed while it was being read")
     if data.startswith(b"\xef\xbb\xbf"):
