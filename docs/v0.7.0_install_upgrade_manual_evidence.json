@@ -1,0 +1,37 @@
+{
+  "schema": "manual-install-upgrade-evidence-1.0",
+  "validation_date": "2026-08-01",
+  "source_commit": "28802a640f8eabd38f7e8afbb529da5a306bb68f",
+  "development_artifact": {
+    "filename": "MembraneVisualQC-0.7.0.dev0.zip",
+    "size_bytes": 194338,
+    "sha256": "d11234fc3e74bbc7427d6bb18f36897bc86a9d27a9bfec134df9b623307d638c",
+    "packaged_version": "0.7.0.dev0"
+  },
+  "stable_artifact": {
+    "filename": "MembraneVisualQC-0.6.0.zip",
+    "sha256": "7126e51acc6514e3fb73ed0113200d8da376ca75e5f128aef556db2194046960",
+    "version": "0.6.0"
+  },
+  "rounds": {
+    "clean_install": "PASS",
+    "v060_state_preparation": "PASS",
+    "upgrade_v060_to_v070dev0": "PASS",
+    "rollback_to_v060": "PASS",
+    "reinstall_v070dev0": "PASS"
+  },
+  "observations": {
+    "duplicate_plugin_entry": false,
+    "stale_ui": false,
+    "traceback": false,
+    "qthread_warning": false,
+    "visible_freeze": false,
+    "user_output_deleted": false,
+    "automatic_cache_migration_claimed": false
+  },
+  "compatibility_notes": "Clean replacement was the upgrade/rollback method used throughout; overlay installation was not exercised. History remained session-only. Artifacts created by 0.7.0.dev0 and tested under the rolled-back v0.6.0 install each either opened successfully or were rejected cleanly with a typed message; this record does not claim any specific field-level compatibility beyond what docs/upgrade_guide.md already documents.",
+  "observer": "owner",
+  "evidence_type": "manual",
+  "scope": "v0.6.0 -> 0.7.0.dev0 only; does not extend to other version pairs",
+  "detail": "docs/manual_install_upgrade_checklist.md"
+}
