@@ -171,7 +171,7 @@ def test_version_agreement_rejects_package_from_wrong_origin(tmp_path, monkeypat
     monkeypatch.setenv("PYTHONPATH", str(ROOT))
 
     with pytest.raises(ReleaseArtifactError, match="resolved outside") as captured:
-        _validate_version_agreement(project, "0.7.0.dev0")
+        _validate_version_agreement(project, "0.7.0")
 
     assert str(ROOT / "membrane_vqc") in str(captured.value)
     assert str(project / "membrane_vqc") in str(captured.value)
@@ -288,7 +288,7 @@ def test_frozen_v050_evidence_is_verified_independently_of_active_version(tmp_pa
         shutil.copytree(ROOT / directory, tmp_path / directory)
     result = verify_frozen_v050_evidence(tmp_path)
 
-    assert project_version(ROOT) == "0.7.0.dev0"
+    assert project_version(ROOT) == "0.7.0"
     assert result["version"] == "0.5.0"
     assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
     assert set(result["reports"]) == {
@@ -327,7 +327,7 @@ def test_frozen_v060_evidence_is_verified_independently_of_active_version(tmp_pa
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v060_evidence(tmp_path)
 
-    assert project_version(ROOT) == "0.7.0.dev0"
+    assert project_version(ROOT) == "0.7.0"
     assert result["version"] == "0.6.0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
