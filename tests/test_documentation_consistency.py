@@ -214,7 +214,11 @@ def test_readme_links_all_primary_guides():
         "docs/coordinate_preservation.md",
         "docs/upgrade_guide.md",
         "docs/compatibility.md",
+        "docs/compatibility_matrix.md",
         "docs/known_limitations.md",
+        "docs/v1.0_contract_freeze.md",
+        "docs/versioning_policy.md",
+        "docs/release_checklist.md",
     ):
         assert doc in text, f"README.md does not link {doc}"
 
@@ -246,7 +250,11 @@ _USER_FACING_DOCS = (
     "docs/offline_guarantees.md",
     "docs/coordinate_preservation.md",
     "docs/compatibility.md",
+    "docs/compatibility_matrix.md",
     "docs/known_limitations.md",
+    "docs/v1.0_contract_freeze.md",
+    "docs/versioning_policy.md",
+    "docs/release_checklist.md",
 )
 
 
@@ -298,3 +306,45 @@ def test_no_doc_claims_automatic_validation_or_biological_correctness_unqualifie
             _assert_always_negated(text, "automatically validated", doc_name=relative)
         if "biologically correct" in text.lower():
             _assert_always_negated(text, "biologically correct", doc_name=relative)
+
+
+# ---------------------------------------------------------------------------
+# Contract-freeze documentation set (docs/v1.0_contract_freeze.md and friends)
+# ---------------------------------------------------------------------------
+
+
+def test_contract_freeze_docs_exist_and_cross_link():
+    freeze = _read("docs", "v1.0_contract_freeze.md")
+    versioning = _read("docs", "versioning_policy.md")
+    checklist = _read("docs", "release_checklist.md")
+    matrix = _read("docs", "compatibility_matrix.md")
+
+    assert "versioning_policy.md" in freeze
+    assert "v1.0_contract_freeze.md" in versioning
+    assert "docs/v1.0_contract_freeze.md" in checklist or "v1.0_contract_freeze.md" in checklist
+    assert "compatibility.md" in matrix
+
+
+def test_contract_freeze_doc_lists_the_frozen_pymol_commands():
+    text = _read("docs", "v1.0_contract_freeze.md")
+    for command in (
+        "mvqc_check",
+        "mvqc_slab",
+        "mvqc_check_orientation",
+        "mvqc_slab_orientation",
+        "mvqc_check_pdbtm",
+        "mvqc_slab_pdbtm",
+        "mvqc_color_hydropathy",
+        "mvqc_ligand_shell",
+        "mvqc_export",
+        "mvqc_batch_run",
+        "mvqc_clear",
+    ):
+        assert f"`{command}`" in text, (
+            f"docs/v1.0_contract_freeze.md is missing command {command!r}"
+        )
+
+
+def test_outputs_and_status_docs_reference_the_contract_freeze():
+    assert "v1.0_contract_freeze.md" in _read("docs", "outputs_and_manifests.md")
+    assert "v1.0_contract_freeze.md" in _read("docs", "status_vocabulary.md")

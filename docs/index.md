@@ -19,8 +19,9 @@ reference while reading results) → [Known limitations](known_limitations.md).
 [Troubleshooting](troubleshooting.md).
 
 **Developer/maintainer** -- working on the code:
-[Report schemas](report_schema.md) → [Compatibility statement](compatibility.md) → the ADRs under
-[`adr/`](adr/) → the Stage 4/5 design documents (see
+[Report schemas](report_schema.md) → [Compatibility statement](compatibility.md) →
+[Contract freeze](v1.0_contract_freeze.md) and [Versioning policy](versioning_policy.md) → the
+ADRs under [`adr/`](adr/) → the Stage 4/5 design documents (see
 [Architecture and historical records](#architecture-and-historical-records) below) →
 [known_limitations.md](known_limitations.md).
 
@@ -78,8 +79,17 @@ reference while reading results) → [Known limitations](known_limitations.md).
 | Document | Purpose |
 |---|---|
 | [Compatibility statement](compatibility.md) | Validated configurations (OS, PyMOL distribution, Python, Qt), supported upgrade path, supported schema/contract versions, cache format, and what CI structurally cannot prove. |
+| [Compatibility matrix](compatibility_matrix.md) | Grid view: platform × validation method, PyMOL distribution, Python version, schema/contract support per release, and verified vs. unverified upgrade paths. |
 | [Upgrade guide](upgrade_guide.md) | Step-by-step v0.6.0 → `0.7.x` upgrade: before-upgrading checklist, recommended clean-replacement method, post-upgrade verification, existing-data compatibility table, rollback, and troubleshooting. |
 | [Manual install/upgrade checklist](manual_install_upgrade_checklist.md) | The owner-observed manual PASS record for the v0.6.0 → `0.7.0.dev0` install/upgrade/rollback path -- real evidence, not a template to assume passed for other version pairs. |
+
+## Contract and release governance
+
+| Document | Purpose |
+|---|---|
+| [v1.0 contract freeze](v1.0_contract_freeze.md) | The audit of every public/machine-readable interface (PyMOL commands, report schemas, batch contracts, cache format, error codes, output layout) and its frozen/not-frozen/internal status ahead of v1.0. |
+| [Versioning policy](versioning_policy.md) | How the package version, report schema versions, and batch contract versions are meant to change, and the deprecation process required before a frozen interface can break. |
+| [Release checklist](release_checklist.md) | The exact two-PR process (prepare → tag/publish → evidence-freeze/reopen) used to cut every release since v0.5.0, generalized for the next one. |
 
 ## Architecture and historical records
 
@@ -113,7 +123,8 @@ original, now fully superseded, project MVP plan).
 **Release evidence** -- exact artifact identities and manual smoke-test results per release:
 `v0.4.0_release_notes.md` / `v0.4.0_graphical_smoke.md`, `v0.5.0_release_notes.md` /
 `v0.5.0_graphical_smoke.md` / `v0.5.0_release_evidence.json`, `v0.6.0_release_notes.md` /
-`v0.6.0_release_evidence.json`, and `v0.7.0_install_upgrade_manual_evidence.json`.
+`v0.6.0_release_evidence.json`, and `v0.7.0_release_notes.md` / `v0.7.0_release_evidence.json` /
+`v0.7.0_install_upgrade_manual_evidence.json`.
 
 **Internal project-management history** -- rolling development logs, not reference material:
 `development_state.md`, `research_log.md`, `validation.md`. `manual_gui_validation.md` is the full

@@ -32,6 +32,19 @@ are the point of the test.
   `.local/release-v060-downloaded/MembraneVisualQC-0.6.0.zip` -- that test is skipped, not faked,
   when the file is absent (e.g. in ordinary CI).
 
+## `v0.7.0/PLUGIN_MANIFEST.json`, `v0.7.0/SHA256SUMS.txt`
+
+- Extracted unmodified from the published `MembraneVisualQC-0.7.0.zip` GitHub Release asset
+  (release commit `c487c2fc339d415edef80797df60e62be89e8940`), verified byte-identical to the
+  authoritative published artifact: SHA-256
+  `4672b1b91657d0ddea9d839e99de6b1b4642a17a0008afc99ae78f5eff55fda4`, 194,334 bytes (matches
+  `docs/v0.7.0_release_evidence.json`).
+- Added as part of the v0.8.0 contract-freeze audit (`docs/v1.0_contract_freeze.md`) to extend the
+  same genuine-fixture pattern established for `v0.6.0/` above, ahead of any future v0.7.0 ->
+  v0.8.x upgrade-compatibility harness. It is not yet consumed by an upgrade test the way `v0.6.0/`
+  is by `tests/test_plugin_upgrade.py` -- `tests/test_contract_freeze.py` verifies its own
+  self-consistency (declared version, manifest/checksum agreement) only.
+
 ## `v0.6.0_batch_result/`
 
 - A genuine five-mode `mvqc-batch-result-1.0` bundle (`batch-result.json` plus its four successful

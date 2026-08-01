@@ -156,12 +156,16 @@ owner-observed confirmation of this.
 
 ## What is stable vs. not yet frozen
 
-- **Stable, versioned contract**: the `mvqc-batch-plan-1.0` / `mvqc-batch-result-1.0` JSON shapes
-  themselves, and report schemas 1.0-1.5 -- these are exact-string contract identifiers with no
-  version-range parsing (`docs/compatibility.md#supported-batch-contract-versions`).
-- **Current, documented convention, not yet a versioned promise for v1.0**: the exact directory
-  layout described above (flat output root, `<job_id>.json`/`.csv` naming, fixed
-  `batch-result.json` manifest name). This page documents what the writer does today; it is not a
-  frozen v1.0 output-layout contract, and a future version could restructure it with its own
-  migration notes. Do not build automation that depends on undocumented details beyond what is
-  written here.
+As of the v0.8.0 contract-freeze audit (`docs/v1.0_contract_freeze.md`), both of the following are
+frozen v1.0 candidate contracts -- see that page for the exact deprecation process required before
+either could change:
+
+- **The `mvqc-batch-plan-1.0` / `mvqc-batch-result-1.0` JSON shapes themselves, and report schemas
+  1.0-1.5** -- exact-string contract identifiers with no version-range parsing
+  (`docs/compatibility.md#supported-batch-contract-versions`,
+  `docs/v1.0_contract_freeze.md#2-batch-contracts-frozen`).
+- **The exact directory layout described above** (flat output root, `<job_id>.json`/`.csv` naming,
+  fixed `batch-result.json` manifest name) -- previously documented here as "current convention,
+  not yet a versioned promise for v1.0"; that framing is superseded by
+  `docs/v1.0_contract_freeze.md#11-outputmanifest-layout-frozen-as-the-v10-candidate`. Do not build
+  automation that depends on undocumented details beyond what is written on this page.
