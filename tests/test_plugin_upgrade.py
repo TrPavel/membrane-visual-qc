@@ -173,29 +173,46 @@ def test_genuine_historical_schema_1_0_report_remains_readable_after_upgrade():
 # ---------------------------------------------------------------------------
 
 
+_V060_COMMIT = "58e89fed284139ea6e5d6be05a35fdeada591037"
+
+
 def test_pdbtm_cache_module_is_byte_identical_since_v060():
     """membrane_vqc/pdbtm_cache.py and pdbtm_cache_contract.py were not touched by
     PR #25 or #26 -- this pins that fact via git history rather than assuming it.
     Combined with the round-trip test below, this is the evidence for
     docs/compatibility.md's claim that cache-v1 needs no migration for this
-    specific upgrade: the code that reads and writes it has not changed at all."""
+    specific upgrade: the code that reads and writes it has not changed at all.
+
+    Skips (does not silently pass) when the v0.6.0 commit is unreachable, e.g. a
+    shallow CI checkout (actions/checkout@v4 defaults to fetch-depth: 1). This was
+    caught during implementation: `git diff <unreachable>..HEAD` exits 128 with its
+    error on stderr, leaving stdout empty -- an earlier version of this test checked
+    only `stdout.strip() == ""` and passed "successfully" on GitHub's shallow
+    checkout without ever actually comparing anything.
+    """
     import subprocess
+
+    reachable = subprocess.run(
+        ["git", "cat-file", "-e", f"{_V060_COMMIT}^{{commit}}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if reachable.returncode != 0:
+        pytest.skip(
+            f"v0.6.0 commit {_V060_COMMIT} is not reachable in this checkout "
+            "(likely a shallow clone); cannot compare against it here"
+        )
 
     for relative in ("membrane_vqc/pdbtm_cache.py", "membrane_vqc/pdbtm_cache_contract.py"):
         diff = subprocess.run(
-            [
-                "git",
-                "diff",
-                "--stat",
-                "58e89fed284139ea6e5d6be05a35fdeada591037..HEAD",
-                "--",
-                relative,
-            ],
+            ["git", "diff", "--stat", f"{_V060_COMMIT}..HEAD", "--", relative],
             cwd=ROOT,
             capture_output=True,
             text=True,
             check=False,
         )
+        assert diff.returncode == 0, f"git diff failed for {relative}: {diff.stderr}"
         assert diff.stdout.strip() == "", f"{relative} changed since v0.6.0:\n{diff.stdout}"
 
 
