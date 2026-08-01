@@ -13,7 +13,7 @@ from .batch_contracts import BatchContractError, load_result, validate_json_sche
 from .batch_paths import BatchPathError, resolve_existing_root, resolve_input_path, safe_output_name
 from .batch_runner import BatchExecutionFailed, _scientific_status
 from .comparison_report import validate_comparison_report
-from .report import validate_report
+from .report import ReportError, validate_report
 
 
 MAX_REFERENCED_FILE_BYTES = 64 * 1024 * 1024
@@ -212,7 +212,7 @@ def inspect_result_bundle(manifest_path: str | Path) -> VerifiedBatchResult:
                     validate_comparison_report(report)
                 else:
                     validate_report(report)
-            except (BatchContractError, TypeError, ValueError) as error:
+            except (BatchContractError, ReportError, TypeError, ValueError) as error:
                 raise BatchResultBrowserError("REPORT_INVALID") from error
             if report.get("schema_version") != schema:
                 raise BatchResultBrowserError("REPORT_SCHEMA_MISMATCH")

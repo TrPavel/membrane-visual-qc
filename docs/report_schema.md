@@ -59,8 +59,28 @@ The frozen schema retains its originally reviewed `$id` suffix `1.3-draft` becau
 identifier would change the accepted bytes. Release status is defined by the v0.4.0 contract and
 the immutable SHA-256, not by rewriting the historical identifier.
 
-Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`; released v0.2.0 analysis uses
-additive schema 1.1. Both schemas are immutable, and validation dispatches by the declared version.
+Released v0.1.0 reports use `schemas/mvqc-report-1.0.schema.json`, a genuine frozen historical
+format: its `orientation` object requires only `source`, `geometry`, `parameters`, and `warnings`,
+and its `review_items` require only `model`, `chain`, `resi`, `resn`, `classification`, `severity`,
+`reason`, and `z` -- it has no depth-measurement fields at all. Released v0.2.0 introduced schema
+1.1, which made `orientation.center`/`normal`/`lower_offset`/`upper_offset`/`interface_width` and
+five per-item depth fields (`signed_distance`, `absolute_center_distance`,
+`nearest_boundary_distance`, `outside_distance`, `normalized_depth`) required. Producers of a
+genuine schema-1.0 report cannot satisfy those additions, so the 1.0-to-1.1 transition did not
+follow the additive-minor-version ideal this document otherwise describes for later versions; it
+was recorded post hoc, without a real reader-migration window, as ADR-0001 acknowledges. Both
+schemas are immutable, and `membrane_vqc.report.validate_report()` dispatches read-side validation
+by the declared version for every schema-1.0-through-1.4 `single_structure_review` report,
+including schema 1.0 -- its required-field logic is version-conditional and does not require the
+schema-1.1 depth fields for a schema-1.0 report. See `tests/fixtures/README.md` for the genuine
+historical schema-1.0 fixture used to test this.
+
+Schema 1.5 is not part of this dispatch and is not structurally related to schemas 1.0-1.4 at all:
+its `report_type` is `orientation_source_comparison`, not `single_structure_review`, and its
+top-level required fields (`selected_object`, `sources`, `comparison`) share no shape with the
+single-structure contract. It is intentionally excluded from
+`membrane_vqc.report.SUPPORTED_SCHEMA_VERSIONS` and validated only by
+`membrane_vqc.comparison_report.validate_comparison_report`.
 
 v0.3.0 opt-in exposure or local-context analysis uses `schemas/mvqc-report-1.2.schema.json`.
 Context-disabled calls continue to produce the v0.2-compatible schema 1.1 contract. Schema 1.2 is

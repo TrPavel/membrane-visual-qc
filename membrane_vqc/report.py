@@ -33,11 +33,30 @@ if TYPE_CHECKING:
     from .pdbtm_report_provenance import PdbtmAcquisitionProvenance
 
 SCHEMA_VERSION = "1.1"
+LEGACY_SCHEMA_VERSION = "1.0"
 CONTEXT_SCHEMA_VERSION = "1.2"
 ADAPTER_SCHEMA_VERSION = "1.3"
 ACQUISITION_SCHEMA_VERSION = "1.4"
 SUPPORTED_SCHEMA_VERSIONS = frozenset(
-    {SCHEMA_VERSION, CONTEXT_SCHEMA_VERSION, ADAPTER_SCHEMA_VERSION, ACQUISITION_SCHEMA_VERSION}
+    {
+        LEGACY_SCHEMA_VERSION,
+        SCHEMA_VERSION,
+        CONTEXT_SCHEMA_VERSION,
+        ADAPTER_SCHEMA_VERSION,
+        ACQUISITION_SCHEMA_VERSION,
+    }
+)
+# Fields present on every review item since schema 1.1. Schema 1.0 predates the
+# depth-fields addition (a required-field change, not additive) and never had
+# them; readers must not require what that frozen historical format never emitted.
+_DEPTH_FIELDS = frozenset(
+    {
+        "signed_distance",
+        "absolute_center_distance",
+        "nearest_boundary_distance",
+        "outside_distance",
+        "normalized_depth",
+    }
 )
 REPORT_TYPE = "single_structure_review"
 CSV_FIELDS = ["model", "chain", "resi", "resn", "classification", "severity", "reason", "z"]
@@ -291,12 +310,9 @@ def validate_report(report: dict[str, Any]) -> None:
         "severity",
         "reason",
         "z",
-        "signed_distance",
-        "absolute_center_distance",
-        "nearest_boundary_distance",
-        "outside_distance",
-        "normalized_depth",
     }
+    if schema_version != LEGACY_SCHEMA_VERSION:
+        required_review_fields |= _DEPTH_FIELDS
     for index, item in enumerate(report.get("review_items", [])):
         if not isinstance(item, dict):
             raise ReportError(f"Review item {index} must be a JSON object.")
