@@ -39,7 +39,7 @@ jobs:
           python scripts/build_plugin_zip.py --output .local/determinism/second.zip
           cmp --silent .local/determinism/first.zip .local/determinism/second.zip
           python scripts/build_plugin_zip.py
-          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.7.0.zip
+          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-0.8.0.dev0.zip
       - name: Validate current development artifacts
         run: python scripts/validate_release_artifacts.py --mode current-development
       - name: Verify frozen v0.4.0 evidence
@@ -48,21 +48,23 @@ jobs:
         run: python scripts/validate_release_artifacts.py --mode frozen-v0.5.0
       - name: Verify frozen v0.6.0 evidence
         run: python scripts/validate_release_artifacts.py --mode frozen-v0.6.0
-      - name: Validate 0.7.0 release-candidate artifact contract
+      - name: Verify frozen v0.7.0 evidence
+        run: python scripts/validate_release_artifacts.py --mode frozen-v0.7.0
+      - name: Validate 0.8.0.dev0 release-candidate artifact contract
         run: >-
           python scripts/validate_release_artifacts.py
           --mode release-candidate
-          --version 0.7.0
+          --version 0.8.0.dev0
       - name: Upload release-build inputs
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
         with:
           name: membrane-vqc-build
           path: |
-            dist/MembraneVisualQC-0.7.0.zip
-            dist/MembraneVisualQC-0.7.0.zip.sha256
-            dist/membrane_vqc_pymol-0.7.0-py3-none-any.whl
-            dist/membrane_vqc_pymol-0.7.0.tar.gz
+            dist/MembraneVisualQC-0.8.0.dev0.zip
+            dist/MembraneVisualQC-0.8.0.dev0.zip.sha256
+            dist/membrane_vqc_pymol-0.8.0.dev0-py3-none-any.whl
+            dist/membrane_vqc_pymol-0.8.0.dev0.tar.gz
 
   freesasa-reference:
     name: FreeSASA reference (Python 3.11)

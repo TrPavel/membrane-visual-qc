@@ -3,23 +3,33 @@
 Snapshot date: 2026-08-01 (Europe/Moscow).
 
 Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. The
-repository is now preparing `0.7.0` as a GitHub prerelease after publishing v0.6.0. Stage 4 provides
-offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch
-versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit
-schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose
-a source, create consensus, rank providers, or make a biological verdict. Exact v0.6.0 release,
-tag, post-merge artifact, and downloaded-asset identities are frozen in
-`docs/v0.6.0_release_evidence.json`. PyPI is not used.
+repository is now on active development version `0.8.0.dev0` after publishing v0.7.0 as a GitHub
+prerelease. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only
+OPM adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or
+mutate coordinates, choose a source, create consensus, rank providers, or make a biological
+verdict. Exact v0.7.0 release, tag, post-merge artifact, and downloaded-asset identities are frozen
+in `docs/v0.7.0_release_evidence.json`. PyPI is not used.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
-v0.7.0 lands PR #25 (schema 1.0 read-compatibility fix), PR #26 (fail-fast Windows filesystem
+v0.7.0 landed PR #25 (schema 1.0 read-compatibility fix), PR #26 (fail-fast Windows filesystem
 errors), PR #27/#28 (install/upgrade compatibility harness plus owner-observed real-PyMOL manual
 acceptance for the v0.6.0 -> `0.7.x` transition), and PR #29 (documentation consolidation into
-`docs/index.md`). No runtime, scientific, batch, schema, contract, or coordinate-preservation
-behavior changed beyond the two targeted bug fixes named above. Final v0.7.0 tag, release, and
-publication evidence remain **PENDING** until the exact release artifact has passed publication
-verification.
+`docs/index.md`), then PR #30 (version-identity promotion). No runtime, scientific, batch, schema,
+contract, or coordinate-preservation behavior changed beyond the two targeted bug fixes named
+above. v0.7.0 was published as a GitHub prerelease on 2026-08-01; see
+`docs/v0.7.0_release_evidence.json` and `docs/v0.7.0_release_notes.md`.
+
+## Post-v0.7.0 development reset
+
+The active package and build identity is `0.8.0.dev0`. The reset changes only version-bearing
+development surfaces, CI artifact expectations, and publication evidence; it introduces no runtime
+or scientific behavior. `frozen-v0.4.0`, `frozen-v0.5.0`, `frozen-v0.6.0`, and `frozen-v0.7.0`
+validator modes are independent of the active development version. The latter pins the v0.7.0
+release squash commit, annotated tag object and target, prerelease URL/date, post-merge
+workflow/artifact, all four authoritative release-asset identities, and the owner-observed
+stable-artifact manual smoke-test PASS.
 
 ## Stage 5A and Stage 5B batch review
 
