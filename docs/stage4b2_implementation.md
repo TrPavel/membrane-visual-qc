@@ -1,5 +1,8 @@
 # Stage 4B2 provenance and report schema 1.4
 
+> **Historical implementation record.** Not current user documentation -- see
+> [docs/report_schema.md](report_schema.md) for the current schema reference.
+
 Status: complete and merged. Schema 1.4 provenance is used by the explicit validated-cache PDBTM
 workflow added in Stage 4B3.
 

@@ -1,5 +1,9 @@
 # Stage 4B4 exact-artifact acceptance
 
+> **Historical acceptance record.** Not current user documentation -- see
+> [docs/tutorial.md](tutorial.md) and [docs/release_checklist.md](release_checklist.md) for the
+> current workflow and release process.
+
 Status: **PASS — complete**. Automated exact-artifact, live-provider, cached-offline, and real-Qt
 gates passed first. The owner then completed the literal Plugin Manager installation/restart and
 the bounded on-screen regression checklist on 2026-07-22 using the same byte-verified Plugin ZIP.

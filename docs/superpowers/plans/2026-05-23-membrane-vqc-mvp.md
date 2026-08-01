@@ -1,5 +1,9 @@
 # Membrane Visual QC MVP Implementation Plan
 
+> **Internal design record (superseded).** This is the original v0.1 MVP plan, fully superseded by
+> the shipped v0.1-v0.7 feature set. Not current user documentation -- see
+> [docs/index.md](../../index.md) for current documentation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a working MVP PyMOL plugin for membrane-protein visual QC.

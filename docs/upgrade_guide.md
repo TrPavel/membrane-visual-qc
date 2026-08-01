@@ -108,6 +108,11 @@ After restarting PyMOL:
 
 ## 7. Troubleshooting
 
+The entries below are upgrade-specific. For the complete symptom-organized guide (installation,
+GUI, plans, batch execution, reports/results, networking/cache), see
+[docs/troubleshooting.md](troubleshooting.md); for validated configurations see
+[docs/compatibility.md](compatibility.md).
+
 **Old version is still displayed after installing the new ZIP.**
 PyMOL was not fully restarted, or Python's module cache still holds the old code from before the
 restart. Fully quit and relaunch PyMOL (not just close the plugin dialog); confirm no other PyMOL

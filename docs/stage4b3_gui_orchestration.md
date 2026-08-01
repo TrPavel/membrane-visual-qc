@@ -1,5 +1,8 @@
 # Stage 4B3 GUI and PyMOL worker orchestration
 
+> **Historical implementation record.** Not current user documentation -- see
+> [docs/tutorial.md](tutorial.md#4-pdbtm-cache) for the current PDBTM cache workflow.
+
 Status: **PASS — complete**. Automated, exact-artifact, live-provider, cached-offline, real-Qt, and
 owner-observed graphical acceptance are recorded in `docs/stage4b4_exact_acceptance.md`.
 

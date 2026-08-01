@@ -1,5 +1,8 @@
 # PDBTM source-semantics preflight
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/pdbtm_offline_import.md](pdbtm_offline_import.md) for the current offline-PDBTM contract.
+
 Status: **PASS**
 
 Date: 2026-07-18

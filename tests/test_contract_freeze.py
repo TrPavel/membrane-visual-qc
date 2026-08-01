@@ -266,7 +266,7 @@ def test_cache_path_suffix_and_env_var_are_frozen():
 
 
 # ---------------------------------------------------------------------------
-# 9. Batch limits named in docs/v1.0_contract_freeze.md and docs/batch_plan.md
+# 9. Batch limits named in docs/v1.0_contract_freeze.md and docs/batch_plan_reference.md
 # ---------------------------------------------------------------------------
 
 

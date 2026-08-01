@@ -84,7 +84,7 @@ boundary. Use an ordinary relative or absolute path instead.
 
 **Relative path not found.**
 File-input paths in a plan are resolved relative to the plan file's own directory, not your current
-working directory (`docs/batch_plan.md#4-path-resolution-rules`). Double-check the plan sits where
+working directory (`docs/batch_plan_reference.md#4-path-resolution-rules`). Double-check the plan sits where
 its relative paths expect it to.
 
 **Unicode and spaces in paths.**
@@ -131,14 +131,14 @@ A referenced report file failed schema/semantic validation. Check its `schema_ve
 
 **Cache miss (`CACHE_MISS`).**
 No cached snapshot exists yet for the requested record. Use **Fetch**/**Refresh** to populate it
-(this is the one action that contacts the network -- see `docs/offline_guarantees.md`), or supply a
+(this is the one action that contacts the network -- see `docs/offline_and_safety.md`), or supply a
 local PDBTM pair via `pdbtm_local` instead.
 
 **Cache corruption (`CACHE_CORRUPT`, `CACHE_FORMAT_UNSUPPORTED`).**
 The cache fails closed with a clear, typed error rather than silently misreading bad data --
 `docs/upgrade_guide.md#7-troubleshooting`. Recovery: use **Clear cached record** for the affected
 entry, or delete the cache directory (`%LOCALAPPDATA%\MembraneVisualQC\Cache` or `$MVQC_CACHE_DIR`)
-and re-fetch. No automatic cache migration ever occurs (`docs/offline_guarantees.md`).
+and re-fetch. No automatic cache migration ever occurs (`docs/offline_and_safety.md`).
 
 **Input rejected vs. execution failure.**
 These are different job statuses with different implications -- see
@@ -176,7 +176,7 @@ is genuinely missing/unsafe -- see `docs/outputs_and_manifests.md#safe-revealope
 
 ## Networking/cache
 
-See `docs/offline_guarantees.md` for the full, grounded statement of what does and does not touch
+See `docs/offline_and_safety.md` for the full, grounded statement of what does and does not touch
 the network. In short: only **Fetch**/**Refresh** for PDBTM contacts the network; everything else
 (validation, all five batch/single-structure modes when inputs are already local, report/result
 inspection) is offline. No automatic cache migration exists between versions
@@ -195,4 +195,4 @@ inspection) is offline. No automatic cache migration exists between versions
   builds a consensus, or produces a biological verdict -- see
   `docs/stage4c_source_comparison.md#scientific-boundary`.
 - **Coordinates are never intentionally modified.** Every analysis mode is read-only with respect
-  to your structure's atomic coordinates -- see `docs/coordinate_preservation.md`.
+  to your structure's atomic coordinates -- see `docs/offline_and_safety.md`.

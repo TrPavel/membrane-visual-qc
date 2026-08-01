@@ -1,5 +1,8 @@
 # Stage 4A2 PyMOL snapshot semantics
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/offline_and_safety.md](offline_and_safety.md) for the current coordinate-preservation guarantee.
+
 Status: verified locally on 2026-07-19 with Incentive PyMOL 3.1.8 and bundled Python 3.10.20 on
 Windows 10 build 26200.
 

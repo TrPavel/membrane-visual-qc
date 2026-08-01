@@ -1,5 +1,10 @@
 # Stage 5B GUI batch review
 
+> **Technical reference.** This document remains the detailed reference for the **Batch review**
+> dialog's controls and state machine, linked from [docs/index.md](index.md) -- for a task-oriented
+> introduction, start with [docs/tutorial.md](tutorial.md#running-many-jobs-at-once-batch-review)
+> or [docs/five_mode_walkthrough.md](five_mode_walkthrough.md).
+
 Stage 5B adds a dedicated **Batch review** tab to the existing dialog. It consumes the unchanged
 `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts. It is a safe loader, validator, queue
 runner, and result viewer; it is not a visual plan editor and its operational states are not a

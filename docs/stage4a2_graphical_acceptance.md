@@ -1,5 +1,8 @@
 # Stage 4A2 graphical acceptance
 
+> **Historical implementation/acceptance record.** Not current user documentation -- see
+> [docs/tutorial.md](tutorial.md) for the current planar-orientation workflow.
+
 Status: PASS — exact-artifact interactive graphical acceptance complete
 
 This record captures orientation applicability, rendering, export, and lifecycle behaviour. It does

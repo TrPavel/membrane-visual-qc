@@ -2,7 +2,7 @@
 
 Covers every current single-structure workflow: **legacy global-z**, **planar orientation**,
 **PDBTM local**, **PDBTM cache**, and **PDBTM-OPM comparison**. For batch (multi-job) usage, see
-`docs/batch_plan.md`. For the report contract each mode produces, see `docs/report_schema.md`; for
+`docs/batch_plan_reference.md`. For the report contract each mode produces, see `docs/report_schema.md`; for
 what every status literal means, see `docs/status_vocabulary.md`.
 
 Low-level schema internals, GUI implementation details, and full acceptance evidence are not
@@ -35,7 +35,7 @@ mvqc_check selection=1C3W, zmin=-15, zmax=15, ligand=organic, cutoff=5
 mvqc_export path=reports/1c3w_mvqc.json
 ```
 
-**Offline/network behavior:** fully offline (`docs/offline_guarantees.md`).
+**Offline/network behavior:** fully offline (`docs/offline_and_safety.md`).
 
 **Failure interpretation:** the structure must already be in a meaningful coordinate frame -- this
 mode records manual orientation and never infers membrane alignment. `mvqc_clear` removes all
@@ -99,7 +99,7 @@ exact object/provenance contract.
 
 **Failure interpretation:** the JSON and transformed-PDB must belong to the same provider record
 (mismatched pairs are rejected); coordinates must match the reference or its inverse directly (see
-`docs/coordinate_preservation.md`) -- this mode never fits, rotates, or translates your object to
+`docs/offline_and_safety.md`) -- this mode never fits, rotates, or translates your object to
 make it match.
 
 **Scientific boundary:** applicability is direct geometric evidence that your coordinates match a
@@ -115,7 +115,7 @@ you want to reuse a previously fetched record across multiple runs/structures.
 4-character ID.
 
 **Workflow:** in the GUI's PDBTM cache area: enter the record ID, press **Fetch / Refresh** once
-(the one action in this project that contacts the network -- see `docs/offline_guarantees.md`) to
+(the one action in this project that contacts the network -- see `docs/offline_and_safety.md`) to
 populate a validated local cache-v1 snapshot, then press **Use cached pair** to load it for
 analysis. Subsequent runs against the same record need only **Use cached pair** -- no repeated
 Fetch. **Clear cached record** removes an entry; **Open cache location** reveals the cache
@@ -161,7 +161,7 @@ itself never fetches.
 
 **Failure interpretation:** both sources must independently match the *same* immutable
 coordinate snapshot of the selected object before a comparison can run (see
-`docs/coordinate_preservation.md#2-comparison-path-membrane_vqcopm_adapterpy-membrane_vqccomparison_pymolpy`);
+`docs/offline_and_safety.md#2-comparison-path-membrane_vqcopm_adapterpy-membrane_vqccomparison_pymolpy`);
 a source that stops matching invalidates the comparison rather than silently comparing against
 stale data.
 
@@ -177,7 +177,7 @@ through **Plugin > Membrane Visual QC > Batch review** or `mvqc_batch_run`. Batc
 an explicit plan, shows the ordered job queue, runs one job per PyMOL main-thread event, supports
 cooperative cancellation, and verifies a result bundle before browsing it -- it is a queue runner
 and integrity-checked viewer, not a visual plan editor, and its operational states are not a
-biological verdict. See `docs/batch_plan.md` for the full guide (including a narrated five-mode
+biological verdict. See `docs/batch_plan_reference.md` for the full guide (including a narrated five-mode
 example) and `docs/stage5b_gui_batch.md` for the GUI's detailed state model.
 
 ## Reading the visualization

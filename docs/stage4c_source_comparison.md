@@ -1,5 +1,10 @@
 # Stage 4C PDBTM–OPM orientation comparison
 
+> **Technical reference.** This document remains the detailed design/scientific-boundary reference
+> for PDBTM-OPM comparison, linked from [docs/tutorial.md](tutorial.md#5-pdbtm-opm-comparison) and
+> [docs/scientific_interpretation.md](scientific_interpretation.md#comparison-is-not-source-ranking) --
+> it is not the primary user-facing entry point for using the feature.
+
 Status: **PASS — complete and merged**. v0.5.0 release packaging and exact release-artifact
 acceptance are tracked separately from the completed Stage 4C implementation acceptance.
 

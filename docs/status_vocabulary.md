@@ -108,7 +108,7 @@ cache/network failure at this layer surfaces to the batch job as `INPUT_REJECTED
 | `CACHE_CLEAR_FAILED` | **Clear cached record** could not remove the entry. |
 | `CACHE_OPEN_FAILED` | The cache root could not be opened/initialized. |
 | `NETWORK_TIMEOUT` / `NETWORK_UNAVAILABLE` | The bounded direct HTTPS request to the PDBTM API timed out or could not connect. |
-| `PROXY_UNSUPPORTED` | A configured system proxy was detected; direct connection only is supported (see `docs/offline_guarantees.md`). |
+| `PROXY_UNSUPPORTED` | A configured system proxy was detected; direct connection only is supported (see `docs/offline_and_safety.md`). |
 | `TLS_ERROR` | The TLS handshake or certificate validation failed. |
 | `REDIRECT_DISALLOWED` | The server attempted to redirect; this transport follows no redirects. |
 | `RESPONSE_TOO_LARGE` | The response exceeded the bounded size limit. |
@@ -137,4 +137,4 @@ in a manifest) when a plan, result bundle, or output path itself is structurally
 No status value in this table is, or is derived from, a biological-correctness verdict, a
 membrane-insertion claim, a "best" or "preferred" source designation, or a claim of automatic
 validation. See `docs/known_limitations.md#scientific-interpretation` and
-`docs/coordinate_preservation.md`.
+`docs/offline_and_safety.md`.

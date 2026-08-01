@@ -75,7 +75,7 @@ Each `jobs[]` entry:
 | `error_code` | A stable code (see `docs/status_vocabulary.md#7-cache-and-provider-error-codes` and `#8`) when `status` is `INPUT_REJECTED` or `ANALYSIS_ERROR`; otherwise `null`. |
 | `report_schema` | The report schema version this job's report was written as (e.g. `"1.1"`, `"1.3"`, `"1.5"`), or `null` if no report was produced. |
 | `review_items_count`, `warnings_count` | Counts extracted from the job's report, or `null`/`0` if no report exists. |
-| `coordinate_preserved` | `true`/`false` if the job's coordinate-fingerprint check ran, `null` if the job never reached that stage (e.g. `INPUT_REJECTED`). See `docs/coordinate_preservation.md`. |
+| `coordinate_preserved` | `true`/`false` if the job's coordinate-fingerprint check ran, `null` if the job never reached that stage (e.g. `INPUT_REJECTED`). See `docs/offline_and_safety.md`. |
 | `report` | `{"path": "<job_id>.json", "size": ..., "sha256": ...}` (relative to the output root), or `null`. |
 | `csv` | Same shape for the CSV companion, or `null`. |
 

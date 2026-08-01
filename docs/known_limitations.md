@@ -14,7 +14,7 @@
   editor. History is limited to 20 entries in the current dialog session and is not discovered or
   persisted. Missing or changed referenced outputs cannot be revealed.
 - There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
-  source, or biological verdict. Stage 5C has not started.
+  source, or biological verdict.
 
 ## Installation and upgrade
 
@@ -52,7 +52,7 @@
   redirects, and retries are unsupported.
 - The validated cache has no automatic migration or garbage collection. Fetch/Refresh, use, and
   clear remain explicit user actions.
-- Stage 5B adds a local GUI queue and bounded current-session history, but no persistent history,
+- Batch review adds a local GUI queue and bounded current-session history, but no persistent history,
   resume manager, scheduler, or automatic source selection.
 - There is no automatic fitting, alignment, consensus orientation, provider ranking, or preferred
   source.
@@ -125,17 +125,10 @@ Membrane Visual QC is an inspection helper, not a definitive validator of membra
   water bridges, oxidation states, and ion-coordination geometry are not inferred.
 - Only same-model contacts are considered. Missing or ambiguous metadata is reported as
   unavailable or excluded rather than guessed.
-- GUI context analysis remains opt-in and disabled by default until graphical Stage 3B acceptance.
+- GUI context analysis remains opt-in and disabled by default.
 
-## Scientific Interpretation
+## Scientific interpretation
 
-Inspect flagged residues in context:
-
-- active sites
-- ion-binding sites
-- cofactors and ligands
-- internal water chains
-- proton-transfer networks
-- known functional polar networks
-
-Avoid language such as "invalid", "failed", or "wrong" for normal user structures. Prefer "inspect", "review", or "warning".
+The full scientific-wording boundary (what a result reports, what it does not claim, comparison
+and membrane-context limits, and the vocabulary this project uses and avoids) is consolidated in
+[docs/scientific_interpretation.md](scientific_interpretation.md).

@@ -52,7 +52,7 @@ restored in v0.7.0; see `docs/adr/0001-report-schema-versioning.md`.
 
 | Release | `mvqc-batch-plan-1.0` / `mvqc-batch-result-1.0` |
 |---|---|
-| v0.1.0-v0.5.0 | Not present (Stage 5A introduced them) |
+| v0.1.0-v0.5.0 | Not present (introduced in v0.6.0) |
 | v0.6.0 | Introduced, full support (5 modes, CLI, GUI) |
 | v0.7.0 | Unchanged, full support |
 

@@ -1,5 +1,8 @@
 # Stage 4 orientation import threat model
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/offline_and_safety.md](offline_and_safety.md) for the current safety guarantees.
+
 Status: proposed design controls; applies before Stage 4A implementation.
 
 ## Assets and trust boundaries
