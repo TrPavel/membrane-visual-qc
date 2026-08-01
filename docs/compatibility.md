@@ -105,6 +105,8 @@ remain manual-verification-only, tracked in `docs/manual_install_upgrade_checkli
 - Whether a second, duplicate plugin entry can appear after an overlay install in practice.
 - Full close/reopen and `QThread` lifecycle behavior under the genuinely installed (not
   source-tree) plugin.
-- Any of the above rounds have not been marked PASS until the maintainer has actually run them and
-  recorded the result in that checklist file -- do not treat this document's existence as evidence
-  that they have been.
+- A round is not to be treated as passed unless the maintainer has actually run it and recorded
+  the result in `docs/manual_install_upgrade_checklist.md` -- do not treat this document's
+  existence as evidence that it has been. For the v0.6.0 -> `0.7.0.dev0` pair specifically, that
+  checklist now records a PASS from an owner-observed session on 2026-08-01; this does not extend
+  to any other version pair.

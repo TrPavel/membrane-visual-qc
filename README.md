@@ -62,7 +62,10 @@ from an existing v0.6.0 installation has its own recommended (clean-replacement)
 compatibility notes, and a troubleshooting section -- see
 [docs/upgrade_guide.md](docs/upgrade_guide.md). The currently validated configurations and
 compatibility boundaries (OS, PyMOL distribution, supported schema/contract versions, what remains
-manual-verification-only) are stated in [docs/compatibility.md](docs/compatibility.md).
+manual-verification-only) are stated in [docs/compatibility.md](docs/compatibility.md). The v0.6.0
+-> `0.7.0.dev0` clean install/upgrade/rollback path has an owner-observed manual PASS result in
+[docs/manual_install_upgrade_checklist.md](docs/manual_install_upgrade_checklist.md); this does not
+extend to other version pairs and does not replace automated CI.
 
 For source development:
 

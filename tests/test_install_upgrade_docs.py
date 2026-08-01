@@ -4,6 +4,7 @@ that it has not silently drifted from the values it describes."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from membrane_vqc.batch_contracts import PLAN_CONTRACT, RESULT_CONTRACT
@@ -11,6 +12,7 @@ from membrane_vqc.report import SUPPORTED_SCHEMA_VERSIONS
 from scripts.build_plugin_zip import project_version
 
 ROOT = Path(__file__).resolve().parents[1]
+MANUAL_VALIDATION_SOURCE_COMMIT = "28802a640f8eabd38f7e8afbb529da5a306bb68f"
 
 
 def test_readme_links_to_the_upgrade_guide_and_compatibility_statement():
@@ -51,13 +53,34 @@ def test_compatibility_statement_matches_supported_schema_and_contract_versions(
     assert RESULT_CONTRACT in text
 
 
-def test_manual_checklist_exists_and_is_not_falsely_marked_complete():
+def test_manual_checklist_records_an_owner_observed_result_not_an_invented_one():
+    """As of 2026-08-01 the owner actually ran the v0.6.0 -> 0.7.0.dev0 manual checklist
+    and recorded PASS -- this is a genuine completion, not the false-completion case the
+    original version of this test guarded against (marking a round PASS without the owner
+    having run it). The checks below confirm the recorded result stays anchored to the
+    exact artifacts the owner actually tested, so a future edit cannot silently drift the
+    claim away from that evidence (for example, by bumping the hash to match a
+    newer, untested ZIP) without this test catching it."""
     text = (ROOT / "docs" / "manual_install_upgrade_checklist.md").read_text("utf-8")
-    assert "pending owner observation" in text
-    # All three rounds (A, B, C) must be genuinely PENDING in the committed version of
-    # this file -- marking one PASS without the owner having actually run it would be a
-    # false completion claim (see the task's own explicit constraint on this point). The
-    # "Result: **PASS**" string does legitimately appear once, in the "Recording
-    # results" section's template explanation of the format to use later -- so check the
-    # per-round markers specifically rather than searching for the substring's absence.
-    assert text.count("Result: **PENDING**") >= 3  # at least Round A, B, and C
+    assert "Status: **PASS**" in text
+    assert "2026-08-01" in text
+    for marker in ("Round A", "Round D", "Round E", "Round F", "## Overall result"):
+        assert marker in text
+    # The exact tested artifact identities must not silently drift from what was actually
+    # verified -- see docs/v0.7.0_install_upgrade_manual_evidence.json and
+    # docs/v0.6.0_release_evidence.json.
+    assert "d11234fc3e74bbc7427d6bb18f36897bc86a9d27a9bfec134df9b623307d638c" in text
+    assert "7126e51acc6514e3fb73ed0113200d8da376ca75e5f128aef556db2194046960" in text
+    assert MANUAL_VALIDATION_SOURCE_COMMIT in text
+
+
+def test_manual_evidence_json_matches_the_checklist_it_summarizes():
+    checklist = (ROOT / "docs" / "manual_install_upgrade_checklist.md").read_text("utf-8")
+    evidence_path = ROOT / "docs" / "v0.7.0_install_upgrade_manual_evidence.json"
+    assert evidence_path.is_file(), "expected a structured evidence file alongside the checklist"
+    evidence = json.loads(evidence_path.read_text("utf-8"))
+    assert evidence["source_commit"] in checklist
+    assert evidence["development_artifact"]["sha256"] in checklist
+    assert evidence["stable_artifact"]["sha256"] in checklist
+    assert all(result == "PASS" for result in evidence["rounds"].values())
+    assert all(flag is False for flag in evidence["observations"].values())

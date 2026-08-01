@@ -6,10 +6,9 @@ install/upgrade compatibility harness (`tests/test_plugin_install.py`,
 `tests/test_plugin_upgrade.py`) run against the genuine, verified `MembraneVisualQC-0.6.0.zip`
 release asset (SHA-256 `7126e51acc6514e3fb73ed0113200d8da376ca75e5f128aef556db2194046960`, see
 `docs/v0.6.0_release_evidence.json`), plus a manual real-PyMOL checklist
-(`docs/manual_install_upgrade_checklist.md`) that has not yet been run by the maintainer as of
-this guide's initial version -- see that file's own status line before relying on any "PASS"
-claim for the graphical Plugin Manager flow itself, which this repository cannot automate (see
-`docs/compatibility.md`).
+(`docs/manual_install_upgrade_checklist.md`), which the owner ran end to end on 2026-08-01 with a
+recorded PASS result -- see that file for the exact steps and observations, which this repository's
+automated tests cannot substitute for (see `docs/compatibility.md`).
 
 Once v1.0.0 is published, this guide will be extended to cover v0.6.0 → v1.0.0 directly; it does
 not (and will not) attempt to support arbitrary older versions.
