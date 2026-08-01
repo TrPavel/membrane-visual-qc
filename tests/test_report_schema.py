@@ -29,6 +29,9 @@ SCHEMA_1_3 = ROOT / "schemas" / "mvqc-report-1.3.schema.json"
 SCHEMA_1_4 = ROOT / "schemas" / "mvqc-report-1.4.schema.json"
 SCHEMA_1_5 = ROOT / "schemas" / "mvqc-report-1.5.schema.json"
 _SYNTHETIC = ROOT / "data" / "synthetic"
+GENUINE_V010_FIXTURE = (
+    ROOT / "tests" / "fixtures" / "genuine_v0.1.0_schema_1_0_bad_core_lys_mvqc.json"
+)
 
 
 def test_example_report_validator_supports_required_direct_script_command():
@@ -109,6 +112,102 @@ def test_generated_examples_can_dispatch_by_declared_schema_version():
         "1.4": 1,
         "1.5": 1,
     }
+
+
+def test_genuine_v010_fixture_matches_its_known_git_history_bytes():
+    """tests/fixtures/README.md documents this file's provenance: recovered byte-for-byte from
+    commit cddcd1c8410343e21a207a8426b81289a6bf12c1's reports/bad_core_lys_mvqc.json (the last
+    commit where that path declared schema_version "1.0", before the Stage 2 commit that follows
+    silently regenerated the same filename to schema 1.1 in place). This is a genuine historical
+    artifact, not one reconstructed from the current writer."""
+
+    assert hashlib.sha256(GENUINE_V010_FIXTURE.read_bytes()).hexdigest() == (
+        "eacd8d31f917ee8dbead6e3ab8048205e38be25257fe3b34f53d6bca1d255d02"
+    )
+    report = json.loads(GENUINE_V010_FIXTURE.read_text(encoding="utf-8"))
+    assert report["schema_version"] == "1.0"
+    assert report["software"]["version"] == "0.1.0"
+
+
+def test_genuine_v010_fixture_validates_against_its_own_json_schema():
+    pytest.importorskip("jsonschema")
+    validate_reports(SCHEMA, [GENUINE_V010_FIXTURE])
+
+
+def test_genuine_v010_fixture_is_accepted_by_validate_report_without_mutation():
+    report = json.loads(GENUINE_V010_FIXTURE.read_text(encoding="utf-8"))
+    before = json.loads(json.dumps(report))
+
+    validate_report(report)  # must not raise
+
+    assert report == before
+
+
+def test_genuine_v010_fixture_lacks_schema_1_1_depth_fields():
+    """Structural proof the fixture is genuinely pre-1.1: schema 1.1 made these fields required
+    on every review item, and schema 1.0 never had them. If validate_report() ever required them
+    unconditionally again, this real fixture -- not a synthetic stand-in -- would catch it."""
+
+    report = json.loads(GENUINE_V010_FIXTURE.read_text(encoding="utf-8"))
+    depth_fields = {
+        "signed_distance",
+        "absolute_center_distance",
+        "nearest_boundary_distance",
+        "outside_distance",
+        "normalized_depth",
+    }
+    for item in report["review_items"]:
+        assert not depth_fields & set(item)
+
+
+def test_genuine_v010_fixture_would_be_rejected_if_depth_fields_were_required(monkeypatch):
+    """Proves the version-conditional branch in validate_report() is load-bearing: force the
+    legacy-version comparison to never match (as it would if 1.0 were folded into the same
+    unconditional depth-field requirement as 1.1+) and confirm this exact genuine fixture then
+    fails for precisely the reason the version branch exists to prevent."""
+
+    import membrane_vqc.report as report_mod
+
+    monkeypatch.setattr(report_mod, "LEGACY_SCHEMA_VERSION", "not-a-real-version")
+    report = json.loads(GENUINE_V010_FIXTURE.read_text(encoding="utf-8"))
+    with pytest.raises(ReportError, match="missing required fields"):
+        report_mod.validate_report(report)
+
+
+def test_unsupported_schema_version_still_rejected():
+    report = json.loads(GENUINE_V010_FIXTURE.read_text(encoding="utf-8"))
+    report = dict(report, schema_version="0.9")
+    with pytest.raises(ReportError, match="Unsupported report schema version"):
+        validate_report(report)
+
+
+def test_schema_1_5_remains_excluded_from_single_structure_validator():
+    """Schema 1.5 (orientation_source_comparison) is a structurally distinct report type and
+    must continue to be validated only via comparison_report.validate_comparison_report, never
+    by validate_report(), regardless of the schema-1.0 fix."""
+    from membrane_vqc.report import SUPPORTED_SCHEMA_VERSIONS
+
+    assert "1.5" not in SUPPORTED_SCHEMA_VERSIONS
+    comparison_report = json.loads(
+        (ROOT / "reports" / "source_comparison_synthetic_mvqc.json").read_text(encoding="utf-8")
+    )
+    assert comparison_report["schema_version"] == "1.5"
+    with pytest.raises(ReportError, match="Unsupported report schema version"):
+        validate_report(comparison_report)
+
+
+def test_supported_schema_versions_each_have_a_matching_schema_file():
+    """Loose synchronization guard between SUPPORTED_SCHEMA_VERSIONS and schemas/, without
+    introspecting validate_report()'s source text: every version the validator accepts must have
+    a real schema file on disk whose own declared const agrees."""
+    from membrane_vqc.report import SUPPORTED_SCHEMA_VERSIONS
+
+    assert SUPPORTED_SCHEMA_VERSIONS == {"1.0", "1.1", "1.2", "1.3", "1.4"}
+    for version in SUPPORTED_SCHEMA_VERSIONS:
+        schema_path = ROOT / "schemas" / f"mvqc-report-{version}.schema.json"
+        assert schema_path.is_file(), f"missing schema file for supported version {version}"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        assert schema["properties"]["schema_version"]["const"] == version
 
 
 def test_exposure_report_validates_against_draft_schema_1_2(tmp_path):

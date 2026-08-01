@@ -1,0 +1,103 @@
+{
+  "capabilities": {},
+  "flagged_residues": [
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "bad_core_lys/A/6/LYS",
+      "model": "bad_core_lys",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 0.0
+    }
+  ],
+  "generated_at": "2026-07-13T20:34:32.497865+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "organic",
+    "path": "",
+    "provenance_status": "input_path_not_supplied",
+    "selection": "bad_core_lys",
+    "sha256": "",
+    "slab_mode": "manual",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Manual slab orientation was used.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "geometry": "planar",
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "manual",
+    "warnings": [
+      "Membrane slab was manually defined. Interpret core flags as geometric inspection only."
+    ]
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": "organic"
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [
+    {
+      "chain": "A",
+      "classification": "core",
+      "id": "bad_core_lys/A/6/LYS",
+      "model": "bad_core_lys",
+      "reason": "charged residue in manually defined membrane core; inspect local environment",
+      "resi": "6",
+      "resn": "LYS",
+      "severity": "WARNING",
+      "z": 0.0
+    }
+  ],
+  "runtime": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.0",
+  "software": {
+    "commit": "",
+    "commit_status": "unavailable",
+    "name": "membrane-vqc-pymol",
+    "version": "0.1.0"
+  },
+  "summary": {
+    "charged_core_residues": 1,
+    "core_residues": 10,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "REVIEW_ITEMS",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 10
+  },
+  "timestamp": "2026-07-13T20:34:32.497865+00:00",
+  "version": "0.1.0",
+  "warnings": [
+    "Membrane slab was manually defined. Interpret core flags as geometric inspection only.",
+    "No atoms found for ligand selection: organic"
+  ]
+}
