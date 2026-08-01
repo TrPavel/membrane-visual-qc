@@ -170,6 +170,56 @@ FROZEN_V060_POST_MERGE = {
     "outer_size": 684562,
     "outer_sha256": "54c61714f2ccf3c37dab01e0b184779ae13bd251b173b60578fe4f19ae7f1f5e",
 }
+FROZEN_V070_VERSION = "0.7.0"
+FROZEN_V070_RELEASE_EVIDENCE = "docs/v0.7.0_release_evidence.json"
+# v0.7.0 is a compatibility/reliability/documentation release; it adds no report
+# schema or new retained report, so schemas 1.0-1.5 stay covered by the
+# frozen-v0.5.0 gate above and there is no separate report/schema set here.
+FROZEN_V070_ASSETS = {
+    "MembraneVisualQC-0.7.0.zip": {
+        "size": 194334,
+        "sha256": "4672b1b91657d0ddea9d839e99de6b1b4642a17a0008afc99ae78f5eff55fda4",
+    },
+    "MembraneVisualQC-0.7.0.zip.sha256": {
+        "size": 93,
+        "sha256": "012da72b4d3a93a602c49fe6dfedf6f423821e54035af240e1042a72e74dfa59",
+    },
+    "membrane_vqc_pymol-0.7.0-py3-none-any.whl": {
+        "size": 199960,
+        "sha256": "24c956981c0e9810e16226bbecf9949906707011302285826f0f40378fccc38a",
+    },
+    "membrane_vqc_pymol-0.7.0.tar.gz": {
+        "size": 330834,
+        "sha256": "86a830071a75214eab1a114d7f6ab21587c72bbfa754f38ad7f04a9beaffc96c",
+    },
+}
+FROZEN_V070_RELEASE = {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.7.0",
+    "published_at": "2026-08-01T20:48:09Z",
+    "prerelease": True,
+    "pypi_published": False,
+}
+FROZEN_V070_TAG = {
+    "name": "v0.7.0",
+    "object": "fa3010f7df6c5f3b0104b4aa25a338c614143601",
+    "target": "c487c2fc339d415edef80797df60e62be89e8940",
+}
+FROZEN_V070_RELEASE_PR = {
+    "number": 30,
+    "final_head": "abda63968899d31c980145ad3cb786c2ac63dbaa",
+    "squash_commit": "c487c2fc339d415edef80797df60e62be89e8940",
+}
+FROZEN_V070_POST_MERGE = {
+    "id": 30717576859,
+    "artifact_id": 8823821630,
+    "outer_size": 716344,
+    "outer_sha256": "f05257108deff918b9ffccc77581249b956b2039a4abc1aefaf74bc9dcc47d34",
+}
+FROZEN_V070_MANUAL_VALIDATION = {
+    "stable_artifact_smoke_test": "PASS",
+    "date": "2026-08-01",
+    "install_upgrade_rollback_evidence": "docs/v0.7.0_install_upgrade_manual_evidence.json",
+}
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
     "membrane_vqc/pdbtm_cache_contract.py",
@@ -750,6 +800,35 @@ def verify_frozen_v060_evidence(project_root: Path = ROOT) -> dict[str, object]:
     }
 
 
+def verify_frozen_v070_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify published v0.7.0 publication evidence without consulting the active version."""
+    project_root = project_root.resolve()
+
+    evidence_path = project_root / FROZEN_V070_RELEASE_EVIDENCE
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    expected_sections = {
+        "version": FROZEN_V070_VERSION,
+        "release_pr": FROZEN_V070_RELEASE_PR,
+        "post_merge_workflow": FROZEN_V070_POST_MERGE,
+        "tag": FROZEN_V070_TAG,
+        "release": FROZEN_V070_RELEASE,
+        "assets": FROZEN_V070_ASSETS,
+        "manual_validation": FROZEN_V070_MANUAL_VALIDATION,
+    }
+    if evidence != expected_sections:
+        raise ReleaseArtifactError("Frozen v0.7.0 publication evidence changed")
+
+    return {
+        "version": FROZEN_V070_VERSION,
+        "assets": evidence["assets"],
+        "release": evidence["release"],
+        "tag": evidence["tag"],
+        "release_pr": evidence["release_pr"],
+        "post_merge_workflow": evidence["post_merge_workflow"],
+        "manual_validation": evidence["manual_validation"],
+    }
+
+
 # Backwards-compatible API name for callers that validate the active build.
 validate_release_artifacts = validate_current_development_artifacts
 
@@ -763,6 +842,7 @@ def main() -> int:
             "frozen-v0.4.0",
             "frozen-v0.5.0",
             "frozen-v0.6.0",
+            "frozen-v0.7.0",
             "release-candidate",
         ),
         default="current-development",
@@ -787,6 +867,10 @@ def main() -> int:
         if args.version is not None:
             parser.error("--version is only valid with --mode release-candidate")
         result = verify_frozen_v060_evidence(args.project_root)
+    elif args.mode == "frozen-v0.7.0":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v070_evidence(args.project_root)
     else:
         if args.version is None:
             parser.error("--mode release-candidate requires --version")

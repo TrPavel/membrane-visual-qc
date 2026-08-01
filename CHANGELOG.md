@@ -8,16 +8,14 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Preparing the completed compatibility/reliability/install-upgrade/documentation work below for
-  the v0.7.0 GitHub prerelease. Final release artifact identity, tag, and publication evidence
-  remain **PENDING** until the exact release artifact has passed tagging and publication
-  verification.
+- Reopened development as `0.8.0.dev0` after publishing v0.7.0. This identity-only reset adds no
+  runtime or scientific behavior.
 
-## [0.7.0] - PENDING
+## [0.7.0] - 2026-08-01
 
-Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
-publication is planned. This is a compatibility, reliability, and documentation release -- no
-scientific algorithm, report schema, batch contract, or cache format changed.
+Status: published GitHub prerelease for limited public testing. No PyPI publication was made. This
+is a compatibility, reliability, and documentation release -- no scientific algorithm, report
+schema, batch contract, or cache format changed.
 
 ### Compatibility
 
