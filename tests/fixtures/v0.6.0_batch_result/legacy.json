@@ -1,0 +1,94 @@
+{
+  "capabilities": {},
+  "flagged_residues": [],
+  "generated_at": "2026-07-31T18:09:07.217803+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "",
+    "path": "input.pdb",
+    "provenance_status": "file_hashed",
+    "selection": "mvqc_batch_legacy_cd5075c1063f",
+    "sha256": "17f5af5bbf3c97be918012f84e4716d4461af0a6476dc792b8daf6ca03eb225f",
+    "slab_mode": "manual_global_z",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Manual global-z membrane orientation was used.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "confidence": null,
+    "geometry": "planar",
+    "interface_width": 3.0,
+    "lower_offset": -15.0,
+    "metadata": {},
+    "normal": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "parameters": {
+      "center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "manual_global_z",
+    "source_version": null,
+    "upper_offset": 15.0,
+    "warnings": [
+      "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
+    ]
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": ""
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [],
+  "runtime": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.1",
+  "software": {
+    "commit": "",
+    "commit_status": "unavailable",
+    "name": "membrane-vqc-pymol",
+    "version": "0.6.0.dev0"
+  },
+  "summary": {
+    "charged_core_residues": 0,
+    "core_residues": 3,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "NO_FLAGS",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 3
+  },
+  "timestamp": "2026-07-31T18:09:07.217803+00:00",
+  "version": "0.6.0.dev0",
+  "warnings": [
+    "Membrane orientation was manually defined or is unverified. Interpret core flags as geometric inspection only."
+  ]
+}

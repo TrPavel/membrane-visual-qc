@@ -1,0 +1,117 @@
+{
+  "completed_at": "2026-07-31T18:09:07.750890Z",
+  "contract": "mvqc-batch-result-1.0",
+  "counts": {
+    "ANALYSIS_ERROR": 0,
+    "CANCELLED": 0,
+    "INPUT_REJECTED": 1,
+    "INSUFFICIENT_CONTEXT": 0,
+    "REVIEW_ITEMS": 1,
+    "SKIPPED_DEPENDENCY": 0,
+    "SUCCESS": 3,
+    "total": 5
+  },
+  "execution": {
+    "failure_policy": "continue_on_error",
+    "overwrite": "refuse"
+  },
+  "identity_core_sha256": "5d332ccf12237202a0a2409d2dc271c09494024722f839fcaad3fa94d9a45c94",
+  "jobs": [
+    {
+      "coordinate_preserved": true,
+      "csv": {
+        "path": "legacy.csv",
+        "sha256": "d4203f98af38b4c3df4a335910e2c75e11fa30b048cec447d656d44a7071f5f9",
+        "size": 56
+      },
+      "error_code": null,
+      "job_id": "legacy",
+      "mode": "legacy_global_z",
+      "report": {
+        "path": "legacy.json",
+        "sha256": "b39fa0a06158b27663f825d537dfc29f6e57e1adab6212eee762b403c2c4896c",
+        "size": 2306
+      },
+      "report_schema": "1.1",
+      "review_items_count": 0,
+      "status": "SUCCESS",
+      "warnings_count": 1
+    },
+    {
+      "coordinate_preserved": true,
+      "csv": {
+        "path": "planar.csv",
+        "sha256": "d4203f98af38b4c3df4a335910e2c75e11fa30b048cec447d656d44a7071f5f9",
+        "size": 56
+      },
+      "error_code": null,
+      "job_id": "planar",
+      "mode": "planar_orientation",
+      "report": {
+        "path": "planar.json",
+        "sha256": "f0bad120ccdee8f96fc6552d9d7c47dd78bdceb085b89ab918666ab3b0b21029",
+        "size": 2366
+      },
+      "report_schema": "1.1",
+      "review_items_count": 0,
+      "status": "SUCCESS",
+      "warnings_count": 0
+    },
+    {
+      "coordinate_preserved": true,
+      "csv": {
+        "path": "pdbtm-local.csv",
+        "sha256": "d4203f98af38b4c3df4a335910e2c75e11fa30b048cec447d656d44a7071f5f9",
+        "size": 56
+      },
+      "error_code": null,
+      "job_id": "pdbtm-local",
+      "mode": "pdbtm_local",
+      "report": {
+        "path": "pdbtm-local.json",
+        "sha256": "de7b8aa1e6de898e74e5fca096ac04780af0f1dcbdde4d6d437983580b753ea5",
+        "size": 10339
+      },
+      "report_schema": "1.3",
+      "review_items_count": 0,
+      "status": "SUCCESS",
+      "warnings_count": 0
+    },
+    {
+      "coordinate_preserved": null,
+      "csv": null,
+      "error_code": "CACHE_ROOT_INVALID",
+      "job_id": "pdbtm-cache",
+      "mode": "pdbtm_cache",
+      "report": null,
+      "report_schema": null,
+      "review_items_count": null,
+      "status": "INPUT_REJECTED",
+      "warnings_count": 0
+    },
+    {
+      "coordinate_preserved": true,
+      "csv": null,
+      "error_code": null,
+      "job_id": "comparison",
+      "mode": "pdbtm_opm_comparison",
+      "report": {
+        "path": "comparison.json",
+        "sha256": "4cc46a464cc06aead62a560f15753b3a14c359e09bf736df684232d15d279dc7",
+        "size": 5813
+      },
+      "report_schema": "1.5",
+      "review_items_count": 1,
+      "status": "REVIEW_ITEMS",
+      "warnings_count": 0
+    }
+  ],
+  "overall_status": "COMPLETED_WITH_ERRORS",
+  "plan_sha256": "61eff5f1cd1e12209486e719fe34e217f2267afcb2c0399e917dd44e2a4e8fdb",
+  "run_id": "1bfe9fa6be485e1a8f9ff79dd742cfdde193d1c0851d9791d0f9b3b787051a3c",
+  "software": {
+    "commit": null,
+    "version": "0.6.0.dev0"
+  },
+  "started_at": "2026-07-31T18:09:07.161311Z"
+}

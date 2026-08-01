@@ -56,6 +56,14 @@ published [v0.1.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0
 [v0.2.0](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.2.0) tags, releases, and
 assets remain unchanged.
 
+Installing for the first time and upgrading an existing installation are different situations: a
+first install can use Plugin Manager's normal "Install New Plugin" flow as above, but upgrading
+from an existing v0.6.0 installation has its own recommended (clean-replacement) method, data-
+compatibility notes, and a troubleshooting section -- see
+[docs/upgrade_guide.md](docs/upgrade_guide.md). The currently validated configurations and
+compatibility boundaries (OS, PyMOL distribution, supported schema/contract versions, what remains
+manual-verification-only) are stated in [docs/compatibility.md](docs/compatibility.md).
+
 For source development:
 
 ```bash

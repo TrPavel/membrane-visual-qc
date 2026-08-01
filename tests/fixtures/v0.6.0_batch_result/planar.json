@@ -1,0 +1,97 @@
+{
+  "capabilities": {},
+  "flagged_residues": [],
+  "generated_at": "2026-07-31T18:09:07.452849+00:00",
+  "input": {
+    "cutoff": 5.0,
+    "format": "",
+    "ligand_selection": "",
+    "path": "input.pdb",
+    "provenance_status": "file_hashed",
+    "selection": "mvqc_batch_planar_9a7c2893026d",
+    "sha256": "17f5af5bbf3c97be918012f84e4716d4461af0a6476dc792b8daf6ca03eb225f",
+    "slab_mode": "synthetic_rigid_transform",
+    "structure_source": "",
+    "structure_type": "unknown",
+    "zmax": 15.0,
+    "zmin": -15.0
+  },
+  "ligand_neighbours": [],
+  "limitations": [
+    "Explicit planar orientation metadata was used and was not independently verified.",
+    "This plugin is a visual QC helper, not a definitive structural validator."
+  ],
+  "orientation": {
+    "center": [
+      10.0,
+      -5.0,
+      3.0
+    ],
+    "confidence": "validation_fixture",
+    "geometry": "planar",
+    "import": {
+      "path": "stage5a_orientation.json",
+      "schema_version": "1.0",
+      "sha256": "a8ea9bd46b0f69f74fd033a0598838721c822ced903b59d391618c9f7100568f"
+    },
+    "interface_width": 3.0,
+    "lower_offset": -15.0,
+    "metadata": {
+      "fixture": "stage5a"
+    },
+    "normal": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "parameters": {
+      "center": [
+        10.0,
+        -5.0,
+        3.0
+      ],
+      "normal": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "source": "synthetic_rigid_transform",
+    "source_version": "stage5a-validation-1",
+    "upper_offset": 15.0,
+    "warnings": []
+  },
+  "parameters": {
+    "ligand_cutoff_angstrom": 5.0,
+    "ligand_selection": ""
+  },
+  "plugin": "membrane-vqc-pymol",
+  "report_type": "single_structure_review",
+  "review_items": [],
+  "runtime": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pymol": "3.1.8",
+    "pymol_status": "recorded",
+    "python": "3.10.20"
+  },
+  "schema_version": "1.1",
+  "software": {
+    "commit": "",
+    "commit_status": "unavailable",
+    "name": "membrane-vqc-pymol",
+    "version": "0.6.0.dev0"
+  },
+  "summary": {
+    "charged_core_residues": 0,
+    "core_residues": 3,
+    "ligand_neighbour_residues": 0,
+    "overall_status": "NO_FLAGS",
+    "polar_core_inspect_residues": 0,
+    "total_residues": 3
+  },
+  "timestamp": "2026-07-31T18:09:07.452849+00:00",
+  "version": "0.6.0.dev0",
+  "warnings": []
+}
