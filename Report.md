@@ -3,19 +3,21 @@
 ## Current status
 
 Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete. v0.6.0 was published as a
-GitHub prerelease for limited public testing on 2026-07-31. It adds Stage 5A's strict
-batch-plan/result contracts and Stage 5B's **Batch review** GUI: an explicit-plan queue runner,
-cooperative cancellation, bounded session-only history, an integrity-checked result browser, and a
-scrollable dialog layout for constrained-height screens. It performs no automatic fitting,
-coordinate mutation, source selection, provider ranking, consensus, or biological verdict.
+GitHub prerelease for limited public testing on 2026-07-31. The repository is now preparing
+`0.7.0` as a GitHub prerelease. It adds restored historical schema-1.0 read compatibility, a
+result-browser `ReportError` fix, fail-fast Windows filesystem-error handling, a clean CLI error
+for a missing batch plan, a real-PyMOL install/upgrade/rollback compatibility harness for the
+v0.6.0 -> `0.7.x` transition, and a consolidated user-facing documentation set. It changes no
+scientific algorithm, report schema, batch contract, or cache format.
 
 The exact v0.6.0 publication evidence is frozen in `docs/v0.6.0_release_evidence.json`; downloaded
-assets were byte-verified against the authoritative post-merge workflow. The pre-promotion
-`0.6.0.dev0` development artifact (commit `9a528c4`, CI run `30656333770`) passed full 20-point
-manual acceptance and a post-fix responsive-GUI smoke test on a real PyMOL session; the published
-stable `MembraneVisualQC-0.6.0.zip` artifact additionally passed manual smoke-test acceptance after
-publication. See `docs/stage5b_graphical_acceptance.md`. Active development is `0.7.0.dev0`.
-Historical v0.1.0–v0.6.0 evidence below remains intentionally unchanged. PyPI is not used.
+assets were byte-verified against the authoritative post-merge workflow. The `0.7.0.dev0`
+development artifact (commit `28802a640f8eabd38f7e8afbb529da5a306bb68f`) passed a full
+owner-observed clean-install/upgrade/rollback manual acceptance on a real PyMOL session before
+this version-identity promotion; see `docs/manual_install_upgrade_checklist.md`. Final v0.7.0 tag,
+release, and publication evidence remain **PENDING** until the exact release artifact has passed
+publication verification. Historical v0.1.0–v0.6.0 evidence below remains intentionally unchanged.
+PyPI is not used.
 
 ## Environment
 

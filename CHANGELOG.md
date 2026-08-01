@@ -8,8 +8,65 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Reopened development as `0.7.0.dev0` after publishing v0.6.0. This identity-only reset adds no
-  runtime or scientific behavior.
+- Preparing the completed compatibility/reliability/install-upgrade/documentation work below for
+  the v0.7.0 GitHub prerelease. Final release artifact identity, tag, and publication evidence
+  remain **PENDING** until the exact release artifact has passed tagging and publication
+  verification.
+
+## [0.7.0] - PENDING
+
+Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
+publication is planned. This is a compatibility, reliability, and documentation release -- no
+scientific algorithm, report schema, batch contract, or cache format changed.
+
+### Compatibility
+
+- Restored read compatibility for genuine historical report schema 1.0, including a frozen
+  historical fixture used to test it; `membrane_vqc.report.validate_report()` correctly dispatches
+  schema-1.0 reports without requiring the schema-1.1 depth fields introduced later.
+
+### Reliability
+
+- Converted an unhandled exception in the batch result browser into a typed `ReportError` so an
+  invalid referenced report fails cleanly instead of crashing the browsing flow.
+- Made Windows filesystem failures during batch execution (permission denial, path-length limits,
+  and other ACL/OS errors) fail fast with a clear, typed error message instead of hanging or
+  retrying unboundedly, including a bounded atomic temporary-file creation path.
+- Gave a missing or invalid batch plan a concise, non-zero-exit CLI error instead of a raw
+  traceback.
+- Added test coverage for space/Unicode paths, read-only destinations, and the Windows safe-path
+  policy.
+
+### Installation and upgrade
+
+- Added a clean-install compatibility harness (`tests/test_plugin_install.py`) and a v0.6.0 ->
+  `0.7.x` upgrade compatibility harness (`tests/test_plugin_upgrade.py`) exercised against the
+  genuine, checksum-verified `MembraneVisualQC-0.6.0.zip` release asset and its retained fixtures.
+- Added `docs/compatibility.md` and `docs/upgrade_guide.md`, documenting the recommended
+  clean-replacement upgrade method, validated configurations, and what remains
+  manual-verification-only.
+- Completed and recorded an owner-observed manual clean-install, upgrade, and rollback acceptance
+  pass on a real PyMOL session for the v0.6.0 -> `0.7.0.dev0` pair
+  (`docs/manual_install_upgrade_checklist.md`, `docs/v0.7.0_install_upgrade_manual_evidence.json`).
+  This does not extend to any other version pair.
+
+### Documentation
+
+- Added `docs/index.md` as a central documentation map, plus dedicated
+  `docs/troubleshooting.md`, `docs/status_vocabulary.md`, `docs/outputs_and_manifests.md`,
+  `docs/offline_guarantees.md`, and `docs/coordinate_preservation.md` guides.
+- Expanded `docs/tutorial.md` to cover all five single-structure analysis modes and Batch review,
+  and expanded `docs/batch_plan.md` into a first-time-user guide with a fully narrated five-mode
+  example.
+- Retained every historical stage/ADR/release-evidence document unchanged; they are now indexed
+  and labeled as design history rather than instructions.
+
+### Validation
+
+- Added `tests/test_documentation_consistency.py`, checking documentation links and synchronizing
+  documented status/error literals against the live code that defines them.
+- No PyPI publication, no automatic cache migration, and no persistent (cross-session) batch
+  history in this release, consistent with all prior versions.
 
 ## [0.6.0] - 2026-07-31
 
