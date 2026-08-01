@@ -130,7 +130,8 @@ frozen for v0.5.0 publication.
 Stage 5A's `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts are operational batch
 contracts, not report schema 1.6. Validate a plan without PyMOL using
 `python -m membrane_vqc.batch_cli validate PLAN.json`; execution still requires PyMOL and runs
-sequentially on its main thread.
+sequentially on its main thread. A missing or invalid plan path prints a concise error to stderr
+and exits non-zero rather than raising a traceback.
 
 `runtime.pymol` is read from the PyMOL command API. Input SHA-256 is recorded only when the
 caller supplies an explicit real local `input_path`; PyMOL object selections do not reliably

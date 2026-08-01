@@ -16,6 +16,18 @@
 - There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
   source, or biological verdict. Stage 5C has not started.
 
+## Windows paths
+
+- Ordinary paths containing spaces or Unicode (Cyrillic, CJK, accented) components are fully
+  supported for plan, input, and output paths.
+- Traversal (`..`), drive-relative (`C:foo`), UNC (`\\server\share`), device (`\\.\`), pipe, and
+  symlink/reparse-point paths remain intentionally rejected wherever the batch path contract
+  applies.
+- Extended-length `\\?\`-prefixed paths are intentionally not accepted, so this plugin cannot opt
+  into Windows' long-path support even when the OS has it enabled; keep plan, input, and output
+  paths within practical Windows path-length limits.
+- A permission-denied destination fails promptly and cleanly, with no partial or leftover output.
+
 ## v0.5.0 limitations
 
 - v0.5.0 is intended as a GitHub prerelease for limited public testing; PyPI publication is not
