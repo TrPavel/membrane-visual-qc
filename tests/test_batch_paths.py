@@ -22,6 +22,7 @@ only, never on printed representations.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import stat
 from types import SimpleNamespace
@@ -122,11 +123,14 @@ def test_drive_letter_and_drive_relative_paths_are_rejected(path):
         validate_relative_path(path, field="input")
 
 
+@pytest.mark.skipif(os.name != "nt", reason="drive-relative syntax is Windows-only")
 def test_drive_relative_output_root_argument_is_rejected(tmp_path):
     """Distinct from the drive-relative *relative-path-string* case above: here
     a drive-relative value is given directly as prepare_output_root's own root
     argument, exercising PureWindowsPath/.absolute() resolution instead of
-    validate_relative_path. Still fails closed."""
+    validate_relative_path. Still fails closed. Windows-only: "C:foo" has no
+    drive-relative meaning on POSIX, where it is just an ordinary (and
+    perfectly safe) relative filename containing a colon."""
     with pytest.raises(BatchPathError):
         prepare_output_root("C:not_a_real_drive_relative_target_xyz")
 
