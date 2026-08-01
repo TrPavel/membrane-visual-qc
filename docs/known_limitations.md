@@ -16,6 +16,20 @@
 - There is no cache manager, garbage collection, automatic fitting, consensus, ranking, preferred
   source, or biological verdict. Stage 5C has not started.
 
+## Installation and upgrade
+
+- PyMOL Plugin Manager's own install-directory placement and whether it removes a prior version's
+  files before extracting a new one are not controlled by this repository and are not proven by
+  automated tests; see `docs/compatibility.md`. Clean replacement (removing the previous install
+  before installing a new ZIP) is the recommended, supported upgrade method for this reason, not
+  because overlay installation is currently known to fail -- see `docs/upgrade_guide.md`.
+- Batch run history remains session-only (see above) across an upgrade too: it is never written to
+  disk by any version, so there is nothing for an upgrade to preserve or lose, and no version's
+  documentation should be read as implying otherwise.
+- The PDBTM cache has no automatic format migration between versions (unchanged from the v0.6.0
+  limitation above); for the v0.6.0 → `0.7.x` upgrade specifically, no migration is needed because
+  the cache code itself did not change.
+
 ## Windows paths
 
 - Ordinary paths containing spaces or Unicode (Cyrillic, CJK, accented) components are fully

@@ -4,3 +4,8 @@
 *.whl binary
 *.gz binary
 *.cif binary
+# Genuine byte-for-byte captured fixtures whose exact bytes are cryptographically
+# pinned by their own accompanying manifest (batch-result.json's per-file sha256/size).
+# CRLF->LF normalization would silently break that self-consistency on checkout, so
+# these must never be touched by the eol=lf rule above -- see tests/fixtures/README.md.
+tests/fixtures/v0.6.0_batch_result/*.csv -text
