@@ -8,6 +8,11 @@ report, or a manifest is not listed here, it is not a literal this project defin
 `docs/report_schema.md`, `membrane_vqc/batch_contracts.py`, and `membrane_vqc/pdbtm_errors.py` for
 the authoritative source enumerations this table is extracted from).
 
+Every vocabulary on this page is a frozen v1.0 candidate contract, additive-only (existing values
+never renamed or removed; new values may be added) -- see
+`docs/v1.0_contract_freeze.md#5-batchsingle-structure-status-vocabulary-frozen` and
+`docs/versioning_policy.md#4-error-code-vocabulary`.
+
 None of these statuses are a biological verdict. "Success" means the software completed its
 deterministic geometric/statistical procedure, not that the input is a biologically correct
 membrane placement.

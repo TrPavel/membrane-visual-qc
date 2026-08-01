@@ -218,11 +218,15 @@ links to the most-used guides:
   output/manifest layout; [docs/status_vocabulary.md](docs/status_vocabulary.md) is the one
   canonical table of every status/error literal this project produces.
 - **Troubleshooting**: [docs/troubleshooting.md](docs/troubleshooting.md), organized by symptom.
-- **Compatibility and upgrades**: [docs/compatibility.md](docs/compatibility.md) and
+- **Compatibility and upgrades**: [docs/compatibility.md](docs/compatibility.md),
+  [docs/compatibility_matrix.md](docs/compatibility_matrix.md), and
   [docs/upgrade_guide.md](docs/upgrade_guide.md) (already linked above).
 - **Scientific boundaries**: [docs/known_limitations.md](docs/known_limitations.md) (already
   linked above), [docs/offline_guarantees.md](docs/offline_guarantees.md), and
   [docs/coordinate_preservation.md](docs/coordinate_preservation.md).
+- **Contract and release governance**: [docs/v1.0_contract_freeze.md](docs/v1.0_contract_freeze.md),
+  [docs/versioning_policy.md](docs/versioning_policy.md), and
+  [docs/release_checklist.md](docs/release_checklist.md).
 
 ## Licence and citation
 
