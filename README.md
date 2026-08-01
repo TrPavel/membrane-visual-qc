@@ -127,9 +127,9 @@ paths into the report. See
 v0.1.0 reports use immutable schema 1.0; v0.2.0 reports use immutable schema 1.1. In v0.3.0,
 opt-in exposure or context analysis uses schema 1.2, while context-disabled runs continue to emit
 schema 1.1. Schema 1.2 is the immutable v0.3.0 release schema. All are
-documented in [docs/report_schema.md](docs/report_schema.md). Biological review
-states are `NO_FLAGS`, `REVIEW_ITEMS`, `INSUFFICIENT_CONTEXT`, and `ANALYSIS_ERROR`.
-`NO_FLAGS` means only that configured heuristics emitted no items.
+documented in [docs/report_schema.md](docs/report_schema.md). For what every status literal
+(`NO_FLAGS`, `REVIEW_ITEMS`, and everything else this project produces) actually means, see
+[docs/status_vocabulary.md](docs/status_vocabulary.md) -- none of them are a biological verdict.
 
 Resolved PDBTM reports use immutable schema 1.3 in v0.4.0, whether Context is OFF or ON. Schema
 1.3 requires JSON Schema structural validation followed by the mandatory Stage 4 semantic
@@ -189,7 +189,30 @@ visual batch-plan editor, curved/multiple-membrane model, automatic fitting, aut
 consensus, or biological correctness verdict. Comparison thresholds are geometric review bands,
 not biological truth. Ordinary SASA is not lipid accessibility,
 local chemical-context labels are conservative evidence, and reports are visual-QC evidence rather
-than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md).
+than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md),
+[docs/offline_guarantees.md](docs/offline_guarantees.md) for exactly what does and doesn't touch
+the network, and [docs/coordinate_preservation.md](docs/coordinate_preservation.md) for how this
+project proves it never silently modifies your structure's coordinates.
+
+## Documentation
+
+Start at [docs/index.md](docs/index.md) -- the full documentation map, grouped by purpose, with a
+recommended reading path for first-time users, batch users, developers, and reviewers. Direct
+links to the most-used guides:
+
+- **Workflows**: [docs/tutorial.md](docs/tutorial.md) covers all five current analysis modes
+  (legacy global-z, planar orientation, PDBTM local, PDBTM cache, PDBTM-OPM comparison) and
+  **Batch review**; [docs/batch_plan.md](docs/batch_plan.md) is the batch-plan guide, including a
+  fully narrated five-mode example.
+- **Outputs**: [docs/outputs_and_manifests.md](docs/outputs_and_manifests.md) documents the batch
+  output/manifest layout; [docs/status_vocabulary.md](docs/status_vocabulary.md) is the one
+  canonical table of every status/error literal this project produces.
+- **Troubleshooting**: [docs/troubleshooting.md](docs/troubleshooting.md), organized by symptom.
+- **Compatibility and upgrades**: [docs/compatibility.md](docs/compatibility.md) and
+  [docs/upgrade_guide.md](docs/upgrade_guide.md) (already linked above).
+- **Scientific boundaries**: [docs/known_limitations.md](docs/known_limitations.md) (already
+  linked above), [docs/offline_guarantees.md](docs/offline_guarantees.md), and
+  [docs/coordinate_preservation.md](docs/coordinate_preservation.md).
 
 ## Licence and citation
 
