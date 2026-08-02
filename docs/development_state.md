@@ -1,15 +1,15 @@
 # Development state
 
-Snapshot date: 2026-08-01 (Europe/Moscow).
+Snapshot date: 2026-08-02 (Europe/Moscow).
 
 Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. The
-repository is now on active development version `0.8.0.dev0` after publishing v0.7.0 as a GitHub
-prerelease. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
-cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only
-OPM adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or
-mutate coordinates, choose a source, create consensus, rank providers, or make a biological
-verdict. Exact v0.7.0 release, tag, post-merge artifact, and downloaded-asset identities are frozen
-in `docs/v0.7.0_release_evidence.json`. PyPI is not used.
+repository is now preparing `0.8.0` as a GitHub prerelease after publishing v0.7.0. Stage 4 provides
+offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch
+versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit
+schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose
+a source, create consensus, rank providers, or make a biological verdict. Exact v0.7.0 release,
+tag, post-merge artifact, and downloaded-asset identities are frozen in
+`docs/v0.7.0_release_evidence.json`. PyPI is not used.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
@@ -21,13 +21,27 @@ contract, or coordinate-preservation behavior changed beyond the two targeted bu
 above. v0.7.0 was published as a GitHub prerelease on 2026-08-01; see
 `docs/v0.7.0_release_evidence.json` and `docs/v0.7.0_release_notes.md`.
 
+## Post-v0.7.0 contract-freeze and documentation release (v0.8.0)
+
+v0.8.0 landed PR #32 (contract-freeze audit: `docs/v1.0_contract_freeze.md`,
+`docs/versioning_policy.md`, `docs/compatibility_matrix.md`, `docs/release_checklist.md`,
+`tests/test_contract_freeze.py`, and genuine `tests/fixtures/v0.7.0/`) and PR #33 (documentation
+consolidation: the five-section `docs/index.md`, `docs/quick_start.md`,
+`docs/five_mode_walkthrough.md`, `docs/offline_and_safety.md`, `docs/scientific_interpretation.md`,
+and the `batch_plan.md` -> `batch_plan_reference.md` rename), then PR #34 (version-identity
+promotion). No runtime, scientific, batch, schema, contract, cache-format, or GUI behavior changed
+at any point in this cycle -- the entire v0.8.0 diff against v0.7.0 is documentation, tests, and
+release tooling plus the version-identity string itself. Final v0.8.0 tag, release, and publication
+evidence remain **PENDING** until the exact release artifact has passed publication verification,
+including a fresh owner-observed manual acceptance round for the v0.7.0 -> v0.8.0 pair (not
+previously verified -- see `docs/compatibility_matrix.md`).
+
 ## Post-v0.7.0 development reset
 
-The active package and build identity is `0.8.0.dev0`. The reset changes only version-bearing
-development surfaces, CI artifact expectations, and publication evidence; it introduces no runtime
-or scientific behavior. `frozen-v0.4.0`, `frozen-v0.5.0`, `frozen-v0.6.0`, and `frozen-v0.7.0`
-validator modes are independent of the active development version. The latter pins the v0.7.0
-release squash commit, annotated tag object and target, prerelease URL/date, post-merge
+The active package and build identity was `0.8.0.dev0` during the v0.8.0 development cycle,
+promoted to `0.8.0` for release preparation. `frozen-v0.4.0`, `frozen-v0.5.0`, `frozen-v0.6.0`, and
+`frozen-v0.7.0` validator modes are independent of the active development version. The latter pins
+the v0.7.0 release squash commit, annotated tag object and target, prerelease URL/date, post-merge
 workflow/artifact, all four authoritative release-asset identities, and the owner-observed
 stable-artifact manual smoke-test PASS.
 
