@@ -68,13 +68,20 @@ def test_logo_svgs_are_well_formed_and_have_no_external_or_embedded_font_refs():
         )
 
 
-def test_social_preview_exists_at_documented_dimensions():
-    from PIL import Image
+def _png_dimensions(path: Path) -> tuple[int, int]:
+    """Read width/height straight from a PNG's IHDR chunk (no Pillow dependency)."""
+    import struct
 
+    data = path.read_bytes()
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", f"{path} is not a PNG file"
+    assert data[12:16] == b"IHDR", f"{path} does not start with an IHDR chunk"
+    width, height = struct.unpack(">II", data[16:24])
+    return width, height
+
+
+def test_social_preview_exists_at_documented_dimensions():
     assert SOCIAL_PREVIEW.is_file(), f"missing social preview asset: {SOCIAL_PREVIEW}"
-    with Image.open(SOCIAL_PREVIEW) as image:
-        assert image.size == (1280, 640)
-        assert image.format == "PNG"
+    assert _png_dimensions(SOCIAL_PREVIEW) == (1280, 640)
 
 
 def test_social_preview_has_no_stray_version_number():
