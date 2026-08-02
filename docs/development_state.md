@@ -2,14 +2,14 @@
 
 Snapshot date: 2026-08-02 (Europe/Moscow).
 
-Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. The
-repository is now preparing `0.8.0` as a GitHub prerelease after publishing v0.7.0. Stage 4 provides
-offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local cache with explicit Fetch
-versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM adapter, and explicit
-schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate coordinates, choose
-a source, create consensus, rank providers, or make a biological verdict. Exact v0.7.0 release,
-tag, post-merge artifact, and downloaded-asset identities are frozen in
-`docs/v0.7.0_release_evidence.json`. PyPI is not used.
+Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. v0.8.0
+was published as a GitHub prerelease on 2026-08-02, after v0.7.0; development has now reopened as
+`0.9.0.dev0`. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM
+adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate
+coordinates, choose a source, create consensus, rank providers, or make a biological verdict. Exact
+v0.7.0 and v0.8.0 release, tag, post-merge artifact, and downloaded-asset identities are frozen in
+`docs/v0.7.0_release_evidence.json` and `docs/v0.8.0_release_evidence.json`. PyPI is not used.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
@@ -31,10 +31,11 @@ consolidation: the five-section `docs/index.md`, `docs/quick_start.md`,
 and the `batch_plan.md` -> `batch_plan_reference.md` rename), then PR #34 (version-identity
 promotion). No runtime, scientific, batch, schema, contract, cache-format, or GUI behavior changed
 at any point in this cycle -- the entire v0.8.0 diff against v0.7.0 is documentation, tests, and
-release tooling plus the version-identity string itself. Final v0.8.0 tag, release, and publication
-evidence remain **PENDING** until the exact release artifact has passed publication verification,
-including a fresh owner-observed manual acceptance round for the v0.7.0 -> v0.8.0 pair (not
-previously verified -- see `docs/compatibility_matrix.md`).
+release tooling plus the version-identity string itself. v0.8.0 was published as a GitHub
+prerelease on 2026-08-02, including a fresh owner-observed manual acceptance pass for the v0.7.0 ->
+v0.8.0 pair (a manual smoke test only, not the dedicated multi-round harness the v0.6.0 pair has --
+see `docs/compatibility_matrix.md`); see `docs/v0.8.0_release_evidence.json` and
+`docs/v0.8.0_release_notes.md`.
 
 ## Post-v0.7.0 development reset
 
@@ -44,6 +45,19 @@ promoted to `0.8.0` for release preparation. `frozen-v0.4.0`, `frozen-v0.5.0`, `
 the v0.7.0 release squash commit, annotated tag object and target, prerelease URL/date, post-merge
 workflow/artifact, all four authoritative release-asset identities, and the owner-observed
 stable-artifact manual smoke-test PASS.
+
+## Post-v0.8.0 development reset
+
+The active package and build identity is `0.9.0.dev0`, promoted from `0.8.0` after publishing the
+v0.8.0 GitHub prerelease. The reset changes only version-bearing development surfaces, CI artifact
+expectations, and publication evidence; it introduces no runtime or scientific behavior. Schemas
+1.0-1.5 and the batch contracts remain byte-identical; v0.8.0 added no new report schema or retained
+report. `frozen-v0.4.0`, `frozen-v0.5.0`, `frozen-v0.6.0`, `frozen-v0.7.0`, and `frozen-v0.8.0`
+validator modes are independent of the active development version. The latter pins the v0.8.0
+release squash commit, annotated tag object and target, prerelease URL/date, post-merge
+workflow/artifact, all four authoritative release-asset identities, and the owner-observed
+stable-artifact manual smoke-test PASS -- see `docs/v0.8.0_release_evidence.json`. The next
+development phase is the premium README/visual-identity redesign, followed by GUI/UX polish.
 
 ## Stage 5A and Stage 5B batch review
 

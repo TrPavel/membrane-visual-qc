@@ -8,10 +8,11 @@ read compatibility, a result-browser `ReportError` fix, fail-fast Windows filesy
 handling, a clean CLI error for a missing batch plan, a real-PyMOL install/upgrade/rollback
 compatibility harness for the v0.6.0 -> `0.7.x` transition, and a consolidated user-facing
 documentation set. It changes no scientific algorithm, report schema, batch contract, or cache
-format. The repository is now preparing `0.8.0` as a GitHub prerelease: a contract-freeze and
-documentation-consolidation release with no scientific, GUI, batch execution, cache-format,
-report-schema, or batch-contract behavior changes of its own -- see `docs/v1.0_contract_freeze.md`
-and `docs/v0.8.0_release_notes.md`.
+format. v0.8.0 was published as a GitHub prerelease for limited public testing on 2026-08-02: a
+contract-freeze and documentation-consolidation release with no scientific, GUI, batch execution,
+cache-format, report-schema, or batch-contract behavior changes of its own -- see
+`docs/v1.0_contract_freeze.md` and `docs/v0.8.0_release_notes.md`. Development has reopened as
+`0.9.0.dev0`; the next phase is the premium README/visual-identity redesign and GUI/UX polish.
 
 The exact v0.7.0 publication evidence is frozen in `docs/v0.7.0_release_evidence.json`; downloaded
 assets were byte-verified against the authoritative post-merge workflow. The `0.7.0.dev0`
@@ -20,9 +21,14 @@ owner-observed clean-install/upgrade/rollback manual acceptance on a real PyMOL 
 version-identity promotion; the published stable `MembraneVisualQC-0.7.0.zip` artifact additionally
 passed manual smoke-test acceptance after publication. See
 `docs/manual_install_upgrade_checklist.md` -- that PASS record covers only the v0.6.0 -> v0.7.0.dev0
-pair and does not carry forward to v0.8.0, which requires its own manual acceptance round before
-tagging. Final v0.8.0 tag, release, and publication evidence remain **PENDING**. Historical
-v0.1.0–v0.7.0 evidence below remains intentionally unchanged. PyPI is not used.
+pair. The v0.7.0 -> v0.8.0 upgrade has its own separate owner-observed manual PASS, recorded in
+`docs/v0.8.0_install_upgrade_manual_evidence.json` (a manual smoke test only, not the same
+dedicated multi-round harness as the v0.6.0 pair -- see `docs/compatibility_matrix.md`). The exact
+v0.8.0 publication evidence -- release PR #34, squash commit, post-merge workflow, annotated tag,
+GitHub prerelease URL/timestamp, and all four asset hashes -- is frozen in
+`docs/v0.8.0_release_evidence.json`; downloaded assets were independently re-verified byte-identical
+to the authoritative post-merge workflow. Historical v0.1.0-v0.7.0 evidence below remains
+intentionally unchanged. PyPI is not used.
 
 ## Environment
 

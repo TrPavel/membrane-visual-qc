@@ -62,14 +62,12 @@ cache-format, report-schema, or batch-contract behavior relative to v0.7.0. See
 
 ## Installation
 
-v0.8.0 is being prepared as a GitHub prerelease for limited public testing. Until its release URL
-and assets are published and byte-verified, v0.7.0 remains the latest published package. Download
-`MembraneVisualQC-0.7.0.zip` and its checksum from the
-[v0.7.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.7.0).
-GitHub Releases is the public installation route. The v0.8.0 Plugin ZIP will be named
-`MembraneVisualQC-0.8.0.zip`; its final size and SHA-256 are **PENDING**. Wheel and source
-distributions are release assets for inspection and development; this project is not published to
-PyPI.
+v0.8.0 is published as a GitHub prerelease for limited public testing and is now the latest
+published package. Download `MembraneVisualQC-0.8.0.zip` and its checksum from the
+[v0.8.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.8.0).
+GitHub Releases is the public installation route. Development has reopened as `0.9.0.dev0`. Wheel
+and source distributions are release assets for inspection and development; this project is not
+published to PyPI.
 
 Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The
@@ -86,7 +84,11 @@ compatibility boundaries (OS, PyMOL distribution, supported schema/contract vers
 manual-verification-only) are stated in [docs/compatibility.md](docs/compatibility.md). The v0.6.0
 -> `0.7.0.dev0` clean install/upgrade/rollback path has an owner-observed manual PASS result in
 [docs/manual_install_upgrade_checklist.md](docs/manual_install_upgrade_checklist.md); this does not
-extend to other version pairs and does not replace automated CI.
+extend to other version pairs and does not replace automated CI. The v0.7.0 -> v0.8.0 upgrade also
+has an owner-observed manual PASS result, recorded in
+[docs/v0.8.0_install_upgrade_manual_evidence.json](docs/v0.8.0_install_upgrade_manual_evidence.json)
+-- a manual smoke test only, not the same dedicated multi-round harness as the v0.6.0 pair above; see
+[docs/compatibility_matrix.md](docs/compatibility_matrix.md) for what remains unverified.
 
 For source development:
 

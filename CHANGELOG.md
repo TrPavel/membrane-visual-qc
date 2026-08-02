@@ -8,16 +8,14 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Preparing the completed contract-freeze and documentation-consolidation work below for the
-  v0.8.0 GitHub prerelease. Final release artifact identity, tag, and publication evidence remain
-  **PENDING** until the exact release artifact has passed tagging and publication verification.
+- Reopened development as `0.9.0.dev0` after publishing the v0.8.0 GitHub prerelease.
 
-## [0.8.0] - PENDING
+## [0.8.0] - 2026-08-02
 
-Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
-publication is planned. This release contains **no scientific, GUI, batch execution, cache-format,
-report-schema, or batch-contract behavior changes** relative to v0.7.0 -- it is a contract-freeze
-and documentation-consolidation release only.
+Status: published GitHub prerelease for limited public testing. No PyPI publication was made. This
+release contains **no scientific, GUI, batch execution, cache-format, report-schema, or
+batch-contract behavior changes** relative to v0.7.0 -- it is a contract-freeze and
+documentation-consolidation release only.
 
 ### Contract freeze
 
