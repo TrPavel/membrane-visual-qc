@@ -25,6 +25,28 @@ five-mode/Batch review GUI) were left untouched and are not reused as current br
 phase changes no runtime, scientific, batch, schema, contract, or cache-format behavior, and does
 not redesign the plugin GUI itself -- GUI/UX polish remains a separate, later phase.
 
+## v0.9.0 GUI/UX polish phase
+
+A dedicated session (draft PR, `design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on
+top of the visual-identity work above: a small internal design system
+(`membrane_vqc/ui_theme.py` for palette/glyph/QSS constants, `membrane_vqc/ui_components.py` for
+hasattr-guarded, per-instance-styled widget helpers -- never a window-level or bare-type-selector
+stylesheet, so nothing leaks onto unrelated native dialogs), section-header labels grouping the
+**Single structure** tab's long form, primary/secondary button styling (`Run QC`, `Export JSON`,
+`Compare`, `Validate`, `Run batch`), and a supplementary, glyph-based status presentation for
+`cache_status`, `comparison_status`, and `status_message` that always preserves the exact original
+text. A real audit finding was fixed presentation-only: a `COMPLETED_WITH_ERRORS` batch outcome
+now reads and displays distinguishably from a true `FAILED_FAST` failure (different message and
+visual category), without changing the unchanged `FAILED` GUI-state literal both still map to --
+see `membrane_vqc/batch_gui.py:_finalize_session` and `docs/status_vocabulary.md`. Two new
+presentation-only modules were added to the packaged plugin (the only reason the Plugin ZIP hash
+changed in this phase); `tests/test_plugin_upgrade.py`'s v0.6.0-file-set test was updated to record
+this as an expected, pure addition, never a removal. No scientific algorithm, report schema, batch
+contract, cache format, output layout, command signature, or status literal changed. Real-PyMOL
+manual acceptance (`docs/manual_v0.9.0_ui_acceptance.md`) and the actual screenshot/GIF capture
+(`docs/screenshot_capture_plan.md`, updated to describe the new styling) remain outstanding owner
+actions, since this repository's own environment cannot open a graphical PyMOL session.
+
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
 v0.7.0 landed PR #25 (schema 1.0 read-compatibility fix), PR #26 (fail-fast Windows filesystem

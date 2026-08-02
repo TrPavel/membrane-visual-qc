@@ -55,6 +55,7 @@ from .pdbtm_report_provenance import build_pdbtm_acquisition_provenance
 from .pdbtm_provider import canonicalize_record_id
 from .pdbtm_worker import WorkerFailure
 from .qc import format_summary
+from . import ui_components, ui_theme
 
 _DIALOG = None
 LEGACY_MODE = "Legacy global-z"
@@ -287,7 +288,9 @@ class MembraneVQCDialog:
         opm_row = QtWidgets.QHBoxLayout()
         opm_row.addWidget(self.comparison_opm_path)
         opm_row.addWidget(self.browse_comparison_opm)
-        self.comparison_status = QtWidgets.QLabel("No comparison has been run.")
+        self.comparison_status = QtWidgets.QLabel(
+            ui_theme.format_status(ui_theme.CATEGORY_NEUTRAL, "No comparison has been run.")
+        )
         self.comparison_metrics = QtWidgets.QTextEdit()
         self.comparison_metrics.setReadOnly(True)
         self.comparison_export_path = QtWidgets.QLineEdit("reports/orientation_comparison.json")
@@ -301,9 +304,10 @@ class MembraneVQCDialog:
         comparison_layout.addRow("PDBTM source summary", self.comparison_pdbtm_summary)
         comparison_layout.addRow("Local OPM file", opm_row)
         comparison_layout.addRow(
-            QtWidgets.QLabel(
+            ui_components.helper_label(
+                QtWidgets,
                 "Geometric review only: neither provider is preferred; no fitting, coordinate "
-                "mutation, consensus, ranking, or biological verdict is performed."
+                "mutation, consensus, ranking, or biological verdict is performed.",
             )
         )
         comparison_actions = QtWidgets.QHBoxLayout()
@@ -315,10 +319,12 @@ class MembraneVQCDialog:
             self.clear_comparison_button,
         ):
             comparison_actions.addWidget(button)
+        ui_components.style_primary(self.compare_button)
         comparison_layout.addRow(comparison_actions)
         comparison_layout.addRow("Comparison status", self.comparison_status)
         comparison_layout.addRow("Comparison metrics", self.comparison_metrics)
         comparison_layout.addRow("Comparison export", self.comparison_export_path)
+        ui_components.style_group_title(self.comparison_group)
 
         if QtGui is not None:
             numeric = QtGui.QDoubleValidator()
@@ -330,9 +336,22 @@ class MembraneVQCDialog:
             self.zmax.setValidator(numeric)
             self.cutoff.setValidator(positive)
 
+        layout.addRow(ui_components.section_label(QtWidgets, "Structure & orientation source"))
         layout.addRow("Selection", self.selection)
         layout.addRow("Orientation mode", self.orientation_mode)
+
+        layout.addRow(
+            ui_components.helper_label(
+                QtWidgets, "Used only when Orientation mode is Planar orientation file."
+            )
+        )
         layout.addRow("Orientation JSON", self.orientation_file)
+
+        layout.addRow(
+            ui_components.helper_label(
+                QtWidgets, "Used only when Orientation mode is PDBTM offline pair."
+            )
+        )
         json_row = QtWidgets.QHBoxLayout()
         json_row.addWidget(self.pdbtm_json)
         json_row.addWidget(self.browse_pdbtm_json)
@@ -342,6 +361,8 @@ class MembraneVQCDialog:
         pdb_row.addWidget(self.browse_transformed_pdb)
         layout.addRow("Transformed PDB", pdb_row)
         layout.addRow("Current assembly (optional)", self.biological_assembly)
+
+        layout.addRow(ui_components.section_label(QtWidgets, "PDBTM source & cache"))
         layout.addRow("PDBTM source", self.pdbtm_source)
         layout.addRow("Canonical record ID", self.cached_record_id)
         fetch_row = QtWidgets.QHBoxLayout()
@@ -355,9 +376,18 @@ class MembraneVQCDialog:
         cache_actions_row.addWidget(self.open_cache_location_button)
         cache_actions_row.addWidget(self.clear_cached_button)
         layout.addRow(cache_actions_row)
+
+        layout.addRow(
+            ui_components.section_label(QtWidgets, "Resolved orientation & membrane boundaries")
+        )
+        layout.addRow(
+            ui_components.helper_label(QtWidgets, "zmin/zmax apply only to Legacy global-z mode.")
+        )
         layout.addRow("Orientation source", self.orientation_source)
         layout.addRow("zmin", self.zmin)
         layout.addRow("zmax", self.zmax)
+
+        layout.addRow(ui_components.section_label(QtWidgets, "Ligand context & export"))
         layout.addRow("Ligand selection", self.ligand)
         layout.addRow("Cutoff", self.cutoff)
         layout.addRow("Export path", self.export_path)
@@ -365,6 +395,7 @@ class MembraneVQCDialog:
         layout.addRow("Exposure quality", self.exposure_quality)
         layout.addRow("Exposure backend", self.exposure_backend)
 
+        layout.addRow(ui_components.section_label(QtWidgets, "Run"))
         buttons = QtWidgets.QHBoxLayout()
         self.action_buttons = []
         for label, callback in (
@@ -378,6 +409,8 @@ class MembraneVQCDialog:
             button.clicked.connect(callback)
             buttons.addWidget(button)
             self.action_buttons.append(button)
+        ui_components.style_primary(self.action_buttons[0])  # Run QC
+        ui_components.style_primary(self.action_buttons[-1])  # Export JSON
         layout.addRow(buttons)
         layout.addRow("Summary", self.summary)
         layout.addRow(self.comparison_group)
@@ -844,7 +877,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._retrieval_state = RETRIEVAL_INSPECTING_CACHE
-        self.cache_status.setText("Checking cached status\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Checking cached status\u2026")
         self._sync_pdbtm_controls()
         worker.request_inspect.emit(request_id, canonical)
 
@@ -861,17 +894,20 @@ class MembraneVQCDialog:
         self._pending_request_id = None
         if isinstance(result, WorkerFailure):
             self._retrieval_state = RETRIEVAL_FAILED
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         self._retrieval_state = RETRIEVAL_IDLE
         self._last_inspect = (result.canonical_record_id, result.cache_generation)
         if result.record_present and result.active_snapshot_id is not None:
-            self.cache_status.setText(
-                f"Cached snapshot available ({result.snapshot_count} retained)."
+            self._set_cache_status(
+                ui_theme.CATEGORY_SUCCESS,
+                f"Cached snapshot available ({result.snapshot_count} retained).",
             )
         else:
-            self.cache_status.setText("No validated cached PDBTM pair is available.")
+            self._set_cache_status(
+                ui_theme.CATEGORY_NEUTRAL, "No validated cached PDBTM pair is available."
+            )
         self._sync_pdbtm_controls()
 
     def _on_fetch_clicked(self):
@@ -888,7 +924,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._retrieval_state = RETRIEVAL_FETCHING
-        self.cache_status.setText("Retrieving PDBTM pair\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Retrieving PDBTM pair\u2026")
         self._sync_pdbtm_controls()
         worker.request_fetch.emit(request_id, canonical)
 
@@ -899,7 +935,7 @@ class MembraneVQCDialog:
         self._pending_request_id = None
         if isinstance(result, WorkerFailure):
             self._retrieval_state = RETRIEVAL_FAILED
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         self._retrieval_state = RETRIEVAL_AVAILABLE
@@ -907,8 +943,9 @@ class MembraneVQCDialog:
         # whatever an earlier inspect captured; discard that now-unreliable
         # value rather than let a later Use cached pair attach a stale one.
         self._last_inspect = (None, None)
-        self.cache_status.setText(
-            "A new validated snapshot is available. Press Use cached pair to select it."
+        self._set_cache_status(
+            ui_theme.CATEGORY_SUCCESS,
+            "A new validated snapshot is available. Press Use cached pair to select it.",
         )
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -921,7 +958,7 @@ class MembraneVQCDialog:
         self._sync_pdbtm_controls()
         self._invalidate_active_request(request_cancel=True)
         self._retrieval_state = RETRIEVAL_CANCELLED
-        self.cache_status.setText("PDBTM retrieval was cancelled.")
+        self._set_cache_status(ui_theme.CATEGORY_CANCELLED, "PDBTM retrieval was cancelled.")
         self._sync_pdbtm_controls()
 
     def _on_use_cached_clicked(self):
@@ -940,7 +977,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._pending_use_cached_record_id = canonical
-        self.cache_status.setText("Validating cached pair\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Validating cached pair\u2026")
         self._sync_pdbtm_controls()
         worker.request_use_cached.emit(request_id, canonical)
 
@@ -958,7 +995,7 @@ class MembraneVQCDialog:
             self._cached_snapshot_record_id = None
             self._cached_snapshot_generation = None
             self._selection_state = SELECTION_CACHED_SELECTION_UNAVAILABLE
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             if hasattr(self, "comparison_status"):
                 self._on_comparison_input_changed()
@@ -968,7 +1005,7 @@ class MembraneVQCDialog:
         last_record_id, last_generation = self._last_inspect
         self._cached_snapshot_generation = last_generation if last_record_id == record_id else None
         self._selection_state = SELECTION_CACHED_SELECTED
-        self.cache_status.setText("Validated cached pair selected.")
+        self._set_cache_status(ui_theme.CATEGORY_SUCCESS, "Validated cached pair selected.")
         self._render_cache_metadata(result)
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -1012,7 +1049,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._pending_clear_record_id = canonical
-        self.cache_status.setText("Clearing cached record\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Clearing cached record\u2026")
         self._sync_pdbtm_controls()
         worker.request_clear.emit(request_id, canonical)
 
@@ -1023,7 +1060,7 @@ class MembraneVQCDialog:
         cleared_record_id = self._pending_clear_record_id
         self._pending_clear_record_id = None
         if isinstance(result, WorkerFailure):
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         if self._cached_snapshot_record_id == cleared_record_id:
@@ -1031,7 +1068,7 @@ class MembraneVQCDialog:
             self._cached_snapshot_record_id = None
             self._cached_snapshot_generation = None
             self._selection_state = SELECTION_CACHED_UNSELECTED
-        self.cache_status.setText("Cached record cleared.")
+        self._set_cache_status(ui_theme.CATEGORY_NEUTRAL, "Cached record cleared.")
         self.cache_metadata.setPlainText("")
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -1063,7 +1100,9 @@ class MembraneVQCDialog:
 
     def _on_comparison_input_changed(self, *_):
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison inputs changed; run Compare explicitly.")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_NEUTRAL, "Comparison inputs changed; run Compare explicitly."
+        )
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
 
@@ -1181,7 +1220,9 @@ class MembraneVQCDialog:
         self._comparison_operation = operation
         self._comparison_snapshot = snapshot
         self._comparison_used_cache = cached
-        self.comparison_status.setText("Comparing explicit PDBTM and OPM evidence\u2026")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_BUSY, "Comparing explicit PDBTM and OPM evidence\u2026"
+        )
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
         worker.request_compare.emit(request_id, request, operation)
@@ -1190,7 +1231,7 @@ class MembraneVQCDialog:
         if self._pending_comparison_id is None:
             return
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison cancelled.")
+        self._set_comparison_status(ui_theme.CATEGORY_CANCELLED, "Comparison cancelled.")
         self._sync_comparison_controls()
 
     def _on_comparison_finished(self, request_id, result):
@@ -1200,7 +1241,7 @@ class MembraneVQCDialog:
         self._comparison_operation = None
         if isinstance(result, ComparisonWorkerFailure):
             self._comparison_snapshot = None
-            self.comparison_status.setText(result.message)
+            self._set_comparison_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_comparison_controls()
             return
         snapshot = self._comparison_snapshot
@@ -1210,8 +1251,9 @@ class MembraneVQCDialog:
             biological_assembly=str(self.biological_assembly.text()).strip() or None,
         ):
             self._invalidate_comparison()
-            self.comparison_status.setText(
-                "Selected-object coordinates changed; comparison result was discarded."
+            self._set_comparison_status(
+                ui_theme.CATEGORY_REVIEW,
+                "Selected-object coordinates changed; comparison result was discarded.",
             )
             self._sync_comparison_controls()
             return
@@ -1219,12 +1261,14 @@ class MembraneVQCDialog:
             report = self._build_gui_comparison_report(result, snapshot)
         except Exception as exc:
             self._invalidate_comparison()
-            self.comparison_status.setText(str(exc) or exc.__class__.__name__)
+            self._set_comparison_status(ui_theme.CATEGORY_ERROR, str(exc) or exc.__class__.__name__)
             self._sync_comparison_controls()
             return
         self._comparison_result = result
         self._comparison_report = report
-        self.comparison_status.setText("Geometric comparison ready; neither source was preferred.")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_SUCCESS, "Geometric comparison ready; neither source was preferred."
+        )
         self.comparison_metrics.setPlainText(_comparison_summary(result.comparison))
         self._sync_comparison_controls()
 
@@ -1319,8 +1363,9 @@ class MembraneVQCDialog:
                 self._comparison_snapshot,
                 str(self.selection.text()).strip(),
             )
-            self.comparison_status.setText(
-                "Both provider boundaries are shown for geometric review."
+            self._set_comparison_status(
+                ui_theme.CATEGORY_SUCCESS,
+                "Both provider boundaries are shown for geometric review.",
             )
         except Exception as exc:
             try:
@@ -1335,13 +1380,15 @@ class MembraneVQCDialog:
         try:
             output = parse_export_path(self.comparison_export_path.text())
             export_comparison_report(self._comparison_report, output)
-            self.comparison_status.setText(f"Comparison report exported: {output.name}")
+            self._set_comparison_status(
+                ui_theme.CATEGORY_SUCCESS, f"Comparison report exported: {output.name}"
+            )
         except Exception as exc:
             self._show_error(str(exc) or exc.__class__.__name__)
 
     def _on_clear_comparison_clicked(self):
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison output cleared.")
+        self._set_comparison_status(ui_theme.CATEGORY_NEUTRAL, "Comparison output cleared.")
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
 
@@ -1398,7 +1445,7 @@ class MembraneVQCDialog:
 
     def _execute(self, status, operation, render):
         self._set_busy(True)
-        self.summary.setPlainText(status)
+        self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_BUSY, status))
         try:
             application = getattr(self.QtWidgets, "QApplication", None)
             if application is not None:
@@ -1418,10 +1465,22 @@ class MembraneVQCDialog:
 
     def _show_error(self, message):
         text = f"Membrane Visual QC could not complete the action:\n{message}"
-        self.summary.setPlainText(text)
+        self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_ERROR, text))
         message_box = getattr(self.QtWidgets, "QMessageBox", None)
         if message_box is not None:
             message_box.warning(self.window, "Membrane Visual QC", text)
+
+    def _set_cache_status(self, category, message):
+        """Set cache_status text with a supplementary, non-exclusive status glyph.
+
+        *category* is a visual grouping only (see ui_theme) -- it is never itself a status
+        literal and carries no scientific meaning.
+        """
+        self.cache_status.setText(ui_theme.format_status(category, message))
+
+    def _set_comparison_status(self, category, message):
+        """Set comparison_status text with a supplementary, non-exclusive status glyph."""
+        self.comparison_status.setText(ui_theme.format_status(category, message))
 
 
 def _orientation_source(value) -> str:

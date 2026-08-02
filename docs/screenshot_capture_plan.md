@@ -12,6 +12,14 @@ Do not commit a screenshot claimed to be current unless it was captured against 
 `membrane_vqc.constants.VERSION` in the checkout at capture time. If the active version has moved
 on since this plan was written, recapture rather than reuse an older image.
 
+The v0.9.0 UI/UX polish session (`design/v0.9.0-ui-ux-polish`) restyled the dialog (section
+headers, primary/secondary button styling, a supplementary status glyph) without changing any
+control's label, position in the tab order, or the exact status vocabulary shown in the queue
+table -- this plan's structure did not need to change, only the "Visible" notes below, which now
+call out the new styling explicitly. Capture these shots only after completing (or alongside)
+Round A of `docs/manual_v0.9.0_ui_acceptance.md`, since that round exercises the exact states these
+shots depend on.
+
 ## Common capture settings
 
 - **Window size**: resize the Membrane Visual QC dialog to exactly 900x700 px before capturing
@@ -38,10 +46,13 @@ on since this plan was written, recapture rather than reuse an older image.
   result, then **Export JSON** once so the dialog reflects a normal post-run state (button
   enabled, no pending validation warnings).
 - **Visible**: dialog title bar showing `Membrane Visual QC <version>`, the **Single structure**
-  tab selected, populated fields above, and the resulting summary text showing exactly one
-  `WARNING`-severity charged-core review item (this fixture is designed to produce exactly one).
-  The PyMOL viewport behind/beside the dialog should show the colored slab boundaries and the one
-  highlighted charged residue.
+  tab selected, the section headers introduced in v0.9.0 ("Structure & orientation source",
+  "Resolved orientation & membrane boundaries", "Ligand context & export", "Run") visually
+  separating the form, the accent-styled `Run QC` and `Export JSON` buttons standing out from the
+  unstyled `Show Slab`/`Colour Hydropathy`/`Ligand Shell` buttons beside them, populated fields
+  above, and the resulting summary text showing exactly one `WARNING`-severity charged-core review
+  item (this fixture is designed to produce exactly one). The PyMOL viewport behind/beside the
+  dialog should show the colored slab boundaries and the one highlighted charged residue.
 - **Do not show**: any error/validation dialog, any unrelated loaded object, any file-path field
   containing anything other than the repository-relative example paths in this plan.
 
@@ -58,9 +69,12 @@ on since this plan was written, recapture rather than reuse an older image.
   `docs/status_vocabulary.md` documents. Do not stage a run that reaches plain `COMPLETED` for this
   shot -- the point is to show the queue's ordered per-job status column with more than one status
   value visible at once.
-- **Visible**: the ordered job queue with each row's `status` cell readable, the run-level banner
-  showing `COMPLETED_WITH_ERRORS`, and the **Manifest** / **Reveal output** controls in their
-  normal (enabled, post-run) state.
+- **Visible**: the ordered job queue with each row's `status` cell readable and exactly as the
+  status vocabulary defines it (unstyled -- the v0.9.0 restyle never changes this cell's text),
+  the run-level status line showing the v0.9.0 supplementary glyph and a message that reads as
+  distinguishable from a true failure (see `docs/manual_v0.9.0_ui_acceptance.md` Round E), and the
+  **Manifest** / **Reveal output** controls in their normal (enabled, post-run) state. The
+  `Validate` and `Run batch` buttons should be visible in their accent-styled (primary) state.
 - **Do not show**: any absolute path outside the repository checkout, any username-bearing path,
   or a mid-run (`RUNNING`/`CANCELLING`) transient state.
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from types import SimpleNamespace
 
-from membrane_vqc import gui, qc
+from membrane_vqc import gui, qc, ui_theme
 from membrane_vqc.comparison_worker import ComparisonWorkerFailure
 from membrane_vqc.orientation_comparison import ComparableOrientation
 from membrane_vqc.orientation_sources import ImportMessage, PayloadDigest, SourceIdentity
@@ -139,7 +139,9 @@ def test_failure_preserves_qc_report_and_standard_state():
             "request", ComparisonWorkerFailure("SOURCE_INVALID", "Source rejected")
         )
         assert qc.LAST_REPORT is sentinel
-        assert dialog.comparison_status.value == "Source rejected"
+        assert dialog.comparison_status.value == ui_theme.format_status(
+            ui_theme.CATEGORY_ERROR, "Source rejected"
+        )
     finally:
         qc.LAST_REPORT = previous
 

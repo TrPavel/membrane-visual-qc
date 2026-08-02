@@ -88,9 +88,16 @@ def test_v060_fixture_manifest_declares_v060_and_matches_its_checksums():
 
 
 def test_v060_file_set_is_identical_to_current_required_files():
-    """No files were removed or added between v0.6.0 and 0.7.0.dev0 -- only content
-    changed. This is why no genuine "stale removed file" fixture exists (see module
-    docstring); this test pins that fact so it is caught explicitly if it ever changes."""
+    """No file was ever removed between v0.6.0 and the current development build -- this is
+    why no genuine "stale removed file" fixture exists (see module docstring); this test pins
+    that fact so it is caught explicitly if it ever changes.
+
+    Files may legitimately be *added* (only ever additively -- an overlay install of a newer
+    ZIP over an older install always writes every file the new version needs, so a pure
+    addition cannot strand anything stale; see the overlay-safety tests below). The v0.9.0
+    UI/UX polish session added exactly two new presentation-only modules,
+    ``membrane_vqc/ui_theme.py`` and ``membrane_vqc/ui_components.py`` -- pinned explicitly
+    below so any *other*, unexpected addition or any removal is still caught."""
     from scripts.build_plugin_zip import CHECKSUMS_NAME, MANIFEST_NAME, collect_plugin_files
 
     v060_manifest = json.loads((V060_FIXTURES / "PLUGIN_MANIFEST.json").read_text("utf-8"))
@@ -102,8 +109,12 @@ def test_v060_file_set_is_identical_to_current_required_files():
         MANIFEST_NAME,
         CHECKSUMS_NAME,
     }
-    assert v060_names == current_names, (
-        f"removed={v060_names - current_names}, added={current_names - v060_names}"
+    expected_additions = {"membrane_vqc/ui_theme.py", "membrane_vqc/ui_components.py"}
+    assert v060_names - current_names == set(), (
+        f"removed since v0.6.0 (never expected): {v060_names - current_names}"
+    )
+    assert current_names - v060_names == expected_additions, (
+        f"added since v0.6.0: {current_names - v060_names}, expected: {expected_additions}"
     )
 
 
@@ -370,12 +381,14 @@ print("VERSION=" + membrane_vqc.__version__)
 
 
 def test_synthetic_overlay_upgrade_leaves_no_v060_content_since_file_sets_match(tmp_path):
-    """For the real v0.6.0 -> current transition specifically (confirmed identical file
-    sets by test_v060_file_set_is_identical_to_current_required_files above), overlay
-    extraction is safe: every file the old version wrote is also written by the new
-    version, so nothing old survives. This does NOT generalize to a future version that
-    removes a file -- see the synthetic-stale-file test below and
-    docs/compatibility.md's overlay-vs-clean-replacement statement."""
+    """For the real v0.6.0 -> current transition specifically (confirmed by
+    test_v060_file_set_is_identical_to_current_required_files above: every v0.6.0 file is
+    still required now, and any files added since -- e.g. the v0.9.0 UI/UX session's
+    ui_theme.py/ui_components.py -- are pure additions, never removals), overlay extraction
+    is safe: every file the old version wrote is also written by the new version, so nothing
+    old survives. This does NOT generalize to a future version that removes a file -- see the
+    synthetic-stale-file test below and docs/compatibility.md's overlay-vs-clean-replacement
+    statement."""
     old_source = _patched_source_tree(tmp_path, "old2", "0.6.0")
     old_zip = build_plugin_zip(old_source, tmp_path / "old2.zip")
     new_zip = build_plugin_zip(ROOT, tmp_path / "new2.zip")
