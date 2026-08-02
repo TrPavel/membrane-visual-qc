@@ -50,15 +50,26 @@ scattered documentation into [docs/index.md](docs/index.md). It changes no scien
 report schema, batch contract, or cache format. See
 [docs/v0.7.0_release_notes.md](docs/v0.7.0_release_notes.md).
 
+Version `0.8.0` is a contract-freeze and documentation-consolidation release: it audits and freezes
+every public/machine-readable interface (PyMOL commands, report schemas, batch contracts, cache
+format, status/error vocabulary, output layout) ahead of v1.0, defines the versioning and
+deprecation policy in [docs/versioning_policy.md](docs/versioning_policy.md), and replaces
+scattered stage-oriented documentation with a five-section documentation system starting at
+[docs/index.md](docs/index.md). It changes no scientific algorithm, GUI, batch execution,
+cache-format, report-schema, or batch-contract behavior relative to v0.7.0. See
+[docs/v0.8.0_release_notes.md](docs/v0.8.0_release_notes.md) and
+[docs/v1.0_contract_freeze.md](docs/v1.0_contract_freeze.md).
+
 ## Installation
 
-v0.7.0 is published as a GitHub prerelease for limited public testing. Download
+v0.8.0 is being prepared as a GitHub prerelease for limited public testing. Until its release URL
+and assets are published and byte-verified, v0.7.0 remains the latest published package. Download
 `MembraneVisualQC-0.7.0.zip` and its checksum from the
 [v0.7.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.7.0).
-The Plugin ZIP is 194,334 bytes with SHA-256
-`4672b1b91657d0ddea9d839e99de6b1b4642a17a0008afc99ae78f5eff55fda4`.
-Wheel and source distributions are release assets for inspection and development; this project is
-not published to PyPI. Active source development has version `0.8.0.dev0` and is not a release.
+GitHub Releases is the public installation route. The v0.8.0 Plugin ZIP will be named
+`MembraneVisualQC-0.8.0.zip`; its final size and SHA-256 are **PENDING**. Wheel and source
+distributions are release assets for inspection and development; this project is not published to
+PyPI.
 
 Install the release ZIP through PyMOL Plugin Manager, fully restart PyMOL, and open
 **Plugin > Membrane Visual QC**. Verify the archive with its accompanying `.zip.sha256` file. The

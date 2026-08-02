@@ -8,8 +8,72 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ### Changed
 
-- Reopened development as `0.8.0.dev0` after publishing v0.7.0. This identity-only reset adds no
-  runtime or scientific behavior.
+- Preparing the completed contract-freeze and documentation-consolidation work below for the
+  v0.8.0 GitHub prerelease. Final release artifact identity, tag, and publication evidence remain
+  **PENDING** until the exact release artifact has passed tagging and publication verification.
+
+## [0.8.0] - PENDING
+
+Status: release preparation for a GitHub prerelease intended for limited public testing. No PyPI
+publication is planned. This release contains **no scientific, GUI, batch execution, cache-format,
+report-schema, or batch-contract behavior changes** relative to v0.7.0 -- it is a contract-freeze
+and documentation-consolidation release only.
+
+### Contract freeze
+
+- Audited and froze every public/machine-readable interface ahead of v1.0: the 11 PyMOL commands
+  and their exact parameter defaults, report schemas 1.0-1.5, the `mvqc-batch-plan-1.0` /
+  `mvqc-batch-result-1.0` contracts and their 5-mode closed union, the batch/single-structure
+  status vocabulary, the full error-code vocabulary (cache/provider codes, result-bundle integrity
+  codes, the typed exception hierarchy), the `cache-v1` format and `MVQC_CACHE_DIR` environment
+  variable, the Plugin ZIP manifest format, and the batch-validation CLI. See
+  `docs/v1.0_contract_freeze.md`.
+- Added `docs/versioning_policy.md`: semantic versioning rules pre- and post-1.0, report-schema and
+  batch-contract version-increment rules, and the deprecation process a frozen interface must go
+  through before it can change.
+- Declared the batch output/manifest directory layout the frozen v1.0 candidate contract,
+  superseding its prior "not yet frozen" framing.
+- Added `tests/fixtures/v0.7.0/` (genuine `PLUGIN_MANIFEST.json`/`SHA256SUMS.txt` extracted from
+  the published v0.7.0 release asset) and `tests/test_contract_freeze.py` (15 regression tests
+  locking in every frozen interface above against live code).
+
+### Documentation consolidation
+
+- Restructured `docs/index.md` into five sections -- Using the plugin, Reference, Scientific
+  boundaries, Installation and maintenance, Developer/release -- none requiring internal
+  stage-number knowledge.
+- Added `docs/quick_start.md` (install to first exported result in one page),
+  `docs/five_mode_walkthrough.md` (narrated five-mode batch example, extracted and expanded from
+  the former `batch_plan.md`), `docs/offline_and_safety.md` (merges the former
+  `offline_guarantees.md` and `coordinate_preservation.md`, plus a new filesystem-safety section),
+  and `docs/scientific_interpretation.md` (consolidated scientific-wording boundary).
+- Renamed `docs/batch_plan.md` to `docs/batch_plan_reference.md`, trimmed to a pure field
+  reference; `docs/offline_guarantees.md` and `docs/coordinate_preservation.md` are now short
+  redirect stubs.
+- Headed all 19 stage-named/internal design documents with a status note (internal design record /
+  historical implementation record / technical reference) linking to the current canonical guide;
+  removed raw "Stage N" labels from primary user-facing navigation and version-history prose.
+
+### Compatibility and release governance
+
+- Added `docs/compatibility_matrix.md`: platform x validation-method grid, schema/contract support
+  per release, and verified vs. unverified upgrade paths.
+- Added `docs/release_checklist.md`: the two-PR release process used since v0.5.0, generalized and
+  made reusable for future releases.
+- Added `scripts/validate_release_artifacts.py --mode frozen-v0.7.0`, freezing the published v0.7.0
+  publication evidence.
+- Grew `tests/test_documentation_consistency.py` from 22 to 37 tests, checking full-repo local link
+  resolution, canonical-document existence and index inclusion, required cross-links, stale
+  active-version detection, and frozen status/mode vocabulary synchronization against live code.
+
+### Compatibility statement
+
+- No user-data migration, cache migration, or report-schema migration is required or performed by
+  this release -- the cache format, report schemas, and batch contracts are byte-for-byte unchanged
+  from v0.7.0.
+- Clean replacement remains the recommended installation/upgrade method, unchanged from
+  `docs/upgrade_guide.md`.
+- Batch review history remains session-only, unchanged.
 
 ## [0.7.0] - 2026-08-01
 

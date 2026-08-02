@@ -118,8 +118,10 @@ as well): `stage5a_batch_review.md` for the batch execution contract's design ra
 **Release evidence** -- exact artifact identities and manual smoke-test results per release:
 `v0.4.0_release_notes.md` / `v0.4.0_graphical_smoke.md`, `v0.5.0_release_notes.md` /
 `v0.5.0_graphical_smoke.md` / `v0.5.0_release_evidence.json`, `v0.6.0_release_notes.md` /
-`v0.6.0_release_evidence.json`, and `v0.7.0_release_notes.md` / `v0.7.0_release_evidence.json` /
-`v0.7.0_install_upgrade_manual_evidence.json`.
+`v0.6.0_release_evidence.json`, `v0.7.0_release_notes.md` / `v0.7.0_release_evidence.json` /
+`v0.7.0_install_upgrade_manual_evidence.json`, and `v0.8.0_release_notes.md` (publication evidence
+`v0.8.0_release_evidence.json` is added only after the release is tagged and published -- see
+`docs/release_checklist.md`).
 
 **Internal project-management history** -- rolling development logs, not reference material:
 `development_state.md`, `research_log.md`, `validation.md`. `manual_gui_validation.md` is the full

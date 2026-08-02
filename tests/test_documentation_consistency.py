@@ -171,9 +171,14 @@ _ACTIVE_VERSION_CLAIM = re.compile(
 
 
 def test_no_user_facing_doc_claims_a_stale_active_development_version():
+    """README states "Active source development has version `X.Y.Z.devN`" only while
+    the active version actually has a .devN suffix -- during a release-preparation
+    window the version is bumped to a plain X.Y.Z with no distinct "active dev" line
+    to state (see docs/release_checklist.md Phase 1), so this sentence's absence is
+    not itself a staleness signal. What must never happen is the sentence naming a
+    version that disagrees with the real one."""
     text = _read("README.md")
     matches = _ACTIVE_VERSION_CLAIM.findall(text)
-    assert matches, "README.md should state the active development version explicitly"
     for claimed in matches:
         assert claimed == VERSION, (
             f"README.md claims active development version {claimed!r}, "
