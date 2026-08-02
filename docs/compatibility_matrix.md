@@ -62,7 +62,8 @@ restored in v0.7.0; see `docs/adr/0001-report-schema-versioning.md`.
 |---|---|---|
 | v0.6.0 | v0.7.0 | **Verified** -- automated harness (`tests/test_plugin_install.py`, `tests/test_plugin_upgrade.py`) against the genuine v0.6.0 asset, plus owner-observed real-PyMOL clean-install/upgrade/rollback (`docs/manual_install_upgrade_checklist.md`) |
 | Any release before v0.6.0 | v0.7.x or later | **Not verified.** Upgrade to v0.6.0 first, confirm it works, then follow the verified path above (`docs/upgrade_guide.md#1-supported-upgrade-path`) |
-| v0.7.0 | v0.8.x or later | **Not yet verified** -- no harness exists for this pair as of this audit; do not assume it is supported until a dedicated upgrade guide entry and harness exist |
+| v0.7.0 | v0.8.0 | **Verified by owner-observed manual smoke test only** -- clean-replacement upgrade, version display, and outputs/cache preservation confirmed (`docs/v0.8.0_install_upgrade_manual_evidence.json`). No automated `tests/test_plugin_install.py` / `tests/test_plugin_upgrade.py` harness exists for this pair, and rollback was not exercised; `docs/upgrade_guide.md` is intentionally not extended to name this pair "supported" until such a harness exists |
+| v0.8.0 | v0.9.x or later | **Not yet verified** -- no harness or manual acceptance record exists for this pair as of this audit; do not assume it is supported until a dedicated upgrade guide entry and evidence exist |
 
 ## Cache format support by release
 

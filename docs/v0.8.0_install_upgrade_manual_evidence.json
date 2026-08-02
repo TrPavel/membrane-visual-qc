@@ -1,0 +1,43 @@
+{
+  "schema": "manual-install-upgrade-evidence-1.0",
+  "validation_date": "2026-08-02",
+  "source_commit": "481e4436f1b9ff172dee20532a3cda32974f79e5",
+  "scope": "v0.7.0 -> v0.8.0 clean-replacement upgrade only, exercised as part of the owner's general manual acceptance pass of the published stable MembraneVisualQC-0.8.0.zip build. This is not a dedicated multi-round clean-install/upgrade/rollback harness like docs/v0.7.0_install_upgrade_manual_evidence.json (v0.6.0 -> 0.7.0.dev0); no automated tests/test_plugin_install.py / tests/test_plugin_upgrade.py harness exists for this specific pair, and rollback was not exercised.",
+  "stable_artifact": {
+    "filename": "MembraneVisualQC-0.8.0.zip",
+    "size_bytes": 194332,
+    "sha256": "920eff17dd5ee3be748b9b1572d91db960e98a8669a632aae83858e5e9e49542",
+    "version": "0.8.0"
+  },
+  "previous_stable_artifact": {
+    "filename": "MembraneVisualQC-0.7.0.zip",
+    "sha256": "4672b1b91657d0ddea9d839e99de6b1b4642a17a0008afc99ae78f5eff55fda4",
+    "version": "0.7.0"
+  },
+  "observations": {
+    "clean_replacement_install": "PASS",
+    "displayed_version_is_0_8_0": "PASS",
+    "single_plugin_entry": "PASS",
+    "single_structure_review": "PASS",
+    "batch_review_five_mode_plan": "PASS",
+    "resize_and_vertical_scroll": "PASS",
+    "batch_result_success_3_input_rejected_1_review_items_1": "PASS",
+    "overall_completed_with_errors": "PASS",
+    "manifest_report_csv_actions": "PASS",
+    "cancellation": "PASS",
+    "close_reopen": "PASS",
+    "no_qthread_warning": true,
+    "coordinates_unchanged": "PASS",
+    "no_network_during_batch": "PASS",
+    "permission_denied_output_fails_promptly": "PASS",
+    "missing_plan_cli_clean_exit_1_without_traceback": "PASS",
+    "historical_schema_1_0_report_validation": "PASS",
+    "upgrade_v070_to_v080": "PASS",
+    "outputs_and_cache_preserved": "PASS",
+    "duplicate_plugin_entry": false
+  },
+  "compatibility_notes": "Clean replacement was the upgrade method used. Pre-upgrade v0.7.0-era outputs and the PDBTM cache remained intact and usable after upgrading to v0.8.0. This record does not claim rollback behavior, overlay-install behavior, or any field-level compatibility beyond what docs/upgrade_guide.md documents for the separately, automated-harness-verified v0.6.0 -> 0.7.x pair.",
+  "observer": "owner",
+  "evidence_type": "manual",
+  "detail": "docs/v0.8.0_release_evidence.json"
+}
