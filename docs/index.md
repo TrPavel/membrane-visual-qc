@@ -119,17 +119,20 @@ as well): `stage5a_batch_review.md` for the batch execution contract's design ra
 `v0.4.0_release_notes.md` / `v0.4.0_graphical_smoke.md`, `v0.5.0_release_notes.md` /
 `v0.5.0_graphical_smoke.md` / `v0.5.0_release_evidence.json`, `v0.6.0_release_notes.md` /
 `v0.6.0_release_evidence.json`, `v0.7.0_release_notes.md` / `v0.7.0_release_evidence.json` /
-`v0.7.0_install_upgrade_manual_evidence.json`, and `v0.8.0_release_notes.md` (publication evidence
-`v0.8.0_release_evidence.json` is added only after the release is tagged and published -- see
-`docs/release_checklist.md`).
+`v0.7.0_install_upgrade_manual_evidence.json`, and `v0.8.0_release_notes.md` /
+`v0.8.0_release_evidence.json` / `v0.8.0_install_upgrade_manual_evidence.json` -- see
+`docs/release_checklist.md` for how each is produced.
 
 **Internal project-management history** -- rolling development logs, not reference material:
 `development_state.md`, `research_log.md`, `validation.md`. `manual_gui_validation.md` is the full
 historical graphical-acceptance record across v0.1.0-v0.3.0.
 
 **Other reference material:** [`visual_style.md`](visual_style.md) (the color-legend source table,
-now also summarized in the Tutorial) and `Report.md` at the repository root (implementation status
-notes).
+now also summarized in the Tutorial), [`visual_identity.md`](visual_identity.md) (the README's own
+branding/design conventions -- a different thing from the PyMOL color legend above),
+[`screenshot_capture_plan.md`](screenshot_capture_plan.md) (the reproducible plan for capturing a
+current, real GUI screenshot and demo, not yet done in this repository's own environment), and
+`Report.md` at the repository root (implementation status notes).
 
 ## Keeping this map accurate
 
