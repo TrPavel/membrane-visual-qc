@@ -1,5 +1,8 @@
 # Stage 4 orientation adapter fixture plan
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/pdbtm_offline_import.md](pdbtm_offline_import.md) for the current offline-PDBTM contract.
+
 Status: accepted design; Stage 4A1 synthetic cases are merged and Stage 4A2 PyMOL integration
 fixtures are in development. Expected results remain defined independently of implementation.
 

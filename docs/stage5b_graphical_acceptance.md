@@ -1,5 +1,9 @@
 # Stage 5B exact-artifact graphical acceptance
 
+> **Historical acceptance record.** Not current user documentation -- see
+> [docs/five_mode_walkthrough.md](five_mode_walkthrough.md) and
+> [docs/stage5b_gui_batch.md](stage5b_gui_batch.md) for the current Batch review workflow.
+
 Overall result: **PASS**.
 
 This is the bounded manual checkpoint for the Stage 5A/5B batch review implementation, performed

@@ -7,8 +7,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from membrane_vqc.batch_contracts import PLAN_CONTRACT, RESULT_CONTRACT, STATUSES
+from membrane_vqc.batch_contracts import MODES, PLAN_CONTRACT, RESULT_CONTRACT, STATUSES
 from membrane_vqc.batch_gui import BATCH_STATES
+from membrane_vqc.constants import VERSION
 from membrane_vqc.pdbtm_errors import Stage4BErrorCode
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,7 +61,7 @@ def _assert_never_present(text: str, phrase: str, *, doc_name: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 1. docs/index.md exists
+# 1. docs/index.md exists, and every canonical user-facing document it lists exists
 # ---------------------------------------------------------------------------
 
 
@@ -68,8 +69,42 @@ def test_docs_index_exists():
     assert (DOCS / "index.md").is_file()
 
 
+_CANONICAL_USER_DOCS = (
+    "quick_start.md",
+    "tutorial.md",
+    "pdbtm_offline_import.md",
+    "batch_plan_reference.md",
+    "five_mode_walkthrough.md",
+    "troubleshooting.md",
+    "outputs_and_manifests.md",
+    "report_schema.md",
+    "status_vocabulary.md",
+    "offline_and_safety.md",
+    "scientific_interpretation.md",
+    "known_limitations.md",
+    "compatibility.md",
+    "compatibility_matrix.md",
+    "upgrade_guide.md",
+    "manual_install_upgrade_checklist.md",
+    "v1.0_contract_freeze.md",
+    "versioning_policy.md",
+    "release_checklist.md",
+)
+
+
+def test_every_canonical_user_doc_exists():
+    for name in _CANONICAL_USER_DOCS:
+        assert (DOCS / name).is_file(), f"canonical document docs/{name} is missing"
+
+
+def test_docs_index_lists_every_canonical_user_doc():
+    text = _read("docs", "index.md")
+    for name in _CANONICAL_USER_DOCS:
+        assert name in text, f"docs/index.md does not list docs/{name}"
+
+
 # ---------------------------------------------------------------------------
-# 2. all local markdown links from README/docs/index resolve
+# 2 & 3. README/docs-index links resolve, and every local link in every doc resolves
 # ---------------------------------------------------------------------------
 
 
@@ -89,27 +124,102 @@ def test_docs_index_local_links_resolve():
         )
 
 
-# ---------------------------------------------------------------------------
-# 3. troubleshooting guide exists and contains required major topics
-# ---------------------------------------------------------------------------
-
-
-def test_troubleshooting_guide_covers_required_topics():
-    text = _read("docs", "troubleshooting.md")
-    for heading in (
-        "## Installation",
-        "## GUI",
-        "## Plans",
-        "## Batch execution",
-        "## Reports/results",
-        "## Networking/cache",
-        "## Scientific interpretation",
-    ):
-        assert heading in text, f"docs/troubleshooting.md is missing the {heading!r} section"
+def test_all_local_markdown_links_in_every_doc_resolve():
+    files = list(DOCS.rglob("*.md")) + [ROOT / "README.md"]
+    broken = []
+    for path in files:
+        text = path.read_text("utf-8")
+        for target in _local_link_targets(text):
+            resolved = (path.parent / target).resolve()
+            if not (resolved.is_file() or resolved.is_dir()):
+                broken.append((str(path.relative_to(ROOT)), target))
+    assert not broken, f"broken local markdown link(s): {broken}"
 
 
 # ---------------------------------------------------------------------------
-# 4. status vocabulary literals match current schema/code enums
+# 4. canonical docs cross-link appropriately
+# ---------------------------------------------------------------------------
+
+
+def test_batch_plan_reference_and_five_mode_walkthrough_cross_link():
+    reference = _read("docs", "batch_plan_reference.md")
+    walkthrough = _read("docs", "five_mode_walkthrough.md")
+    assert "five_mode_walkthrough.md" in reference
+    assert "batch_plan_reference.md" in walkthrough
+
+
+def test_scientific_interpretation_and_known_limitations_cross_link():
+    interpretation = _read("docs", "scientific_interpretation.md")
+    limitations = _read("docs", "known_limitations.md")
+    assert "known_limitations.md" in interpretation
+    assert "scientific_interpretation.md" in limitations
+
+
+def test_quick_start_links_tutorial_and_offline_and_safety():
+    text = _read("docs", "quick_start.md")
+    assert "tutorial.md" in text
+    assert "offline_and_safety.md" in text or "scientific_interpretation.md" in text
+
+
+# ---------------------------------------------------------------------------
+# 5. no user-facing doc references an obsolete development version as current
+# ---------------------------------------------------------------------------
+
+_ACTIVE_VERSION_CLAIM = re.compile(
+    r"Active source development has version `([^`]+)`", re.IGNORECASE
+)
+
+
+def test_no_user_facing_doc_claims_a_stale_active_development_version():
+    text = _read("README.md")
+    matches = _ACTIVE_VERSION_CLAIM.findall(text)
+    assert matches, "README.md should state the active development version explicitly"
+    for claimed in matches:
+        assert claimed == VERSION, (
+            f"README.md claims active development version {claimed!r}, "
+            f"but membrane_vqc.constants.VERSION is {VERSION!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# 6. no user-facing doc claims schema 1.0 -> 1.1 was additive
+# ---------------------------------------------------------------------------
+
+
+def test_no_doc_claims_the_1_0_to_1_1_transition_was_additive():
+    for relative in ("docs/report_schema.md", "docs/v1.0_contract_freeze.md"):
+        text = _read(*relative.split("/"))
+        for window in _sentence_windows(text, "1.0"):
+            if "1.1" in window and "additive" in window.lower():
+                assert re.search(r"\b(not|did not|didn't)\b", window, re.IGNORECASE), (
+                    f"{relative} appears to claim the 1.0->1.1 transition was additive "
+                    f"without qualification -- context: {window!r}"
+                )
+
+
+# ---------------------------------------------------------------------------
+# 7. no user-facing doc claims session history persists
+#    (see test_no_doc_claims_persistent_session_history further below, which needs
+#    _USER_FACING_DOCS defined after this point in the file)
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# 8. no user-facing doc claims batch manifests accept schema-1.0 standalone reports
+# ---------------------------------------------------------------------------
+
+
+def test_no_doc_claims_batch_accepts_schema_1_0_reports():
+    for relative in ("docs/outputs_and_manifests.md", "docs/batch_plan_reference.md"):
+        text = _read(*relative.split("/"))
+        assert "schema 1.0" not in text.lower() and '"1.0"' not in text, (
+            f"{relative} should not reference schema 1.0 in a batch/manifest context -- "
+            "no batch mode ever produces schema 1.0"
+        )
+
+
+# ---------------------------------------------------------------------------
+# 9. status vocabulary literals match current schema/code enums
 # ---------------------------------------------------------------------------
 
 
@@ -134,7 +244,18 @@ def test_status_vocabulary_matches_cache_error_codes():
 
 
 # ---------------------------------------------------------------------------
-# 5. outputs/manifests guide mentions current manifest filename and contract version
+# 10. batch mode names match frozen values
+# ---------------------------------------------------------------------------
+
+
+def test_batch_plan_reference_lists_every_frozen_mode():
+    text = _read("docs", "batch_plan_reference.md")
+    for mode in MODES:
+        assert f"`{mode}`" in text, f"docs/batch_plan_reference.md is missing mode {mode!r}"
+
+
+# ---------------------------------------------------------------------------
+# 11. outputs/manifests guide mentions current manifest filename and contract version
 # ---------------------------------------------------------------------------
 
 
@@ -146,18 +267,98 @@ def test_outputs_guide_mentions_manifest_filename_and_contract():
 
 
 # ---------------------------------------------------------------------------
-# 6. offline guarantees match the explicit fetch-action boundary
+# 12. upgrade guide links to compatibility and troubleshooting
 # ---------------------------------------------------------------------------
 
 
-def test_offline_guarantees_names_the_one_network_module():
-    text = _read("docs", "offline_guarantees.md")
+def test_upgrade_guide_links_compatibility_and_troubleshooting():
+    text = _read("docs", "upgrade_guide.md")
+    assert "compatibility.md" in text
+    assert "troubleshooting.md" in text
+
+
+# ---------------------------------------------------------------------------
+# 13. quick start links to batch-plan and output guides
+# ---------------------------------------------------------------------------
+
+
+def test_quick_start_links_batch_plan_and_outputs():
+    text = _read("docs", "quick_start.md")
+    assert "batch_plan_reference.md" in text
+    assert "outputs_and_manifests.md" in text
+
+
+# ---------------------------------------------------------------------------
+# 14. internal stage documents are not presented as the main documentation entry
+# ---------------------------------------------------------------------------
+
+_SEMI_CANONICAL_STAGE_DOCS = {
+    "stage4c_source_comparison.md",
+    "stage5a_batch_review.md",
+    "stage5b_gui_batch.md",
+}
+
+
+def test_internal_stage_documents_are_not_in_primary_navigation():
+    text = _read("docs", "index.md")
+    governance_start = text.index("## Developer/release")
+    primary_navigation = text[:governance_start]
+    stage_link_re = re.compile(r"\]\((stage\d[^)]*\.md)\)")
+    linked_in_primary_nav = set(stage_link_re.findall(primary_navigation))
+    unexpected = linked_in_primary_nav - _SEMI_CANONICAL_STAGE_DOCS
+    assert not unexpected, (
+        f"internal stage document(s) linked outside Developer/release: {unexpected}"
+    )
+
+
+def test_stage_documents_are_headed_with_a_status_note():
+    stage_docs = sorted(DOCS.glob("stage*.md"))
+    assert stage_docs, "expected at least one stage-named document"
+    for path in stage_docs:
+        text = path.read_text("utf-8")
+        assert "> **" in text.split("\n\n")[0] + text.split("\n\n")[1], (
+            f"{path.name} is missing its internal/historical/technical-reference status header"
+        )
+
+
+# ---------------------------------------------------------------------------
+# 15. all new canonical documents are included in the documentation index
+#     (covered by test_docs_index_lists_every_canonical_user_doc above)
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# 3 (troubleshooting). troubleshooting guide exists and contains required major topics
+# ---------------------------------------------------------------------------
+
+
+def test_troubleshooting_guide_covers_required_topics():
+    text = _read("docs", "troubleshooting.md")
+    for heading in (
+        "## Installation",
+        "## GUI",
+        "## Plans",
+        "## Batch execution",
+        "## Reports/results",
+        "## Networking/cache",
+        "## Scientific interpretation",
+    ):
+        assert heading in text, f"docs/troubleshooting.md is missing the {heading!r} section"
+
+
+# ---------------------------------------------------------------------------
+# offline/safety docs match the explicit fetch-action boundary
+# ---------------------------------------------------------------------------
+
+
+def test_offline_and_safety_names_the_one_network_module():
+    text = _read("docs", "offline_and_safety.md")
     assert "pdbtm_transport.py" in text
     assert "Fetch" in text
 
 
 def test_only_pdbtm_transport_imports_networking_primitives():
-    """Ground docs/offline_guarantees.md's central claim directly against the source
+    """Ground docs/offline_and_safety.md's central claim directly against the source
     tree: exactly membrane_vqc/pdbtm_transport.py may import socket/ssl/http.client."""
     package = ROOT / "membrane_vqc"
     offenders = []
@@ -169,49 +370,41 @@ def test_only_pdbtm_transport_imports_networking_primitives():
             offenders.append(path.name)
     assert not offenders, (
         f"unexpected network-capable import(s) outside pdbtm_transport.py: {offenders} -- "
-        "update docs/offline_guarantees.md if this is an intentional change"
+        "update docs/offline_and_safety.md if this is an intentional change"
     )
 
 
-# ---------------------------------------------------------------------------
-# 7. coordinate-preservation docs reference both fingerprint mechanisms
-# ---------------------------------------------------------------------------
-
-
-def test_coordinate_preservation_references_both_fingerprint_mechanisms():
-    text = _read("docs", "coordinate_preservation.md")
+def test_offline_and_safety_references_both_fingerprint_mechanisms():
+    text = _read("docs", "offline_and_safety.md")
     assert "pdbtm_adapter.py" in text
     assert "opm_adapter.py" in text
     assert "transformed_reference" in text
     assert "source_fingerprint" in text
 
 
-# ---------------------------------------------------------------------------
-# 8. batch-plan guide links the five-mode example
-# ---------------------------------------------------------------------------
+def test_batch_plan_reference_links_five_mode_example():
+    text = _read("docs", "batch_plan_reference.md")
+    assert "five_mode_walkthrough.md" in text
 
 
-def test_batch_plan_guide_links_five_mode_example():
-    text = _read("docs", "batch_plan.md")
+def test_five_mode_walkthrough_references_the_synthetic_plan():
+    text = _read("docs", "five_mode_walkthrough.md")
     assert "data/synthetic/stage5a_batch_plan.json" in text
-
-
-# ---------------------------------------------------------------------------
-# 9. README links all primary guides
-# ---------------------------------------------------------------------------
 
 
 def test_readme_links_all_primary_guides():
     text = _read("README.md")
     for doc in (
         "docs/index.md",
+        "docs/quick_start.md",
         "docs/tutorial.md",
-        "docs/batch_plan.md",
+        "docs/batch_plan_reference.md",
+        "docs/five_mode_walkthrough.md",
         "docs/outputs_and_manifests.md",
         "docs/status_vocabulary.md",
         "docs/troubleshooting.md",
-        "docs/offline_guarantees.md",
-        "docs/coordinate_preservation.md",
+        "docs/offline_and_safety.md",
+        "docs/scientific_interpretation.md",
         "docs/upgrade_guide.md",
         "docs/compatibility.md",
         "docs/compatibility_matrix.md",
@@ -224,7 +417,7 @@ def test_readme_links_all_primary_guides():
 
 
 # ---------------------------------------------------------------------------
-# 10. historical manual evidence remains unchanged (beyond cross-links)
+# historical manual evidence remains unchanged (beyond cross-links)
 # ---------------------------------------------------------------------------
 
 
@@ -236,19 +429,21 @@ def test_manual_install_upgrade_evidence_still_records_its_pass_result():
 
 
 # ---------------------------------------------------------------------------
-# 11-13. forbidden claims without an apparent negation nearby
+# forbidden claims without an apparent negation nearby
 # ---------------------------------------------------------------------------
 
 _USER_FACING_DOCS = (
     "README.md",
     "docs/index.md",
+    "docs/quick_start.md",
     "docs/tutorial.md",
-    "docs/batch_plan.md",
+    "docs/batch_plan_reference.md",
+    "docs/five_mode_walkthrough.md",
     "docs/outputs_and_manifests.md",
     "docs/status_vocabulary.md",
     "docs/troubleshooting.md",
-    "docs/offline_guarantees.md",
-    "docs/coordinate_preservation.md",
+    "docs/offline_and_safety.md",
+    "docs/scientific_interpretation.md",
     "docs/compatibility.md",
     "docs/compatibility_matrix.md",
     "docs/known_limitations.md",
@@ -264,11 +459,17 @@ def test_no_doc_claims_pypi_publication():
         _assert_always_negated(text, "PyPI", doc_name=relative)
 
 
-def test_no_doc_claims_persistent_history():
+def test_no_doc_claims_persistent_session_history():
     for relative in _USER_FACING_DOCS:
         text = _read(*relative.split("/"))
         if "persistent" in text.lower() and "history" in text.lower():
             _assert_always_negated(text, "persistent", doc_name=relative)
+        for window in _sentence_windows(text, "history"):
+            lowered = window.lower()
+            if "persist" in lowered:
+                assert re.search(r"\b(not|no|never|n't)\b", lowered), (
+                    f"{relative} may claim history persists -- context: {window!r}"
+                )
 
 
 def test_no_doc_claims_automatic_cache_migration():
@@ -279,7 +480,7 @@ def test_no_doc_claims_automatic_cache_migration():
 
 
 # ---------------------------------------------------------------------------
-# 14. prohibited scientific-verdict wording in user-facing status explanations
+# prohibited scientific-verdict wording in user-facing status explanations
 # ---------------------------------------------------------------------------
 
 _ALWAYS_FORBIDDEN = (
@@ -293,7 +494,12 @@ _ALWAYS_FORBIDDEN = (
 
 
 def test_no_doc_uses_prohibited_verdict_phrases():
+    # docs/scientific_interpretation.md is the one canonical place these exact phrases are
+    # named on purpose, as the "vocabulary to avoid" list itself -- excluded here, not from
+    # any other check in this module.
     for relative in _USER_FACING_DOCS:
+        if relative == "docs/scientific_interpretation.md":
+            continue
         text = _read(*relative.split("/"))
         for phrase in _ALWAYS_FORBIDDEN:
             _assert_never_present(text, phrase, doc_name=relative)

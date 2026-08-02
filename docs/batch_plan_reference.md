@@ -1,9 +1,13 @@
-# Batch plan guide
+# Batch plan reference
 
-A first-time-user guide to `mvqc-batch-plan-1.0`, the JSON contract that drives **Batch review**
-and `mvqc_batch_run`. For the run-level output contract (manifest, filenames, atomic publication),
-see `docs/outputs_and_manifests.md`. For the exact status literals a run can produce, see
-`docs/status_vocabulary.md`.
+A field-by-field reference for `mvqc-batch-plan-1.0`, the JSON contract that drives **Batch
+review** and `mvqc_batch_run`. This page covers structure, fields, path rules, and every
+supported mode; for a narrated, run-it-yourself example see
+[docs/five_mode_walkthrough.md](five_mode_walkthrough.md). For the run-level output contract
+(manifest, filenames, atomic publication), see [docs/outputs_and_manifests.md](outputs_and_manifests.md).
+For the exact status literals a run can produce, see [docs/status_vocabulary.md](status_vocabulary.md).
+This contract is frozen ahead of v1.0 -- see
+[docs/v1.0_contract_freeze.md#2-batch-contracts-frozen](v1.0_contract_freeze.md#2-batch-contracts-frozen).
 
 ## 1. Purpose of a batch plan
 
@@ -92,7 +96,7 @@ python -m membrane_vqc.batch_cli validate PLAN.json
 ```
 
 This checks contract shape, field types, closed enums, duplicate job IDs, unsafe paths, and job
-count/size limits -- entirely offline (`docs/offline_guarantees.md`). It never executes a job. In
+count/size limits -- entirely offline (`docs/offline_and_safety.md`). It never executes a job. In
 the GUI, pressing **Validate** does the same thing and never runs anything either
 (`docs/stage5b_gui_batch.md`).
 
@@ -132,38 +136,28 @@ Rejected everywhere the batch path contract applies: path traversal (`..`), driv
 intentionally not accepted -- keep paths within practical Windows length limits. See
 `docs/known_limitations.md#windows-paths` and `docs/troubleshooting.md#plans`.
 
-## 11. Five-mode narrated example
+## 11. Minimal valid examples
 
-[`data/synthetic/stage5a_batch_plan.json`](../data/synthetic/stage5a_batch_plan.json) is the
-retained, complete synthetic example exercising all five modes in one plan, with
-`execution: {"failure_policy": "continue_on_error", "overwrite": "refuse"}`. The separate
-`stage5a_batch_plan_invalid.json` fixture intentionally contains a path-traversal violation for
-negative testing -- it is not a usage example. The valid plan references a synthetic cache under
-`stage5a-synthetic-cache/`, which is not committed to Git; materialize it first with:
+The smallest valid single-job plan (legacy global-z, no context/ligand):
 
-```bash
-python scripts/materialize_stage5a_example.py DESTINATION
+```json
+{
+  "contract": "mvqc-batch-plan-1.0",
+  "jobs": [
+    {
+      "id": "legacy",
+      "input": {"kind": "pymol", "selection": "protein"},
+      "analysis": {"mode": "legacy_global_z", "zmin": -15.0, "zmax": 15.0},
+      "output": {"write_csv": true}
+    }
+  ],
+  "execution": {"failure_policy": "continue_on_error", "overwrite": "refuse"}
+}
 ```
 
-(no network access; purely local file generation). This is also the exact plan used as the
-"designated" batch example throughout this project's manual acceptance checklists.
-
-| Job `id` | Mode | Input | Orientation source | Why it's included |
-|---|---|---|---|---|
-| `legacy` | `legacy_global_z` | `pdbtm_original_test.pdb` | `zmin=-15.0, zmax=15.0` | Exercises the original, simplest slab mode with a real (if synthetic) transmembrane-shaped file. |
-| `planar` | `planar_orientation` | `pdbtm_original_test.pdb` | `stage5a_orientation.json` | Exercises the general planar-membrane orientation-file mode on the same input, for direct comparison against `legacy`. |
-| `pdbtm-local` | `pdbtm_local` | `pdbtm_original_test.pdb` | `record_id: "test"`, local `pdbtm_api_v1_test.json` + `pdbtm_transformed_test.pdb` pair | Exercises the offline-import path with a genuine explicit local pair, producing schema 1.3. |
-| `pdbtm-cache` | `pdbtm_cache` | `pdbtm_original_1tes.pdb` | `record_id: "1tes"`, `snapshot_id` naming an exact cache entry under `cache_root` | Exercises the cache-read path (schema 1.4) with no network access at all -- requires the materialized synthetic cache above to be present; without it, this job fails closed rather than fetching. |
-| `comparison` | `pdbtm_opm_comparison` | `pdbtm_original_test.pdb` | local `pdbtm_local` pair plus `opm_oriented_test.pdb` | Exercises the two-independent-source geometric comparison (schema 1.5); the only job here with `write_csv: false`, since comparison never writes CSV. |
-
-When run through `python -m membrane_vqc.batch_cli validate`, this plan validates cleanly (5 jobs,
-`mvqc-batch-plan-1.0`). When actually executed with the materialized cache present, expect
-`legacy`, `planar`, `pdbtm-local`, and `pdbtm-cache` to reach `SUCCESS` and `comparison` to
-typically reach `REVIEW_ITEMS` given the synthetic fixtures' deliberately-offset geometry -- **this
-is the observed status for this specific synthetic example, not a universal guarantee for real
-structures.** A real plan against your own data may see any of the job statuses in
-`docs/status_vocabulary.md#2-batch-job-status-jobsstatus-in-batch-resultjson` depending entirely on
-your inputs.
+For a complete, runnable example exercising all five modes together -- with a full narrated
+walkthrough of what each job demonstrates, its expected status, and how to inspect the result --
+see [docs/five_mode_walkthrough.md](five_mode_walkthrough.md).
 
 ## Result contract
 

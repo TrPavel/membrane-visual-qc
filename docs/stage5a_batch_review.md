@@ -1,5 +1,10 @@
 # Stage 5A reproducible batch review
 
+> **Technical reference.** This document remains the detailed design reference for the batch
+> execution contract, linked from [docs/batch_plan_reference.md](batch_plan_reference.md) and
+> [docs/five_mode_walkthrough.md](five_mode_walkthrough.md) -- it is not the primary user-facing
+> entry point for writing or running batch plans.
+
 Stage 5A runs an ordered list of explicit review jobs using the existing accepted single-job
 scientific paths. The planner and contract validator import without PyMOL. Execution occurs only
 inside PyMOL, sequentially on the calling main thread; no worker invokes a PyMOL command.
@@ -100,4 +105,5 @@ match and every existing output still matches the size/SHA recorded by the prior
 Successful replacement publishes the complete new set; an unsuccessful replacement raises the
 stable `SAME_BATCH_ROLLED_BACK` code and leaves the prior set byte-for-byte intact.
 
-See [batch_plan.md](batch_plan.md) for the contract shape and multi-job example.
+See [batch_plan_reference.md](batch_plan_reference.md) for the contract shape and
+[five_mode_walkthrough.md](five_mode_walkthrough.md) for the multi-job example.

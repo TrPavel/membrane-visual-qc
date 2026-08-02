@@ -1,5 +1,8 @@
 # Stage 4B network retrieval and cache design
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/offline_and_safety.md](offline_and_safety.md) for the current offline/cache guarantees.
+
 Status: **COMPLETE**. The accepted design is implemented through Stage 4B1 (transport/cache core),
 Stage 4B2 (schema 1.4/provenance), Stage 4B3 (GUI/PyMOL worker orchestration), and Stage 4B4
 (exact-artifact acceptance). See `docs/stage4b1_implementation.md`,

@@ -1,5 +1,8 @@
 # Stage 4 orientation-source research
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/tutorial.md](tutorial.md) for the current orientation-source workflows.
+
 Status: design gate; no production implementation has started.
 Research snapshot: 2026-07-18.
 

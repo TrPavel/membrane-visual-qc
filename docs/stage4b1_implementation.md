@@ -1,5 +1,8 @@
 # Stage 4B1 transport and cache core
 
+> **Historical implementation record.** Not current user documentation -- see
+> [docs/offline_and_safety.md](offline_and_safety.md) for the current offline/cache guarantees.
+
 Status: complete and merged. Its transport/cache core is exposed only through Stage 4B3's explicit
 GUI Fetch/Refresh workflow; package import and all non-fetch actions remain network-free.
 

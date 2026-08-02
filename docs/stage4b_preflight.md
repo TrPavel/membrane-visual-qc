@@ -1,5 +1,8 @@
 # Stage 4B official-provider preflight
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/offline_and_safety.md](offline_and_safety.md) for the current offline/cache guarantees.
+
 Status: complete for design review. Raw provider material is local-only and not committed.
 
 ## Date and environment

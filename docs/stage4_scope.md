@@ -1,5 +1,8 @@
 # Stage 4 scope and implementation boundary
 
+> **Internal design record.** Not current user documentation -- see [docs/index.md](index.md) for
+> current documentation and [docs/known_limitations.md](known_limitations.md) for current scope.
+
 Status: **COMPLETE**. Stage 4A, Stage 4B1–4B4, and Stage 4C are merged and accepted. The detailed
 sections below preserve the original staged design and acceptance criteria as historical context;
 later implementation documents and v0.5.0 release notes describe the completed behavior.

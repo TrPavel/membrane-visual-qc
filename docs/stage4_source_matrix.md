@@ -1,5 +1,8 @@
 # Stage 4 orientation-source matrix
 
+> **Internal design record.** Not current user documentation -- see
+> [docs/tutorial.md](tutorial.md) for the current orientation-source workflows.
+
 Research snapshot: 2026-07-18. “Unknown” means the provider did not publish a value in the reviewed
 official material. No row is an assertion of biological correctness.
 

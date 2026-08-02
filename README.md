@@ -23,7 +23,7 @@ original review severities.
 Version `0.4.0` adds the reviewed offline PDBTM API-v1 pair contract, direct coordinate-frame
 applicability, PyMOL commands, the third GUI orientation mode, and released report schema 1.3.
 
-Version `0.5.0` completes Stage 4. It adds bounded direct PDBTM retrieval, a validated local cache
+Version `0.5.0` adds bounded direct PDBTM retrieval, a validated local cache
 with explicit **Fetch / Refresh** versus **Use cached pair** actions, schema 1.4 acquisition
 provenance, and an explicit PDBTM-versus-OPM geometric comparison area with schema 1.5. PDBTM may
 come from a local pair or an explicitly selected validated cache snapshot; OPM remains an explicit
@@ -32,7 +32,7 @@ immutable current object. The comparison performs no fitting, coordinate mutatio
 source choice, consensus, provider ranking, or biological verdict. See
 [docs/stage4c_source_comparison.md](docs/stage4c_source_comparison.md).
 
-Version `0.6.0` adds Stage 5A's strict batch contracts and Stage 5B's **Batch review** GUI. The
+Version `0.6.0` adds strict batch contracts and the **Batch review** GUI. The
 GUI validates an explicit plan, displays its ordered queue, advances one PyMOL job per queued
 main-thread event, supports cooperative cancellation, retains at most 20 current-session runs, and
 verifies an explicitly selected result bundle before browsing it. It never scans for plans or
@@ -142,13 +142,13 @@ documented in [docs/report_schema.md](docs/report_schema.md). For what every sta
 [docs/status_vocabulary.md](docs/status_vocabulary.md) -- none of them are a biological verdict.
 
 Resolved PDBTM reports use immutable schema 1.3 in v0.4.0, whether Context is OFF or ON. Schema
-1.3 requires JSON Schema structural validation followed by the mandatory Stage 4 semantic
+1.3 requires JSON Schema structural validation followed by a mandatory semantic
 validator for nonlinear scientific invariants. Schemas 1.0–1.3 are immutable release contracts.
 Cached-PDBTM reports use schema 1.4. The independent two-source comparison uses additive schema
 1.5; schemas 1.0–1.3 remain immutable historical release contracts, and schemas 1.4–1.5 are
 frozen for v0.5.0 publication.
 
-Stage 5A's `mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` contracts are operational batch
+`mvqc-batch-plan-1.0` and `mvqc-batch-result-1.0` are operational batch
 contracts, not report schema 1.6. Validate a plan without PyMOL using
 `python -m membrane_vqc.batch_cli validate PLAN.json`; execution still requires PyMOL and runs
 sequentially on its main thread. A missing or invalid plan path prints a concise error to stderr
@@ -170,7 +170,7 @@ Reported depth values are geometric evidence, not proof of biological burial.
 v0.3.0 builds local chemical-context review on the deterministic SASA/RSA foundation. Opt-in
 analysis adds conservative distance-only contacts and independent burial/contact/context states
 without changing `WARNING`/`INSPECT` severity. The GUI offers Fast/Standard/High sampling and
-Built-in/Auto/FreeSASA-reference backends; context remains disabled by default. Graphical Stage 3
+Built-in/Auto/FreeSASA-reference backends; context remains disabled by default. Graphical
 acceptance passed on Windows with Incentive PyMOL 3.1.8. FreeSASA is optional and lazy.
 
 The schema 1.2 contact vocabulary is deliberately limited to `putative_salt_bridge`,
@@ -199,31 +199,36 @@ visual batch-plan editor, curved/multiple-membrane model, automatic fitting, aut
 consensus, or biological correctness verdict. Comparison thresholds are geometric review bands,
 not biological truth. Ordinary SASA is not lipid accessibility,
 local chemical-context labels are conservative evidence, and reports are visual-QC evidence rather
-than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md),
-[docs/offline_guarantees.md](docs/offline_guarantees.md) for exactly what does and doesn't touch
-the network, and [docs/coordinate_preservation.md](docs/coordinate_preservation.md) for how this
-project proves it never silently modifies your structure's coordinates.
+than definitive structural validation. See [docs/known_limitations.md](docs/known_limitations.md)
+and [docs/scientific_interpretation.md](docs/scientific_interpretation.md) for the full scientific
+boundary, and [docs/offline_and_safety.md](docs/offline_and_safety.md) for exactly what does and
+doesn't touch the network and how this project proves it never silently modifies your structure's
+coordinates.
 
 ## Documentation
 
-Start at [docs/index.md](docs/index.md) -- the full documentation map, grouped by purpose, with a
-recommended reading path for first-time users, batch users, developers, and reviewers. Direct
+Start at [docs/index.md](docs/index.md) -- the full documentation map, grouped into Using the
+plugin, Reference, Scientific boundaries, Installation and maintenance, and Developer/release, with
+a recommended reading path for first-time users, batch users, developers, and reviewers. Direct
 links to the most-used guides:
 
+- **Quick start**: [docs/quick_start.md](docs/quick_start.md) -- install to first exported result
+  in one page.
 - **Workflows**: [docs/tutorial.md](docs/tutorial.md) covers all five current analysis modes
   (legacy global-z, planar orientation, PDBTM local, PDBTM cache, PDBTM-OPM comparison) and
-  **Batch review**; [docs/batch_plan.md](docs/batch_plan.md) is the batch-plan guide, including a
-  fully narrated five-mode example.
+  **Batch review**; [docs/batch_plan_reference.md](docs/batch_plan_reference.md) is the batch-plan
+  field reference, with a fully narrated five-mode example in
+  [docs/five_mode_walkthrough.md](docs/five_mode_walkthrough.md).
 - **Outputs**: [docs/outputs_and_manifests.md](docs/outputs_and_manifests.md) documents the batch
   output/manifest layout; [docs/status_vocabulary.md](docs/status_vocabulary.md) is the one
   canonical table of every status/error literal this project produces.
 - **Troubleshooting**: [docs/troubleshooting.md](docs/troubleshooting.md), organized by symptom.
-- **Compatibility and upgrades**: [docs/compatibility.md](docs/compatibility.md),
+- **Installation and upgrade**: [docs/compatibility.md](docs/compatibility.md),
   [docs/compatibility_matrix.md](docs/compatibility_matrix.md), and
   [docs/upgrade_guide.md](docs/upgrade_guide.md) (already linked above).
 - **Scientific boundaries**: [docs/known_limitations.md](docs/known_limitations.md) (already
-  linked above), [docs/offline_guarantees.md](docs/offline_guarantees.md), and
-  [docs/coordinate_preservation.md](docs/coordinate_preservation.md).
+  linked above), [docs/scientific_interpretation.md](docs/scientific_interpretation.md), and
+  [docs/offline_and_safety.md](docs/offline_and_safety.md).
 - **Contract and release governance**: [docs/v1.0_contract_freeze.md](docs/v1.0_contract_freeze.md),
   [docs/versioning_policy.md](docs/versioning_policy.md), and
   [docs/release_checklist.md](docs/release_checklist.md).
