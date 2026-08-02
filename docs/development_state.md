@@ -11,6 +11,20 @@ coordinates, choose a source, create consensus, rank providers, or make a biolog
 v0.7.0 and v0.8.0 release, tag, post-merge artifact, and downloaded-asset identities are frozen in
 `docs/v0.7.0_release_evidence.json` and `docs/v0.8.0_release_evidence.json`. PyPI is not used.
 
+## v0.9.0 visual-identity and premium-README phase
+
+A dedicated session (draft PR, `design/v0.9.0-premium-readme`) redesigned the repository's public
+presentation on top of the `0.9.0.dev0` development line: a restrained visual identity (original
+SVG logo/wordmark in light and dark variants, a PNG social-preview card, `docs/visual_identity.md`
+recording the palette/conventions), a rewritten `README.md` (hero, a Mermaid workflow diagram, an
+accurate mode-overview and example-output table, progressive disclosure into canonical docs), and
+`docs/screenshot_capture_plan.md` -- a reproducible plan for a real current-GUI screenshot and demo,
+since this repository's own environment cannot open a graphical PyMOL session to capture one. The
+pre-existing images under `docs/screenshots/` (historical validation evidence, predating the
+five-mode/Batch review GUI) were left untouched and are not reused as current branding assets. This
+phase changes no runtime, scientific, batch, schema, contract, or cache-format behavior, and does
+not redesign the plugin GUI itself -- GUI/UX polish remains a separate, later phase.
+
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
 v0.7.0 landed PR #25 (schema 1.0 read-compatibility fix), PR #26 (fail-fast Windows filesystem
