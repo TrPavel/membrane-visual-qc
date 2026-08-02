@@ -59,7 +59,7 @@ active sites, ion-binding sites, and cofactors before treating a flagged residue
 
 ## 7. Export
 
-Click **Export**, or run `mvqc_export path=reports/my_result.json` in the PyMOL command line. This
+Click **Export JSON**, or run `mvqc_export path=reports/my_result.json` in the PyMOL command line. This
 writes a versioned JSON report and a deterministic CSV companion. See
 [docs/report_schema.md](report_schema.md) for the schema, and
 [docs/outputs_and_manifests.md](outputs_and_manifests.md) for single-export vs. batch output
@@ -91,7 +91,7 @@ Save it as `my_plan.json`, then either validate it offline:
 python -m membrane_vqc.batch_cli validate my_plan.json
 ```
 
-or, in **Batch review**: select the plan and an output directory, press **Validate**, then **Run**.
+or, in **Batch review**: select the plan and an output directory, press **Validate**, then **Run batch**.
 For a complete five-mode example with a full narrated walkthrough, see
 [docs/five_mode_walkthrough.md](five_mode_walkthrough.md).
 

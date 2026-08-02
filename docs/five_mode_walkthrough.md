@@ -30,7 +30,7 @@ python -m membrane_vqc.batch_cli validate DESTINATION/stage5a_batch_plan.json
 ```
 
 or run it for real, through **Batch review** (select the materialized plan and an output
-directory, press **Validate**, then **Run**) or headlessly:
+directory, press **Validate**, then **Run batch**) or headlessly:
 
 ```bash
 pymol -cq tests/pymol_smoke/run_batch_plan.py -- DESTINATION/stage5a_batch_plan.json DESTINATION/output
@@ -87,6 +87,6 @@ After a real run, the output directory contains `batch-result.json` (the manifes
 successful job's `<id>.json` report and (where applicable) `<id>.csv` -- see
 [docs/outputs_and_manifests.md](outputs_and_manifests.md) for the exact layout. Through **Batch
 review**'s result browser: select the completed run, inspect the ordered queue's per-job status,
-open **Manifest** to see the raw `batch-result.json`, and use **Reveal**/**Open** on any individual
-job to view its report or CSV directly. Each open re-verifies the file's identity against the
-manifest before showing it.
+press **Open result manifest** to see the raw `batch-result.json`, and use **Reveal selected
+report** / **Reveal selected CSV** on any individual job to view its report or CSV directly. Each
+open re-verifies the file's identity against the manifest before showing it.

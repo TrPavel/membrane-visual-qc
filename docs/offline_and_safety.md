@@ -4,9 +4,14 @@ This page consolidates every operational safety guarantee this project makes out
 correctness: what never touches the network, what the coordinate-preservation guarantee covers,
 and the filesystem-safety behaviors (atomic writes, path containment, symlink protection) that
 apply across batch execution and the PDBTM cache. Every claim below is grounded in a specific
-module or test in this repository -- see the citation after each item. This is a frozen v1.0
-candidate contract; see
-[docs/v1.0_contract_freeze.md](v1.0_contract_freeze.md#7-cache-format-frozen).
+module or test in this repository -- see the citation after each item. The cache format and the
+output/manifest layout described here are frozen v1.0 candidate contracts in their own right; see
+[docs/v1.0_contract_freeze.md#7-cache-format-frozen](v1.0_contract_freeze.md#7-cache-format-frozen)
+and
+[#11-outputmanifest-layout-frozen-as-the-v10-candidate](v1.0_contract_freeze.md#11-outputmanifest-layout-frozen-as-the-v10-candidate).
+The network-fetch boundary, coordinate-preservation mechanism, and atomic-write/path-safety
+behaviors are current, tested behavior, not separately enumerated as their own frozen interface
+line items in that audit.
 
 ## Part 1 -- Offline guarantees
 
@@ -174,12 +179,15 @@ for the complete collision/rollback mechanism.
 
 ### Path containment and symlink/reparse protection
 
-Every user-supplied path in a batch plan or cache location is validated against the same safe-path
+Batch-plan paths (`membrane_vqc/batch_paths.py`) are validated against a strict safe-path
 contract: path traversal (`..`), drive-relative (`C:foo`), UNC (`\\server\share`), device (`\\.\`),
 pipe, reserved Windows device names, and symlink/reparse-point paths are all rejected before any
 read or write. Ordinary paths with spaces or Unicode characters are fully supported. See
 [docs/batch_plan_reference.md#10-safe-path-restrictions](batch_plan_reference.md#10-safe-path-restrictions)
-for the complete rule set and examples.
+for the complete rule set and examples. The PDBTM cache (`membrane_vqc/pdbtm_cache.py`) enforces
+its own independent, equivalent symlink/reparse-point rejection on every already-existing path
+component it touches -- a separate implementation from the batch-path contract, not shared code,
+but the same protective outcome.
 
 ### Failure behavior
 
