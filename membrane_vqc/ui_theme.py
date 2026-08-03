@@ -20,6 +20,18 @@ SPACING_SM = 6
 SPACING_MD = 10
 SPACING_LG = 16
 
+# A result/detail text area's height before vs. after it actually has something to show -- see
+# ui_components.cap_height. Keeping an empty QTextEdit small (COMPACT) is what stops an unused
+# panel from reading as a large blank rectangle; EXPANDED gives real content room to be useful
+# once there is some.
+COMPACT_RESULT_HEIGHT = 56
+EXPANDED_RESULT_HEIGHT = 220
+
+# Shown in a metadata grid/label in place of an empty string, so "no value yet" reads as an
+# explicit, intentional absence rather than a blank cell that looks broken -- never a stand-in
+# for a real falsy value like the number 0.
+EMPTY_VALUE = "—"
+
 # Restrained palette matching docs/visual_identity.md's README accent (teal), extended with a
 # secondary amber accent (review/attention) and a muted error red -- never used alone, always
 # paired with a glyph and a text label.

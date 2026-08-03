@@ -134,6 +134,84 @@ def test_real_qt_orientation_mode_hides_irrelevant_rows():
     QtWidgets.QApplication.processEvents()
 
 
+def _orientation_group(dialog):
+    return next(
+        box
+        for box in dialog.single_page.findChildren(QtWidgets.QGroupBox)
+        if box.title() == "Orientation source"
+    )
+
+
+def test_real_qt_hidden_orientation_rows_do_not_reserve_height():
+    """Regression test for the real bug this refinement pass fixed: hiding QFormLayout rows
+    via setVisible() alone leaves each hidden row's inter-row spacing reserved on this exact
+    PyQt5 5.15.11/Qt 5.15.15 build (confirmed empirically: ~6px per hidden row, invisible with
+    one hidden row but a large, clearly visible gap with the ~10 this group can hide at once).
+    The fix groups each mode's fields into its own QWidget container and toggles whole
+    containers, which collapses with zero residual height -- this test pins that fact."""
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    dialog.window.show()
+    QtWidgets.QApplication.processEvents()
+    group = _orientation_group(dialog)
+
+    dialog.orientation_mode.setCurrentText(LEGACY_MODE)
+    QtWidgets.QApplication.processEvents()
+    legacy_height = group.sizeHint().height()
+
+    # Build a from-scratch reference group containing only what Legacy mode actually shows
+    # (helper text, Resolved orientation, zmin, zmax) to establish the true minimal height.
+    reference = QtWidgets.QGroupBox("Orientation source")
+    reference_layout = QtWidgets.QFormLayout(reference)
+    helper = QtWidgets.QLabel("The fields below adapt to the selected orientation mode.")
+    helper.setWordWrap(True)
+    reference_layout.addRow(helper)
+    reference_layout.addRow("Resolved orientation", QtWidgets.QLabel("manual_global_z"))
+    reference_layout.addRow("zmin", QtWidgets.QLineEdit("-15.0"))
+    reference_layout.addRow("zmax", QtWidgets.QLineEdit("15.0"))
+    reference.show()
+    QtWidgets.QApplication.processEvents()
+    reference_height = reference.sizeHint().height()
+
+    # Allow a small margin for styling/font differences, but the ~60px of residual spacing the
+    # old row-hiding approach left behind must not reappear.
+    assert legacy_height <= reference_height + 20, (
+        f"Legacy-mode group height ({legacy_height}) is far larger than a from-scratch group "
+        f"with only its visible fields ({reference_height}) -- hidden rows are reserving space "
+        "again."
+    )
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_orientation_group_height_changes_with_visible_content():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    dialog.window.show()
+    QtWidgets.QApplication.processEvents()
+    group = _orientation_group(dialog)
+
+    heights = {}
+    for mode in (LEGACY_MODE, ORIENTATION_FILE_MODE, PDBTM_MODE):
+        dialog.orientation_mode.setCurrentText(mode)
+        QtWidgets.QApplication.processEvents()
+        heights[mode] = group.sizeHint().height()
+
+    # Planar shows only one field (Orientation JSON) -- strictly the smallest.
+    assert heights[ORIENTATION_FILE_MODE] < heights[LEGACY_MODE]
+    # PDBTM (local, the mode's default source) shows more fields than Legacy's zmin/zmax pair.
+    assert heights[PDBTM_MODE] > heights[LEGACY_MODE]
+
+    dialog.pdbtm_source.setCurrentText("Validated cache")
+    QtWidgets.QApplication.processEvents()
+    cached_height = group.sizeHint().height()
+    # Switching from local to cache trades two fields (PDBTM JSON, Transformed PDB) for more
+    # (fetch/cancel, cache status, cache metadata, cache actions) -- strictly taller.
+    assert cached_height > heights[PDBTM_MODE]
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
 def test_real_qt_advanced_and_comparison_groups_start_collapsed():
     dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
     dialog.window.show()
@@ -200,6 +278,39 @@ def test_real_qt_run_qc_updates_result_headline_and_enables_export():
     assert ui_theme.glyph_for_category(ui_theme.CATEGORY_REVIEW) in dialog.result_headline.text()
     assert "REVIEW_ITEMS" in dialog.result_headline.text()
     assert ui_theme.glyph_for_category(ui_theme.CATEGORY_ERROR) not in dialog.result_headline.text()
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_single_structure_results_area_is_compact_until_populated():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+
+    assert dialog.summary.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+
+    dialog._execute(
+        "Running…",
+        lambda: {"summary": {"overall_status": "NO_FLAGS"}},
+        lambda result: "rendered",
+    )
+    QtWidgets.QApplication.processEvents()
+    assert dialog.summary.maximumHeight() == ui_theme.EXPANDED_RESULT_HEIGHT
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_comparison_metrics_area_is_compact_until_a_comparison_completes():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    assert dialog.comparison_metrics.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+
+    # _sync_comparison_controls reads self._comparison_result/_comparison_report directly;
+    # simulate "a comparison just completed" the same way _on_comparison_finished does.
+    dialog._comparison_result = object()
+    dialog._comparison_report = object()
+    dialog._sync_comparison_controls()
+
+    assert dialog.comparison_metrics.maximumHeight() == ui_theme.EXPANDED_RESULT_HEIGHT
 
     dialog.window.close()
     QtWidgets.QApplication.processEvents()
@@ -287,6 +398,90 @@ def test_real_qt_batch_plan_metadata_grid_is_populated_after_validation(tmp_path
     assert panel.plan_job_count.text() == "5"
     assert panel.plan_sha.text() != ""
     assert panel.plan_contract_status.text() != "Not validated"
+
+
+def test_real_qt_batch_metadata_shows_em_dash_before_validation_not_blank_or_zero():
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, QtWidgets.QWidget())
+
+    assert panel.plan_sha.text() == ui_theme.EMPTY_VALUE
+    assert panel.plan_job_count.text() == ui_theme.EMPTY_VALUE
+    assert panel.failure_policy.text() == ui_theme.EMPTY_VALUE
+    assert panel.overwrite_policy.text() == ui_theme.EMPTY_VALUE
+    assert panel.current_job.text() == ui_theme.EMPTY_VALUE
+    assert panel.current_mode.text() == ui_theme.EMPTY_VALUE
+    for text in (
+        panel.plan_sha.text(),
+        panel.plan_job_count.text(),
+        panel.failure_policy.text(),
+        panel.overwrite_policy.text(),
+    ):
+        assert text != ""
+        assert text != "0"
+
+
+def test_real_qt_batch_result_and_selected_job_areas_are_compact_until_populated(tmp_path):
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, QtWidgets.QWidget())
+    panel.cmd_obj = object()
+
+    assert panel.result_summary.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+    assert panel.selected_job_details.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+
+    panel.plan_path.setText(str(ROOT / "data" / "synthetic" / "stage5a_batch_plan.json"))
+    panel.validate_selected_plan()
+    panel.output_path.setText(str(tmp_path / "output"))
+
+    # Selecting a job before any bundle exists must not crash and must stay compact.
+    assert panel.selected_job_details.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+
+
+def test_real_qt_batch_result_and_selected_job_areas_expand_once_populated():
+    from types import MappingProxyType
+
+    from membrane_vqc.batch_result_browser import VerifiedBatchResult, VerifiedJob
+
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, QtWidgets.QWidget())
+    jobs = tuple(
+        VerifiedJob(
+            f"job-{i}",
+            "legacy_global_z",
+            "SUCCESS",
+            "1.1",
+            0,
+            0,
+            None,
+            True,
+            None,
+            None,
+            MappingProxyType({}),
+        )
+        for i in range(3)
+    )
+    bundle = VerifiedBatchResult(
+        Path("C:/safe/batch-result.json"),
+        Path("C:/safe"),
+        100,
+        "a" * 64,
+        "b" * 64,
+        "c" * 64,
+        "d" * 64,
+        "COMPLETED",
+        "2026-08-03T00:00:00Z",
+        "2026-08-03T00:00:01Z",
+        "0.9.0.dev0",
+        MappingProxyType({"total": 3}),
+        jobs,
+    )
+
+    panel._selected_bundle = bundle
+    panel._render_bundle(bundle)
+    assert panel.result_summary.maximumHeight() == ui_theme.EXPANDED_RESULT_HEIGHT
+    # No row selected yet -- detail area stays compact even though a bundle now exists.
+    assert panel.selected_job_details.maximumHeight() == ui_theme.COMPACT_RESULT_HEIGHT
+
+    panel.queue.selectRow(0)
+    panel._render_selected_job()
+    assert panel.selected_job_details.maximumHeight() == ui_theme.EXPANDED_RESULT_HEIGHT
+    assert "job-0" in panel.selected_job_details.toPlainText()
 
 
 class _ConfigurableSession:

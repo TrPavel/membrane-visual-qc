@@ -67,31 +67,26 @@ def stretch_last_table_section(table, *, section: int | None = None) -> None:
     resize_mode(target, stretch)
 
 
-def set_row_visible(form_layout, field, visible: bool) -> None:
-    """Hide/show one QFormLayout row (its label and field) as a unit.
+def mode_container(QtWidgets, parent_layout):
+    """A plain QWidget with a zero-margin QFormLayout, meant to hold one mode/state's fields.
 
-    PyQt5 5.15 (the version this project's CI pins) has no ``QFormLayout.setRowVisible``
-    (only added in Qt 6.4) -- calling ``.hide()``/``.show()`` on a field widget alone leaves the
-    row's height reserved. This works around that by also hiding the row's label (via
-    ``labelForField``) and, when *field* is a layout (e.g. a QHBoxLayout row of a line edit plus
-    a Browse button), every widget that layout directly contains -- verified empirically to
-    collapse the row's contribution to the form's size hint in this project's exact PyQt5/Qt
-    build. No-op under a fake test shim (neither ``labelForField`` nor ``itemAt`` exist there).
+    Showing/hiding this *whole container* (``container.setVisible(...)``) -- rather than
+    individual QFormLayout rows within one shared form -- is the only approach confirmed to
+    fully collapse unused vertical space against this project's exact PyQt5 5.15.11/Qt 5.15.15
+    build: hiding a row's widgets alone leaves that row's inter-row spacing reserved (there is no
+    ``QFormLayout.setRowVisible`` before Qt 6.4), and with several such rows hidden at once the
+    residual spacing becomes a visible gap. A hidden QWidget contributes neither size nor spacing
+    to its parent QVBoxLayout, so stacking one small container per mode/state and toggling whole
+    containers avoids the problem entirely. Returns ``(container, form_layout)``; the caller
+    populates *form_layout* and adds *container* to *parent_layout*.
     """
-    if hasattr(form_layout, "setRowVisible"):
-        form_layout.setRowVisible(field, visible)
-        return
-    if hasattr(field, "itemAt") and hasattr(field, "count"):
-        for index in range(field.count()):
-            item = field.itemAt(index)
-            child = item.widget() if item is not None else None
-            if child is not None:
-                child.setVisible(visible)
-    elif hasattr(field, "setVisible"):
-        field.setVisible(visible)
-    label = form_layout.labelForField(field) if hasattr(form_layout, "labelForField") else None
-    if label is not None:
-        label.setVisible(visible)
+    container = QtWidgets.QWidget()
+    form = QtWidgets.QFormLayout(container)
+    if hasattr(form, "setContentsMargins"):
+        form.setContentsMargins(0, 0, 0, 0)
+    if hasattr(parent_layout, "addWidget"):
+        parent_layout.addWidget(container)
+    return container, form
 
 
 def make_collapsible_group(QtWidgets, title: str, *, checked: bool = True):

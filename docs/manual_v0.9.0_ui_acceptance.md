@@ -10,33 +10,48 @@ applies here identically.
 
 ## What changed (scope of this pass)
 
-Presentation and interaction only, across two implementation passes on the same branch.
+Presentation and interaction only, across three implementation passes on the same branch.
 
 **Pass 1** (colors/typography only -- the owner's real-PyMOL review found this insufficient on
-its own, see Pass 2 below): a small internal design system (`membrane_vqc/ui_theme.py`,
+its own, see Pass 2): a small internal design system (`membrane_vqc/ui_theme.py`,
 `membrane_vqc/ui_components.py`), primary/secondary button styling, a supplementary status glyph
 on `cache_status`/`comparison_status`/`status_message`/error text (never replacing the exact
 text), and a message/category distinction between a `COMPLETED_WITH_ERRORS` batch outcome and a
 true `FAILED_FAST` one.
 
-**Pass 2** (structural information architecture): the **Single structure** tab's one long,
-undifferentiated form is now six distinct `QGroupBox` panels -- *Structure & mode*, *Orientation
-source*, *Analysis options*, a collapsible *Advanced analysis (optional)*, *Run*, *Results* --
-plus the *Source comparison (optional)* group, now collapsed by default instead of always
-occupying the bottom of the tab. Fields that do not apply to the selected orientation mode
-(Legacy global-z / Planar orientation file / PDBTM offline pair, and PDBTM's local-vs-cache
-sub-choice) are now actually hidden, not just grayed out -- confirmed against this project's exact
-PyQt5 5.15.11 build (see `membrane_vqc/ui_components.set_row_visible`'s docstring). A compact
-"Ready to analyze `<selection>` using `<mode>`" context line replaces guessing the current state
-from scattered fields. `Export JSON` starts disabled/unstyled and only becomes the primary,
-accent-styled action once a result actually exists to export. A new result headline
-(`✓ NO_FLAGS` / `◆ REVIEW_ITEMS (n)` / etc.) sits above the summary text, which itself is now
-height-capped with placeholder text ("Run QC to generate a structured summary.") instead of a
-tall blank box. **Batch review** gained a compact metadata grid for plan facts (contract/SHA/job
-count/policies) and execution facts (progress/current job/mode/run state), a result headline
-above the run summary, empty-state banners for the job queue and session history ("Validate a
-plan to populate the job queue.", "No batch runs yet this session."), and the session-history
-group is now collapsed by default (it is secondary to the current run, not the visual center).
+**Pass 2** (structural information architecture -- the owner's second real-PyMOL review confirmed
+this was materially better, but flagged compactness issues, see Pass 3): the **Single structure**
+tab's one long, undifferentiated form is now six distinct `QGroupBox` panels -- *Structure &
+mode*, *Orientation source*, *Analysis options*, a collapsible *Advanced analysis (optional)*,
+*Run*, *Results* -- plus the *Source comparison (optional)* group, now collapsed by default
+instead of always occupying the bottom of the tab. Fields that do not apply to the selected
+orientation mode (Legacy global-z / Planar orientation file / PDBTM offline pair, and PDBTM's
+local-vs-cache sub-choice) are now hidden. A compact "Ready to analyze `<selection>` using
+`<mode>`" context line replaces guessing the current state from scattered fields. `Export JSON`
+starts disabled/unstyled and only becomes the primary, accent-styled action once a result actually
+exists to export. A new result headline (`✓ NO_FLAGS` / `◆ REVIEW_ITEMS (n)` / etc.) sits above
+the summary text. **Batch review** gained a compact metadata grid for plan facts
+(contract/SHA/job count/policies) and execution facts (progress/current job/mode/run state), a
+result headline above the run summary, empty-state banners for the job queue and session history
+("Validate a plan to populate the job queue.", "No batch runs yet this session."), and the
+session-history group is now collapsed by default (it is secondary to the current run, not the
+visual center).
+
+**Pass 3** (compactness refinement, prompted directly by the owner's Pass-2 screenshots): fixed a
+real, confirmed bug where hiding a QFormLayout row's widgets alone (Pass 2's approach) does not
+release that row's inter-row spacing on this project's exact PyQt5 5.15.11/Qt 5.15.15 build --
+invisible with one hidden row, but a clearly visible ~60px gap with the ~10 rows the *Orientation
+source* group can hide at once (verified empirically: Legacy mode's group `sizeHint` dropped from
+219px to 159px, matching a from-scratch group built with only its visible fields). The fix groups
+each orientation mode's fields into its own small container widget and toggles whole containers
+(a hidden `QWidget` reserves neither size nor spacing in its parent `QVBoxLayout`) -- see
+`membrane_vqc/ui_components.mode_container`'s docstring. `Results` (Single structure) and `Run
+summary`/`Selected job` (Batch review) now start at a compact fixed height
+(`ui_theme.COMPACT_RESULT_HEIGHT`, 56px) with placeholder text, and expand to a useful height
+(`ui_theme.EXPANDED_RESULT_HEIGHT`, 220px) only once they actually have something to show --
+`Selected job` specifically expands only once a queue row is selected, not merely once a batch
+result exists. Batch review's metadata grid and execution facts now show an em dash (`—`,
+`ui_theme.EMPTY_VALUE`) for values not yet known, instead of a blank cell or a misleading `0`.
 
 No scientific algorithm, report schema, batch contract, cache format, command signature, or status
 literal changed in either pass -- see `docs/status_vocabulary.md` (unchanged) and
@@ -59,7 +74,7 @@ Planar orientation file, PDBTM local, PDBTM cache, PDBTM-OPM comparison, Batch r
 | Check | Result |
 |---|---|
 | Dialog opens without a traceback or stray process |  |
-| **Single structure** tab shows the new section headers (Structure & orientation source; PDBTM source & cache; Resolved orientation & membrane boundaries; Ligand context & export; Run) in reading order, each visually distinct from field labels |  |
+| **Single structure** tab shows six distinct panels (Structure & mode; Orientation source; Analysis options; Advanced analysis (optional); Run; Results) plus Source comparison (optional), each visually distinct from field labels |  |
 | Both tabs remain vertically scrollable at a reduced window height |  |
 | Dialog remains fully usable at 1366x768, 100% scaling |  |
 | Dialog remains fully usable at 1920x1080, 100% / 125% / 150% scaling |  |
@@ -71,6 +86,10 @@ Planar orientation file, PDBTM local, PDBTM cache, PDBTM-OPM comparison, Batch r
 | `Validate` and `Run batch` are visually the most prominent buttons in **Batch review** |  |
 | `Cancel` is visible during a run but does not visually compete with the primary action |  |
 | Narrow dialog width remains usable (labels wrap or truncate readably, no overlap) |  |
+| **Orientation source** panel sizes closely to its visible content in every mode -- no large empty gap between the helper text and the active fields (this is the specific gap Pass 3 fixed; confirm it does not reappear) |  |
+| **Results** (Single structure) is compact before any result exists (short headline + small placeholder text, not a tall blank rectangle), and expands to a useful height once a result exists |  |
+| **Run summary** and **Selected job** (Batch review) are each compact before they have content, and expand once a batch result exists / a job row is selected, respectively |  |
+| Batch review's metadata (Plan SHA-256, Jobs, Failure/Overwrite policy, Current job/mode) shows an em dash (`—`) before validation/execution, never a blank cell or a `0` that could be misread as a real count |  |
 
 ## Round B -- states
 

@@ -291,7 +291,7 @@ class MembraneVQCDialog:
         )
         self.summary = QtWidgets.QTextEdit()
         self.summary.setReadOnly(True)
-        ui_components.cap_height(self.summary, 160)
+        ui_components.cap_height(self.summary, ui_theme.COMPACT_RESULT_HEIGHT)
         ui_components.empty_state_placeholder(
             self.summary, "Run QC to generate a structured summary."
         )
@@ -314,7 +314,7 @@ class MembraneVQCDialog:
         )
         self.comparison_metrics = QtWidgets.QTextEdit()
         self.comparison_metrics.setReadOnly(True)
-        ui_components.cap_height(self.comparison_metrics, 110)
+        ui_components.cap_height(self.comparison_metrics, ui_theme.COMPACT_RESULT_HEIGHT)
         ui_components.empty_state_placeholder(
             self.comparison_metrics, "Run Compare to generate geometric comparison metrics."
         )
@@ -361,11 +361,11 @@ class MembraneVQCDialog:
             self.zmax.setValidator(numeric)
             self.cutoff.setValidator(positive)
 
-        self._orientation_form = None
-        self._json_row = None
-        self._pdb_row = None
-        self._fetch_row = None
-        self._cache_actions_row = None
+        self._planar_container = None
+        self._pdbtm_container = None
+        self._pdbtm_local_container = None
+        self._pdbtm_cache_container = None
+        self._legacy_container = None
         self.action_buttons = []
         if has_tabs:
             context_group = QtWidgets.QGroupBox("Structure & mode")
@@ -376,42 +376,78 @@ class MembraneVQCDialog:
             ui_components.style_group_title(context_group)
             single_root_layout.addWidget(context_group)
 
+            # A mode-specific field that lives in a shared QFormLayout and is hidden via
+            # setVisible() does NOT release the vertical space QFormLayout reserves for that
+            # row's spacing (only the row's own content collapses; confirmed empirically against
+            # this project's exact PyQt5 5.15.11/Qt 5.15.15 build -- ~6px of residual spacing per
+            # hidden row, invisible with one or two hidden rows but a clearly visible gap with the
+            # ~10 rows this group can hide). A QVBoxLayout of whole QWidget containers does not
+            # have this problem: a hidden child widget contributes neither height nor spacing to
+            # its parent QVBoxLayout's size hint. Each mode's fields therefore live in their own
+            # small container widget, and only entire containers are shown/hidden -- never
+            # individual QFormLayout rows within the outer group.
             orientation_group = QtWidgets.QGroupBox("Orientation source")
-            orientation_form = QtWidgets.QFormLayout(orientation_group)
-            orientation_form.addRow(
+            orientation_outer = QtWidgets.QVBoxLayout(orientation_group)
+            orientation_outer.addWidget(
                 ui_components.helper_label(
                     QtWidgets, "The fields below adapt to the selected orientation mode."
                 )
             )
-            orientation_form.addRow("Orientation JSON", self.orientation_file)
-            self._json_row = QtWidgets.QHBoxLayout()
-            self._json_row.addWidget(self.pdbtm_json)
-            self._json_row.addWidget(self.browse_pdbtm_json)
-            orientation_form.addRow("PDBTM JSON", self._json_row)
-            self._pdb_row = QtWidgets.QHBoxLayout()
-            self._pdb_row.addWidget(self.transformed_pdb)
-            self._pdb_row.addWidget(self.browse_transformed_pdb)
-            orientation_form.addRow("Transformed PDB", self._pdb_row)
-            orientation_form.addRow("Current assembly (optional)", self.biological_assembly)
-            orientation_form.addRow("PDBTM source", self.pdbtm_source)
-            orientation_form.addRow("Canonical record ID", self.cached_record_id)
-            self._fetch_row = QtWidgets.QHBoxLayout()
-            self._fetch_row.addWidget(self.fetch_button)
-            self._fetch_row.addWidget(self.cancel_button)
-            orientation_form.addRow(self._fetch_row)
-            orientation_form.addRow("Cache status", self.cache_status)
-            orientation_form.addRow("Cache metadata", self.cache_metadata)
-            self._cache_actions_row = QtWidgets.QHBoxLayout()
-            self._cache_actions_row.addWidget(self.use_cached_button)
-            self._cache_actions_row.addWidget(self.open_cache_location_button)
-            self._cache_actions_row.addWidget(self.clear_cached_button)
-            orientation_form.addRow(self._cache_actions_row)
-            orientation_form.addRow("zmin", self.zmin)
-            orientation_form.addRow("zmax", self.zmax)
-            orientation_form.addRow("Resolved orientation", self.orientation_source)
+
+            self._planar_container, planar_form = ui_components.mode_container(
+                QtWidgets, orientation_outer
+            )
+            planar_form.addRow("Orientation JSON", self.orientation_file)
+
+            self._pdbtm_container = QtWidgets.QWidget()
+            pdbtm_outer = QtWidgets.QVBoxLayout(self._pdbtm_container)
+            pdbtm_outer.setContentsMargins(0, 0, 0, 0)
+
+            self._pdbtm_local_container, pdbtm_local_form = ui_components.mode_container(
+                QtWidgets, pdbtm_outer
+            )
+            json_row = QtWidgets.QHBoxLayout()
+            json_row.addWidget(self.pdbtm_json)
+            json_row.addWidget(self.browse_pdbtm_json)
+            pdbtm_local_form.addRow("PDBTM JSON", json_row)
+            pdb_row = QtWidgets.QHBoxLayout()
+            pdb_row.addWidget(self.transformed_pdb)
+            pdb_row.addWidget(self.browse_transformed_pdb)
+            pdbtm_local_form.addRow("Transformed PDB", pdb_row)
+
+            _, pdbtm_shared_form = ui_components.mode_container(QtWidgets, pdbtm_outer)
+            pdbtm_shared_form.addRow("Current assembly (optional)", self.biological_assembly)
+            pdbtm_shared_form.addRow("PDBTM source", self.pdbtm_source)
+            pdbtm_shared_form.addRow("Canonical record ID", self.cached_record_id)
+
+            self._pdbtm_cache_container, pdbtm_cache_form = ui_components.mode_container(
+                QtWidgets, pdbtm_outer
+            )
+            fetch_row = QtWidgets.QHBoxLayout()
+            fetch_row.addWidget(self.fetch_button)
+            fetch_row.addWidget(self.cancel_button)
+            pdbtm_cache_form.addRow(fetch_row)
+            pdbtm_cache_form.addRow("Cache status", self.cache_status)
+            pdbtm_cache_form.addRow("Cache metadata", self.cache_metadata)
+            cache_actions_row = QtWidgets.QHBoxLayout()
+            cache_actions_row.addWidget(self.use_cached_button)
+            cache_actions_row.addWidget(self.open_cache_location_button)
+            cache_actions_row.addWidget(self.clear_cached_button)
+            pdbtm_cache_form.addRow(cache_actions_row)
+
+            orientation_outer.addWidget(self._pdbtm_container)
+
+            self._legacy_container, legacy_form = ui_components.mode_container(
+                QtWidgets, orientation_outer
+            )
+            legacy_form.addRow("zmin", self.zmin)
+            legacy_form.addRow("zmax", self.zmax)
+
+            _, resolved_form = ui_components.mode_container(QtWidgets, orientation_outer)
+            resolved_form.addRow("Resolved orientation", self.orientation_source)
+
             ui_components.style_group_title(orientation_group)
             single_root_layout.addWidget(orientation_group)
-            self._orientation_form = orientation_form
 
             analysis_group = QtWidgets.QGroupBox("Analysis options")
             analysis_form = QtWidgets.QFormLayout(analysis_group)
@@ -815,12 +851,15 @@ class MembraneVQCDialog:
         self.orientation_file.setEnabled(planar)
         self.biological_assembly.setEnabled(pdbtm)
         self.orientation_source.setText("manual_global_z" if legacy else "unavailable")
-        form = getattr(self, "_orientation_form", None)
-        if form is not None:
-            ui_components.set_row_visible(form, self.zmin, legacy)
-            ui_components.set_row_visible(form, self.zmax, legacy)
-            ui_components.set_row_visible(form, self.orientation_file, planar)
-            ui_components.set_row_visible(form, self.biological_assembly, pdbtm)
+        legacy_container = getattr(self, "_legacy_container", None)
+        if legacy_container is not None:
+            legacy_container.setVisible(legacy)
+        planar_container = getattr(self, "_planar_container", None)
+        if planar_container is not None:
+            planar_container.setVisible(planar)
+        pdbtm_container = getattr(self, "_pdbtm_container", None)
+        if pdbtm_container is not None:
+            pdbtm_container.setVisible(pdbtm)
         self._sync_pdbtm_controls()
         self._update_context_status()
 
@@ -846,16 +885,12 @@ class MembraneVQCDialog:
         self.use_cached_button.setEnabled(cached and not busy)
         self.clear_cached_button.setEnabled(cached and not busy)
         self.open_cache_location_button.setEnabled(mode_is_pdbtm)
-        form = getattr(self, "_orientation_form", None)
-        if form is not None:
-            ui_components.set_row_visible(form, self._json_row, local)
-            ui_components.set_row_visible(form, self._pdb_row, local)
-            ui_components.set_row_visible(form, self.pdbtm_source, mode_is_pdbtm)
-            ui_components.set_row_visible(form, self.cached_record_id, mode_is_pdbtm)
-            ui_components.set_row_visible(form, self._fetch_row, cached)
-            ui_components.set_row_visible(form, self.cache_status, cached)
-            ui_components.set_row_visible(form, self.cache_metadata, cached)
-            ui_components.set_row_visible(form, self._cache_actions_row, cached)
+        pdbtm_local_container = getattr(self, "_pdbtm_local_container", None)
+        if pdbtm_local_container is not None:
+            pdbtm_local_container.setVisible(local)
+        pdbtm_cache_container = getattr(self, "_pdbtm_cache_container", None)
+        if pdbtm_cache_container is not None:
+            pdbtm_cache_container.setVisible(cached)
 
     def _update_context_status(self, *_):
         if not hasattr(self, "context_status"):
@@ -869,11 +904,20 @@ class MembraneVQCDialog:
         )
 
     def _sync_result_actions(self):
+        result_available = getattr(self, "_last_result_available", False)
+        summary = getattr(self, "summary", None)
+        if summary is not None:
+            height = (
+                ui_theme.EXPANDED_RESULT_HEIGHT
+                if result_available
+                else ui_theme.COMPACT_RESULT_HEIGHT
+            )
+            ui_components.cap_height(summary, height)
         export_button = self.action_buttons[-1] if self.action_buttons else None
         if export_button is None:
             return
-        export_button.setEnabled(self._last_result_available)
-        if self._last_result_available:
+        export_button.setEnabled(result_available)
+        if result_available:
             ui_components.style_primary(export_button)
         elif hasattr(export_button, "setStyleSheet"):
             export_button.setStyleSheet("")
@@ -1275,6 +1319,10 @@ class MembraneVQCDialog:
                 self.comparison_pdbtm_summary.setText("Validated cache: no selected pair")
         else:
             self.comparison_pdbtm_summary.setText("Explicit local JSON + transformed PDB")
+        ui_components.cap_height(
+            self.comparison_metrics,
+            ui_theme.EXPANDED_RESULT_HEIGHT if result_ready else ui_theme.COMPACT_RESULT_HEIGHT,
+        )
 
     def _ensure_comparison_worker(self):
         if self._comparison_worker is not None:

@@ -157,10 +157,10 @@ class BatchReviewPanel:
             self.QtWidgets,
             [
                 ("contract", "Contract", "Not validated"),
-                ("sha", "Plan SHA-256", ""),
-                ("jobs", "Jobs", "0"),
-                ("failure_policy", "Failure policy", ""),
-                ("overwrite_policy", "Overwrite policy", ""),
+                ("sha", "Plan SHA-256", ui_theme.EMPTY_VALUE),
+                ("jobs", "Jobs", ui_theme.EMPTY_VALUE),
+                ("failure_policy", "Failure policy", ui_theme.EMPTY_VALUE),
+                ("overwrite_policy", "Overwrite policy", ui_theme.EMPTY_VALUE),
             ],
         )
         self.plan_contract_status = plan_grid.values["contract"]
@@ -197,9 +197,9 @@ class BatchReviewPanel:
         execution_grid = ui_components.metadata_grid(
             self.QtWidgets,
             [
-                ("completed_total", "Completed / total", "0 / 0"),
-                ("current_job", "Current job", ""),
-                ("current_mode", "Current mode", ""),
+                ("completed_total", "Completed / total", ui_theme.EMPTY_VALUE),
+                ("current_job", "Current job", ui_theme.EMPTY_VALUE),
+                ("current_mode", "Current mode", ui_theme.EMPTY_VALUE),
                 ("run_state", "Run state", IDLE),
             ],
         )
@@ -250,13 +250,13 @@ class BatchReviewPanel:
         summary_form = self.QtWidgets.QFormLayout()
         self.result_summary = self.QtWidgets.QTextEdit()
         self.result_summary.setReadOnly(True)
-        ui_components.cap_height(self.result_summary, 140)
+        ui_components.cap_height(self.result_summary, ui_theme.COMPACT_RESULT_HEIGHT)
         ui_components.empty_state_placeholder(
             self.result_summary, "Run or open a batch result to see its summary."
         )
         self.selected_job_details = self.QtWidgets.QTextEdit()
         self.selected_job_details.setReadOnly(True)
-        ui_components.cap_height(self.selected_job_details, 120)
+        ui_components.cap_height(self.selected_job_details, ui_theme.COMPACT_RESULT_HEIGHT)
         ui_components.empty_state_placeholder(
             self.selected_job_details, "Select a job in the queue to see its details."
         )
@@ -344,10 +344,12 @@ class BatchReviewPanel:
         self._selected_bundle = None
         self._clear_queue()
         self.plan_contract_status.setText("Not validated")
-        self.plan_sha.setText("")
-        self.plan_job_count.setText("0")
-        self.failure_policy.setText("")
-        self.overwrite_policy.setText("")
+        self.plan_sha.setText(ui_theme.EMPTY_VALUE)
+        self.plan_job_count.setText(ui_theme.EMPTY_VALUE)
+        self.failure_policy.setText(ui_theme.EMPTY_VALUE)
+        self.overwrite_policy.setText(ui_theme.EMPTY_VALUE)
+        self.current_job.setText(ui_theme.EMPTY_VALUE)
+        self.current_mode.setText(ui_theme.EMPTY_VALUE)
         self._set_state(IDLE, "Plan path changed; validate explicitly.")
 
     def _browse_plan(self):
@@ -422,7 +424,7 @@ class BatchReviewPanel:
         self.queue.setRowCount(0)
         self.progress.setRange(0, 0)
         self.progress.setValue(0)
-        self.progress_label.setText("0 / 0")
+        self.progress_label.setText(ui_theme.EMPTY_VALUE)
         self._set_queue_empty(True)
 
     def _set_queue_empty(self, empty: bool) -> None:
@@ -753,6 +755,7 @@ class BatchReviewPanel:
                 )
             )
         )
+        ui_components.cap_height(self.result_summary, ui_theme.EXPANDED_RESULT_HEIGHT)
         self.queue.setRowCount(len(bundle.jobs))
         for row, job in enumerate(bundle.jobs):
             values = (
@@ -781,6 +784,7 @@ class BatchReviewPanel:
         job = self._selected_job()
         if job is None:
             self.selected_job_details.setPlainText("")
+            ui_components.cap_height(self.selected_job_details, ui_theme.COMPACT_RESULT_HEIGHT)
             self._sync_controls()
             return
         lines = [
@@ -795,6 +799,7 @@ class BatchReviewPanel:
         for key, value in job.summary.items():
             lines.append(f"{key.replace('_', ' ').title()}: {value}")
         self.selected_job_details.setPlainText("\n".join(lines))
+        ui_components.cap_height(self.selected_job_details, ui_theme.EXPANDED_RESULT_HEIGHT)
         self._sync_controls()
 
     def _open_local(self, path: Path) -> bool:

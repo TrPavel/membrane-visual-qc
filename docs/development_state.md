@@ -28,24 +28,44 @@ not redesign the plugin GUI itself -- GUI/UX polish remains a separate, later ph
 ## v0.9.0 GUI/UX polish phase
 
 A dedicated session (draft PR, `design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on
-top of the visual-identity work above: a small internal design system
-(`membrane_vqc/ui_theme.py` for palette/glyph/QSS constants, `membrane_vqc/ui_components.py` for
-hasattr-guarded, per-instance-styled widget helpers -- never a window-level or bare-type-selector
-stylesheet, so nothing leaks onto unrelated native dialogs), section-header labels grouping the
-**Single structure** tab's long form, primary/secondary button styling (`Run QC`, `Export JSON`,
-`Compare`, `Validate`, `Run batch`), and a supplementary, glyph-based status presentation for
-`cache_status`, `comparison_status`, and `status_message` that always preserves the exact original
-text. A real audit finding was fixed presentation-only: a `COMPLETED_WITH_ERRORS` batch outcome
-now reads and displays distinguishably from a true `FAILED_FAST` failure (different message and
-visual category), without changing the unchanged `FAILED` GUI-state literal both still map to --
-see `membrane_vqc/batch_gui.py:_finalize_session` and `docs/status_vocabulary.md`. Two new
-presentation-only modules were added to the packaged plugin (the only reason the Plugin ZIP hash
-changed in this phase); `tests/test_plugin_upgrade.py`'s v0.6.0-file-set test was updated to record
-this as an expected, pure addition, never a removal. No scientific algorithm, report schema, batch
-contract, cache format, output layout, command signature, or status literal changed. Real-PyMOL
-manual acceptance (`docs/manual_v0.9.0_ui_acceptance.md`) and the actual screenshot/GIF capture
-(`docs/screenshot_capture_plan.md`, updated to describe the new styling) remain outstanding owner
-actions, since this repository's own environment cannot open a graphical PyMOL session.
+top of the visual-identity work above, across three implementation passes on the same branch (see
+`docs/manual_v0.9.0_ui_acceptance.md` for the full account).
+
+**Pass 1** (colors/typography): a small internal design system (`membrane_vqc/ui_theme.py` for
+palette/glyph/QSS constants, `membrane_vqc/ui_components.py` for hasattr-guarded,
+per-instance-styled widget helpers -- never a window-level or bare-type-selector stylesheet, so
+nothing leaks onto unrelated native dialogs), primary/secondary button styling, and a
+supplementary, glyph-based status presentation for `cache_status`, `comparison_status`, and
+`status_message` that always preserves the exact original text. A real audit finding was fixed
+presentation-only: a `COMPLETED_WITH_ERRORS` batch outcome now reads and displays distinguishably
+from a true `FAILED_FAST` failure (different message and visual category), without changing the
+unchanged `FAILED` GUI-state literal both still map to -- see
+`membrane_vqc/batch_gui.py:_finalize_session` and `docs/status_vocabulary.md`. The owner's
+real-PyMOL review found this insufficient on its own ("recoloring, not a redesign").
+
+**Pass 2** (structural information architecture): the **Single structure** tab's one long form
+became six distinct `QGroupBox` panels with mode-based field visibility, a compact context line,
+and a result headline; **Batch review** gained a compact metadata grid, empty-state banners, and a
+collapsed-by-default session-history section. The owner's second real-PyMOL review confirmed this
+was materially better, but flagged remaining compactness issues with screenshots.
+
+**Pass 3** (compactness refinement): fixed a real, confirmed Qt bug -- hiding a QFormLayout row's
+widgets alone (Pass 2's approach) does not release that row's inter-row spacing on this project's
+exact PyQt5 5.15.11/Qt 5.15.15 build, leaving a visible gap once several rows are hidden at once.
+The fix groups each mode's fields into its own container widget and toggles whole containers
+instead (see `membrane_vqc/ui_components.mode_container`). Result/detail text areas (Single
+structure's `Results`, Batch review's `Run summary`/`Selected job`) now start at a small fixed
+height and expand only once they have something to show; Batch review's metadata grid shows an em
+dash for values not yet known instead of a blank cell or a misleading `0`.
+
+Two new presentation-only modules (`ui_theme.py`, `ui_components.py`) were added to the packaged
+plugin in Pass 1 -- the only reason the Plugin ZIP hash changed in this phase;
+`tests/test_plugin_upgrade.py`'s v0.6.0-file-set test was updated to record this as an expected,
+pure addition, never a removal. No scientific algorithm, report schema, batch contract, cache
+format, output layout, command signature, or status literal changed in any pass. Real-PyMOL manual
+acceptance (`docs/manual_v0.9.0_ui_acceptance.md`) and the actual screenshot/GIF capture
+(`docs/screenshot_capture_plan.md`) remain outstanding owner actions, since this repository's own
+environment cannot open a graphical PyMOL session.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 
