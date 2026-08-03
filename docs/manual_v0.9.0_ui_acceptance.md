@@ -10,14 +10,36 @@ applies here identically.
 
 ## What changed (scope of this pass)
 
-Presentation and interaction only: a small internal design system
-(`membrane_vqc/ui_theme.py`, `membrane_vqc/ui_components.py`), section-header labels grouping the
-**Single structure** tab's long form, primary/secondary button styling (`Run QC`, `Export JSON`,
-`Compare`, `Validate`, `Run batch` are now visually primary), a supplementary status glyph on
-`cache_status`/`comparison_status`/`status_message`/error text (never replacing the exact text),
-and a message/category distinction between a `COMPLETED_WITH_ERRORS` batch outcome and a true
-`FAILED_FAST` one. No scientific algorithm, report schema, batch contract, cache format, command
-signature, or status literal changed -- see `docs/status_vocabulary.md` (unchanged) and
+Presentation and interaction only, across two implementation passes on the same branch.
+
+**Pass 1** (colors/typography only -- the owner's real-PyMOL review found this insufficient on
+its own, see Pass 2 below): a small internal design system (`membrane_vqc/ui_theme.py`,
+`membrane_vqc/ui_components.py`), primary/secondary button styling, a supplementary status glyph
+on `cache_status`/`comparison_status`/`status_message`/error text (never replacing the exact
+text), and a message/category distinction between a `COMPLETED_WITH_ERRORS` batch outcome and a
+true `FAILED_FAST` one.
+
+**Pass 2** (structural information architecture): the **Single structure** tab's one long,
+undifferentiated form is now six distinct `QGroupBox` panels -- *Structure & mode*, *Orientation
+source*, *Analysis options*, a collapsible *Advanced analysis (optional)*, *Run*, *Results* --
+plus the *Source comparison (optional)* group, now collapsed by default instead of always
+occupying the bottom of the tab. Fields that do not apply to the selected orientation mode
+(Legacy global-z / Planar orientation file / PDBTM offline pair, and PDBTM's local-vs-cache
+sub-choice) are now actually hidden, not just grayed out -- confirmed against this project's exact
+PyQt5 5.15.11 build (see `membrane_vqc/ui_components.set_row_visible`'s docstring). A compact
+"Ready to analyze `<selection>` using `<mode>`" context line replaces guessing the current state
+from scattered fields. `Export JSON` starts disabled/unstyled and only becomes the primary,
+accent-styled action once a result actually exists to export. A new result headline
+(`✓ NO_FLAGS` / `◆ REVIEW_ITEMS (n)` / etc.) sits above the summary text, which itself is now
+height-capped with placeholder text ("Run QC to generate a structured summary.") instead of a
+tall blank box. **Batch review** gained a compact metadata grid for plan facts (contract/SHA/job
+count/policies) and execution facts (progress/current job/mode/run state), a result headline
+above the run summary, empty-state banners for the job queue and session history ("Validate a
+plan to populate the job queue.", "No batch runs yet this session."), and the session-history
+group is now collapsed by default (it is secondary to the current run, not the visual center).
+
+No scientific algorithm, report schema, batch contract, cache format, command signature, or status
+literal changed in either pass -- see `docs/status_vocabulary.md` (unchanged) and
 `docs/v1.0_contract_freeze.md`.
 
 ## Environment
@@ -96,6 +118,23 @@ Planar orientation file, PDBTM local, PDBTM cache, PDBTM-OPM comparison, Batch r
 | `INPUT_REJECTED` reads as an operational/pre-execution rejection, not a claim about scientific correctness |  |
 | `COMPLETED_WITH_ERRORS` reads as distinguishable from total failure, and the message states that other jobs' outputs remain valid |  |
 | The PDBTM-OPM comparison group's wording still states neither source is preferred and no biological verdict is made (unchanged text, only restyled) |  |
+
+## Round F -- visual comparison against v0.8.0
+
+This round exists specifically because the first review of Pass 1 found it read as "recoloring
+and minor spacing, not a professional UI/UX redesign." Answer each question directly; do not mark
+PASS by default.
+
+| Question | Answer |
+|---|---|
+| Is the interface visibly, structurally different from v0.8.0 at first glance (not just different colors)? |  |
+| Can you understand the Single structure workflow (structure -> mode -> orientation -> options -> run -> result) without scrolling through controls that don't apply to your selected mode? |  |
+| When you switch orientation mode, do irrelevant fields actually disappear (not just gray out)? |  |
+| Do the empty states (Results, Comparison metrics, job queue, session history) look like intentional, designed states -- text explaining what will appear -- rather than blank rectangles? |  |
+| Does the application feel professionally, deliberately designed, rather than "the same form, recolored"? |  |
+| Does Batch review have an obvious visual center (the job queue), with Plan/Output/Execution feeling like compact setup steps rather than equally-weighted forms? |  |
+| Is every feature that existed in v0.8.0 still reachable and usable (nothing was hidden permanently, only collapsed/hidden-until-relevant)? |  |
+| Does the collapsed Advanced analysis / Source comparison / session-history state make sense, or does it hide something you needed visible by default? |  |
 
 ## Overall result
 

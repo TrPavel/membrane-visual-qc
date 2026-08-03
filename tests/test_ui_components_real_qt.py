@@ -22,7 +22,8 @@ QtWidgets = pytest.importorskip("PyQt5.QtWidgets")
 
 from membrane_vqc import ui_theme  # noqa: E402
 from membrane_vqc.batch_gui import FAILED, BatchReviewPanel  # noqa: E402
-from membrane_vqc.gui import MembraneVQCDialog  # noqa: E402
+from membrane_vqc.gui import LEGACY_MODE, ORIENTATION_FILE_MODE, PDBTM_MODE  # noqa: E402
+from membrane_vqc.gui import MembraneVQCDialog, _headline_for_result  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -41,9 +42,12 @@ def test_real_qt_primary_actions_are_styled_and_secondary_actions_are_not():
     assert run_qc.text() == "Run QC"
     assert export_json.text() == "Export JSON"
     assert run_qc.styleSheet() == ui_theme.PRIMARY_BUTTON_QSS
-    assert export_json.styleSheet() == ui_theme.PRIMARY_BUTTON_QSS
     for secondary in (show_slab, colour, ligand_shell):
         assert secondary.styleSheet() == ""
+    # Export JSON starts disabled and unstyled -- it only becomes the primary action once a
+    # result actually exists to export (see _sync_result_actions).
+    assert export_json.styleSheet() == ""
+    assert export_json.isEnabled() is False
     assert dialog.compare_button.styleSheet() == ui_theme.PRIMARY_BUTTON_QSS
     assert dialog.comparison_cancel_button.styleSheet() == ""
 
@@ -51,22 +55,151 @@ def test_real_qt_primary_actions_are_styled_and_secondary_actions_are_not():
     QtWidgets.QApplication.processEvents()
 
 
-def test_real_qt_single_structure_tab_has_scannable_section_headers():
+def test_real_qt_export_json_becomes_primary_once_a_result_exists():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    export_json = dialog.action_buttons[-1]
+    assert export_json.isEnabled() is False
+
+    dialog._last_result_available = True
+    dialog._sync_result_actions()
+    assert export_json.isEnabled() is True
+    assert export_json.styleSheet() == ui_theme.PRIMARY_BUTTON_QSS
+
+    dialog._last_result_available = False
+    dialog._sync_result_actions()
+    assert export_json.isEnabled() is False
+    assert export_json.styleSheet() == ""
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_single_structure_tab_has_workflow_group_titles():
     dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
 
-    labels = {
-        label.text()
-        for label in dialog.single_page.findChildren(QtWidgets.QLabel)
-        if label.styleSheet() == ui_theme.SECTION_TITLE_QSS
+    titles = {
+        box.title()
+        for box in dialog.single_page.findChildren(QtWidgets.QGroupBox)
+        if box.styleSheet() == ui_theme.GROUP_TITLE_QSS
     }
     for expected in (
-        "Structure & orientation source",
-        "PDBTM source & cache",
-        "Resolved orientation & membrane boundaries",
-        "Ligand context & export",
+        "Structure & mode",
+        "Orientation source",
+        "Analysis options",
+        "Advanced analysis (optional)",
         "Run",
+        "Results",
+        "Source comparison (optional)",
     ):
-        assert expected in labels
+        assert expected in titles
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_orientation_mode_hides_irrelevant_rows():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    dialog.window.show()
+    QtWidgets.QApplication.processEvents()
+
+    dialog.orientation_mode.setCurrentText(LEGACY_MODE)
+    QtWidgets.QApplication.processEvents()
+    assert dialog.zmin.isVisible() is True
+    assert dialog.zmax.isVisible() is True
+    assert dialog.orientation_file.isVisible() is False
+    assert dialog.pdbtm_json.isVisible() is False
+
+    dialog.orientation_mode.setCurrentText(ORIENTATION_FILE_MODE)
+    QtWidgets.QApplication.processEvents()
+    assert dialog.zmin.isVisible() is False
+    assert dialog.orientation_file.isVisible() is True
+    assert dialog.pdbtm_json.isVisible() is False
+
+    dialog.orientation_mode.setCurrentText(PDBTM_MODE)
+    QtWidgets.QApplication.processEvents()
+    assert dialog.orientation_file.isVisible() is False
+    assert dialog.pdbtm_json.isVisible() is True  # local source is the PDBTM-mode default
+    assert dialog.pdbtm_source.isVisible() is True
+    assert dialog.cache_status.isVisible() is False  # cache-only rows stay hidden for local
+
+    dialog.pdbtm_source.setCurrentText("Validated cache")
+    QtWidgets.QApplication.processEvents()
+    assert dialog.pdbtm_json.isVisible() is False
+    assert dialog.cache_status.isVisible() is True
+
+    # Always visible regardless of mode.
+    assert dialog.orientation_source.isVisible() is True
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_advanced_and_comparison_groups_start_collapsed():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    dialog.window.show()
+    QtWidgets.QApplication.processEvents()
+
+    assert dialog.comparison_group.isCheckable() is True
+    assert dialog.comparison_group.isChecked() is False
+    assert dialog.comparison_pdbtm_source.isVisible() is False
+
+    dialog.comparison_group.setChecked(True)
+    QtWidgets.QApplication.processEvents()
+    assert dialog.comparison_pdbtm_source.isVisible() is True
+
+    dialog.window.close()
+    QtWidgets.QApplication.processEvents()
+
+
+@pytest.mark.parametrize(
+    ("result", "expected_category", "expected_text"),
+    [
+        ({"summary": {"overall_status": "NO_FLAGS"}}, ui_theme.CATEGORY_SUCCESS, "NO_FLAGS"),
+        (
+            {"summary": {"overall_status": "REVIEW_ITEMS"}, "review_items": [1, 2]},
+            ui_theme.CATEGORY_REVIEW,
+            "REVIEW_ITEMS (2)",
+        ),
+        (
+            {"summary": {"overall_status": "INSUFFICIENT_CONTEXT"}},
+            ui_theme.CATEGORY_REVIEW,
+            "INSUFFICIENT_CONTEXT",
+        ),
+        (
+            {"summary": {"overall_status": "ANALYSIS_ERROR"}},
+            ui_theme.CATEGORY_ERROR,
+            "ANALYSIS_ERROR",
+        ),
+        (["not", "a", "report"], ui_theme.CATEGORY_SUCCESS, "Completed"),
+    ],
+)
+def test_headline_for_result_never_confuses_review_with_failure(
+    result, expected_category, expected_text
+):
+    category, text = _headline_for_result(result)
+    assert category == expected_category
+    assert text == expected_text
+    if expected_category == ui_theme.CATEGORY_REVIEW:
+        assert category != ui_theme.CATEGORY_ERROR
+
+
+def test_real_qt_run_qc_updates_result_headline_and_enables_export():
+    dialog = MembraneVQCDialog(QtWidgets, QtGui, QtCore)
+    export_json = dialog.action_buttons[-1]
+    assert export_json.isEnabled() is False
+    assert ui_theme.glyph_for_category(ui_theme.CATEGORY_NEUTRAL) in dialog.result_headline.text()
+
+    dialog._execute(
+        "Running…",
+        lambda: {"summary": {"overall_status": "REVIEW_ITEMS"}, "review_items": [1]},
+        lambda result: "rendered",
+    )
+    QtWidgets.QApplication.processEvents()
+
+    assert export_json.isEnabled() is True
+    assert ui_theme.glyph_for_category(ui_theme.CATEGORY_REVIEW) in dialog.result_headline.text()
+    assert "REVIEW_ITEMS" in dialog.result_headline.text()
+    assert ui_theme.glyph_for_category(ui_theme.CATEGORY_ERROR) not in dialog.result_headline.text()
 
     dialog.window.close()
     QtWidgets.QApplication.processEvents()
@@ -85,6 +218,75 @@ def test_real_qt_batch_panel_primary_button_and_group_titles():
         if box.styleSheet() == ui_theme.GROUP_TITLE_QSS
     }
     assert group_titles == {"Plan", "Output", "Execution", "Results", "Current-session history"}
+
+
+def test_real_qt_batch_panel_history_group_starts_collapsed():
+    parent = QtWidgets.QWidget()
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, parent)
+    parent.show()
+    QtWidgets.QApplication.processEvents()
+
+    history_group = next(
+        box
+        for box in panel.widget.findChildren(QtWidgets.QGroupBox)
+        if box.title() == "Current-session history"
+    )
+    assert history_group.isCheckable() is True
+    assert history_group.isChecked() is False
+    assert panel.history_table.isVisible() is False
+
+    history_group.setChecked(True)
+    QtWidgets.QApplication.processEvents()
+    assert panel.history_table.isVisible() is True
+
+    parent.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_batch_panel_empty_states_toggle_with_content(monkeypatch, tmp_path):
+    parent = QtWidgets.QWidget()
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, parent)
+    panel.cmd_obj = object()
+    parent.show()
+    QtWidgets.QApplication.processEvents()
+
+    # The history group starts collapsed (see the dedicated collapsed-by-default test), so its
+    # empty-state label is only meaningfully visible once expanded.
+    history_group = next(
+        box
+        for box in panel.widget.findChildren(QtWidgets.QGroupBox)
+        if box.title() == "Current-session history"
+    )
+    history_group.setChecked(True)
+    QtWidgets.QApplication.processEvents()
+
+    assert panel.queue_empty_label.isVisible() is True
+    assert panel.history_empty_label.isVisible() is True
+
+    panel.plan_path.setText(str(ROOT / "data" / "synthetic" / "stage5a_batch_plan.json"))
+    panel.validate_selected_plan()
+    QtWidgets.QApplication.processEvents()
+    assert panel.queue.rowCount() == 5
+    assert panel.queue_empty_label.isVisible() is False
+
+    panel.plan_path.setText("")
+    QtWidgets.QApplication.processEvents()
+    assert panel.queue.rowCount() == 0
+    assert panel.queue_empty_label.isVisible() is True
+
+    parent.close()
+    QtWidgets.QApplication.processEvents()
+
+
+def test_real_qt_batch_plan_metadata_grid_is_populated_after_validation(tmp_path):
+    panel = BatchReviewPanel(QtWidgets, QtGui, QtCore, QtWidgets.QWidget())
+    panel.cmd_obj = object()
+    panel.plan_path.setText(str(ROOT / "data" / "synthetic" / "stage5a_batch_plan.json"))
+    panel.validate_selected_plan()
+
+    assert panel.plan_job_count.text() == "5"
+    assert panel.plan_sha.text() != ""
+    assert panel.plan_contract_status.text() != "Not validated"
 
 
 class _ConfigurableSession:

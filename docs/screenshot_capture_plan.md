@@ -12,13 +12,16 @@ Do not commit a screenshot claimed to be current unless it was captured against 
 `membrane_vqc.constants.VERSION` in the checkout at capture time. If the active version has moved
 on since this plan was written, recapture rather than reuse an older image.
 
-The v0.9.0 UI/UX polish session (`design/v0.9.0-ui-ux-polish`) restyled the dialog (section
-headers, primary/secondary button styling, a supplementary status glyph) without changing any
-control's label, position in the tab order, or the exact status vocabulary shown in the queue
-table -- this plan's structure did not need to change, only the "Visible" notes below, which now
-call out the new styling explicitly. Capture these shots only after completing (or alongside)
-Round A of `docs/manual_v0.9.0_ui_acceptance.md`, since that round exercises the exact states these
-shots depend on.
+The v0.9.0 UI/UX polish session (`design/v0.9.0-ui-ux-polish`) restructured the dialog across two
+passes: colors/typography/status glyphs first, then -- after real-PyMOL review found that
+insufficient -- a structural pass regrouping the **Single structure** tab into six `QGroupBox`
+panels with mode-based row hiding, a collapsed-by-default comparison section, and result headlines
+on both tabs (see `docs/manual_v0.9.0_ui_acceptance.md`'s "What changed" section for the full
+list). No control's exact label, tab order, or the queue table's status-cell text changed. The
+"Visible" notes below describe the new structure; capture these shots only after completing (or
+alongside) Rounds A and F of `docs/manual_v0.9.0_ui_acceptance.md`, since those rounds exercise the
+exact states these shots depend on and are the right place to judge whether the composition below
+still looks right once you can actually see it.
 
 ## Common capture settings
 
@@ -46,13 +49,18 @@ shots depend on.
   result, then **Export JSON** once so the dialog reflects a normal post-run state (button
   enabled, no pending validation warnings).
 - **Visible**: dialog title bar showing `Membrane Visual QC <version>`, the **Single structure**
-  tab selected, the section headers introduced in v0.9.0 ("Structure & orientation source",
-  "Resolved orientation & membrane boundaries", "Ligand context & export", "Run") visually
-  separating the form, the accent-styled `Run QC` and `Export JSON` buttons standing out from the
-  unstyled `Show Slab`/`Colour Hydropathy`/`Ligand Shell` buttons beside them, populated fields
-  above, and the resulting summary text showing exactly one `WARNING`-severity charged-core review
-  item (this fixture is designed to produce exactly one). The PyMOL viewport behind/beside the
-  dialog should show the colored slab boundaries and the one highlighted charged residue.
+  tab selected showing its distinct group panels in order -- *Structure & mode* (with the compact
+  "Ready to analyze bad_core_lys using Legacy global-z." context line), *Orientation source*
+  (only the Legacy-relevant `zmin`/`zmax`/Resolved orientation rows visible -- PDBTM/planar rows
+  actually hidden, not grayed out), *Analysis options*, the collapsed *Advanced analysis
+  (optional)* group (title visible, contents collapsed), *Run* (the accent-styled `Run QC` and
+  `Export JSON` standing out from the unstyled `Show Slab`/`Colour Hydropathy`/`Ligand Shell`
+  beside them; `Export JSON` should be in its post-run enabled/accent state, not its initial
+  disabled state), and *Results* (the result headline reading something like
+  `✓ NO_FLAGS` or `◆ REVIEW_ITEMS (1)` above a populated, non-empty summary box). The collapsed
+  *Source comparison (optional)* group should be visible at the bottom, still collapsed. The
+  PyMOL viewport behind/beside the dialog should show the colored slab boundaries and the one
+  highlighted charged residue.
 - **Do not show**: any error/validation dialog, any unrelated loaded object, any file-path field
   containing anything other than the repository-relative example paths in this plan.
 
@@ -69,12 +77,18 @@ shots depend on.
   `docs/status_vocabulary.md` documents. Do not stage a run that reaches plain `COMPLETED` for this
   shot -- the point is to show the queue's ordered per-job status column with more than one status
   value visible at once.
-- **Visible**: the ordered job queue with each row's `status` cell readable and exactly as the
-  status vocabulary defines it (unstyled -- the v0.9.0 restyle never changes this cell's text),
-  the run-level status line showing the v0.9.0 supplementary glyph and a message that reads as
-  distinguishable from a true failure (see `docs/manual_v0.9.0_ui_acceptance.md` Round E), and the
-  **Manifest** / **Reveal output** controls in their normal (enabled, post-run) state. The
-  `Validate` and `Run batch` buttons should be visible in their accent-styled (primary) state.
+- **Visible**: the compact *Plan* metadata grid (Contract/Plan SHA-256/Jobs/Failure policy/
+  Overwrite policy as short label:value pairs, not a tall list of full-width rows), the *Execution*
+  group's own compact grid (Completed / total, Current job, Current mode, Run state) with the
+  status line below it showing the v0.9.0 supplementary glyph and a message that reads as
+  distinguishable from a true failure (see `docs/manual_v0.9.0_ui_acceptance.md` Round E), the job
+  queue as the visual center of the tab with each row's `status` cell readable and exactly as the
+  status vocabulary defines it (unstyled -- the v0.9.0 restyle never changes this cell's text), the
+  *Results* group's own result headline (e.g. `◆ COMPLETED_WITH_ERRORS · success=3, ...`) above a
+  populated run-summary box, and the **Manifest** / **Reveal output** controls in their normal
+  (enabled, post-run) state. The `Validate` and `Run batch` buttons should be visible in their
+  accent-styled (primary) state. The *Current-session history* group should be visible but
+  collapsed (title only) -- it is intentionally secondary to the current run.
 - **Do not show**: any absolute path outside the repository checkout, any username-bearing path,
   or a mid-run (`RUNNING`/`CANCELLING`) transient state.
 

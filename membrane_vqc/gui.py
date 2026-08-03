@@ -229,22 +229,30 @@ class MembraneVQCDialog:
         self.window.setWindowTitle(DIALOG_TITLE)
         self.tabs = None
         self.single_page = None
-        if all(
+        has_tabs = all(
             hasattr(QtWidgets, name)
             for name in ("QTabWidget", "QVBoxLayout", "QWidget", "QTableWidget", "QScrollArea")
-        ):
+        )
+        single_root_layout = None
+        layout = None
+        if has_tabs:
             root_layout = QtWidgets.QVBoxLayout(self.window)
             self.tabs = QtWidgets.QTabWidget(self.window)
             root_layout.addWidget(self.tabs)
             self.single_page = QtWidgets.QWidget(self.tabs)
-            layout = QtWidgets.QFormLayout(self.single_page)
+            single_root_layout = QtWidgets.QVBoxLayout(self.single_page)
             self.tabs.addTab(_wrap_scrollable(QtWidgets, self.single_page), "Single structure")
         else:
+            # Minimal-Qt fallback (no QTabWidget/QScrollArea etc.): a plain flat form on the
+            # dialog itself. Not exercised by any real Qt build this project tests against; kept
+            # simple and unstructured deliberately, since the grouped/collapsible layout below
+            # depends on widgets this branch doesn't have.
             layout = QtWidgets.QFormLayout(self.window)
 
         self.selection = QtWidgets.QLineEdit("all")
         self.orientation_mode = QtWidgets.QComboBox()
         self.orientation_mode.addItems([LEGACY_MODE, ORIENTATION_FILE_MODE, PDBTM_MODE])
+        self.context_status = QtWidgets.QLabel("")
         self.orientation_file = QtWidgets.QLineEdit("")
         self.pdbtm_json = QtWidgets.QLineEdit("")
         self.transformed_pdb = QtWidgets.QLineEdit("")
@@ -259,6 +267,10 @@ class MembraneVQCDialog:
         self.cache_status = QtWidgets.QLabel("")
         self.cache_metadata = QtWidgets.QTextEdit()
         self.cache_metadata.setReadOnly(True)
+        ui_components.cap_height(self.cache_metadata, 110)
+        ui_components.empty_state_placeholder(
+            self.cache_metadata, "Select and validate a cached PDBTM pair to see its metadata."
+        )
         self.use_cached_button = QtWidgets.QPushButton("Use cached pair")
         self.open_cache_location_button = QtWidgets.QPushButton("Open cache location")
         self.clear_cached_button = QtWidgets.QPushButton("Clear cached record")
@@ -274,11 +286,20 @@ class MembraneVQCDialog:
         self.exposure_quality.setCurrentText("Standard")
         self.exposure_backend = QtWidgets.QComboBox()
         self.exposure_backend.addItems(["Built-in", "Auto", "FreeSASA reference"])
+        self.result_headline = QtWidgets.QLabel(
+            ui_theme.format_status(ui_theme.CATEGORY_NEUTRAL, "No result yet.")
+        )
         self.summary = QtWidgets.QTextEdit()
         self.summary.setReadOnly(True)
+        ui_components.cap_height(self.summary, 160)
+        ui_components.empty_state_placeholder(
+            self.summary, "Run QC to generate a structured summary."
+        )
 
-        self.comparison_group = QtWidgets.QGroupBox("Compare orientation sources")
-        comparison_layout = QtWidgets.QFormLayout(self.comparison_group)
+        self.comparison_group, comparison_inner = ui_components.make_collapsible_group(
+            QtWidgets, "Source comparison (optional)", checked=False
+        )
+        comparison_layout = QtWidgets.QFormLayout(comparison_inner)
         self.comparison_pdbtm_source = QtWidgets.QComboBox()
         self.comparison_pdbtm_source.addItems([PDBTM_SOURCE_LOCAL, PDBTM_SOURCE_CACHED])
         self.comparison_record_id = QtWidgets.QLineEdit("")
@@ -293,6 +314,10 @@ class MembraneVQCDialog:
         )
         self.comparison_metrics = QtWidgets.QTextEdit()
         self.comparison_metrics.setReadOnly(True)
+        ui_components.cap_height(self.comparison_metrics, 110)
+        ui_components.empty_state_placeholder(
+            self.comparison_metrics, "Run Compare to generate geometric comparison metrics."
+        )
         self.comparison_export_path = QtWidgets.QLineEdit("reports/orientation_comparison.json")
         self.compare_button = QtWidgets.QPushButton("Compare")
         self.comparison_cancel_button = QtWidgets.QPushButton("Cancel")
@@ -336,84 +361,158 @@ class MembraneVQCDialog:
             self.zmax.setValidator(numeric)
             self.cutoff.setValidator(positive)
 
-        layout.addRow(ui_components.section_label(QtWidgets, "Structure & orientation source"))
-        layout.addRow("Selection", self.selection)
-        layout.addRow("Orientation mode", self.orientation_mode)
-
-        layout.addRow(
-            ui_components.helper_label(
-                QtWidgets, "Used only when Orientation mode is Planar orientation file."
-            )
-        )
-        layout.addRow("Orientation JSON", self.orientation_file)
-
-        layout.addRow(
-            ui_components.helper_label(
-                QtWidgets, "Used only when Orientation mode is PDBTM offline pair."
-            )
-        )
-        json_row = QtWidgets.QHBoxLayout()
-        json_row.addWidget(self.pdbtm_json)
-        json_row.addWidget(self.browse_pdbtm_json)
-        layout.addRow("PDBTM JSON", json_row)
-        pdb_row = QtWidgets.QHBoxLayout()
-        pdb_row.addWidget(self.transformed_pdb)
-        pdb_row.addWidget(self.browse_transformed_pdb)
-        layout.addRow("Transformed PDB", pdb_row)
-        layout.addRow("Current assembly (optional)", self.biological_assembly)
-
-        layout.addRow(ui_components.section_label(QtWidgets, "PDBTM source & cache"))
-        layout.addRow("PDBTM source", self.pdbtm_source)
-        layout.addRow("Canonical record ID", self.cached_record_id)
-        fetch_row = QtWidgets.QHBoxLayout()
-        fetch_row.addWidget(self.fetch_button)
-        fetch_row.addWidget(self.cancel_button)
-        layout.addRow(fetch_row)
-        layout.addRow("Cache status", self.cache_status)
-        layout.addRow("Cache metadata", self.cache_metadata)
-        cache_actions_row = QtWidgets.QHBoxLayout()
-        cache_actions_row.addWidget(self.use_cached_button)
-        cache_actions_row.addWidget(self.open_cache_location_button)
-        cache_actions_row.addWidget(self.clear_cached_button)
-        layout.addRow(cache_actions_row)
-
-        layout.addRow(
-            ui_components.section_label(QtWidgets, "Resolved orientation & membrane boundaries")
-        )
-        layout.addRow(
-            ui_components.helper_label(QtWidgets, "zmin/zmax apply only to Legacy global-z mode.")
-        )
-        layout.addRow("Orientation source", self.orientation_source)
-        layout.addRow("zmin", self.zmin)
-        layout.addRow("zmax", self.zmax)
-
-        layout.addRow(ui_components.section_label(QtWidgets, "Ligand context & export"))
-        layout.addRow("Ligand selection", self.ligand)
-        layout.addRow("Cutoff", self.cutoff)
-        layout.addRow("Export path", self.export_path)
-        layout.addRow(self.analyze_context)
-        layout.addRow("Exposure quality", self.exposure_quality)
-        layout.addRow("Exposure backend", self.exposure_backend)
-
-        layout.addRow(ui_components.section_label(QtWidgets, "Run"))
-        buttons = QtWidgets.QHBoxLayout()
+        self._orientation_form = None
+        self._json_row = None
+        self._pdb_row = None
+        self._fetch_row = None
+        self._cache_actions_row = None
         self.action_buttons = []
-        for label, callback in (
-            ("Run QC", self.run_qc),
-            ("Show Slab", self.show_slab),
-            ("Colour Hydropathy", self.colour_hydropathy),
-            ("Ligand Shell", self.ligand_shell),
-            ("Export JSON", self.export_json),
-        ):
-            button = QtWidgets.QPushButton(label)
-            button.clicked.connect(callback)
-            buttons.addWidget(button)
-            self.action_buttons.append(button)
-        ui_components.style_primary(self.action_buttons[0])  # Run QC
-        ui_components.style_primary(self.action_buttons[-1])  # Export JSON
-        layout.addRow(buttons)
-        layout.addRow("Summary", self.summary)
-        layout.addRow(self.comparison_group)
+        if has_tabs:
+            context_group = QtWidgets.QGroupBox("Structure & mode")
+            context_form = QtWidgets.QFormLayout(context_group)
+            context_form.addRow("Selection", self.selection)
+            context_form.addRow("Orientation mode", self.orientation_mode)
+            context_form.addRow(self.context_status)
+            ui_components.style_group_title(context_group)
+            single_root_layout.addWidget(context_group)
+
+            orientation_group = QtWidgets.QGroupBox("Orientation source")
+            orientation_form = QtWidgets.QFormLayout(orientation_group)
+            orientation_form.addRow(
+                ui_components.helper_label(
+                    QtWidgets, "The fields below adapt to the selected orientation mode."
+                )
+            )
+            orientation_form.addRow("Orientation JSON", self.orientation_file)
+            self._json_row = QtWidgets.QHBoxLayout()
+            self._json_row.addWidget(self.pdbtm_json)
+            self._json_row.addWidget(self.browse_pdbtm_json)
+            orientation_form.addRow("PDBTM JSON", self._json_row)
+            self._pdb_row = QtWidgets.QHBoxLayout()
+            self._pdb_row.addWidget(self.transformed_pdb)
+            self._pdb_row.addWidget(self.browse_transformed_pdb)
+            orientation_form.addRow("Transformed PDB", self._pdb_row)
+            orientation_form.addRow("Current assembly (optional)", self.biological_assembly)
+            orientation_form.addRow("PDBTM source", self.pdbtm_source)
+            orientation_form.addRow("Canonical record ID", self.cached_record_id)
+            self._fetch_row = QtWidgets.QHBoxLayout()
+            self._fetch_row.addWidget(self.fetch_button)
+            self._fetch_row.addWidget(self.cancel_button)
+            orientation_form.addRow(self._fetch_row)
+            orientation_form.addRow("Cache status", self.cache_status)
+            orientation_form.addRow("Cache metadata", self.cache_metadata)
+            self._cache_actions_row = QtWidgets.QHBoxLayout()
+            self._cache_actions_row.addWidget(self.use_cached_button)
+            self._cache_actions_row.addWidget(self.open_cache_location_button)
+            self._cache_actions_row.addWidget(self.clear_cached_button)
+            orientation_form.addRow(self._cache_actions_row)
+            orientation_form.addRow("zmin", self.zmin)
+            orientation_form.addRow("zmax", self.zmax)
+            orientation_form.addRow("Resolved orientation", self.orientation_source)
+            ui_components.style_group_title(orientation_group)
+            single_root_layout.addWidget(orientation_group)
+            self._orientation_form = orientation_form
+
+            analysis_group = QtWidgets.QGroupBox("Analysis options")
+            analysis_form = QtWidgets.QFormLayout(analysis_group)
+            analysis_form.addRow("Ligand selection", self.ligand)
+            analysis_form.addRow("Cutoff", self.cutoff)
+            analysis_form.addRow("Export path", self.export_path)
+            ui_components.style_group_title(analysis_group)
+            single_root_layout.addWidget(analysis_group)
+
+            advanced_group, advanced_inner = ui_components.make_collapsible_group(
+                QtWidgets, "Advanced analysis (optional)", checked=False
+            )
+            advanced_form = QtWidgets.QFormLayout(advanced_inner)
+            advanced_form.addRow(self.analyze_context)
+            advanced_form.addRow("Exposure quality", self.exposure_quality)
+            advanced_form.addRow("Exposure backend", self.exposure_backend)
+            ui_components.style_group_title(advanced_group)
+            single_root_layout.addWidget(advanced_group)
+
+            run_group = QtWidgets.QGroupBox("Run")
+            run_layout = QtWidgets.QVBoxLayout(run_group)
+            buttons = QtWidgets.QHBoxLayout()
+            for label, callback in (
+                ("Run QC", self.run_qc),
+                ("Show Slab", self.show_slab),
+                ("Colour Hydropathy", self.colour_hydropathy),
+                ("Ligand Shell", self.ligand_shell),
+                ("Export JSON", self.export_json),
+            ):
+                button = QtWidgets.QPushButton(label)
+                button.clicked.connect(callback)
+                buttons.addWidget(button)
+                self.action_buttons.append(button)
+            ui_components.style_primary(self.action_buttons[0])  # Run QC
+            self.action_buttons[-1].setEnabled(False)  # Export JSON, until a result exists
+            run_layout.addLayout(buttons)
+            ui_components.style_group_title(run_group)
+            single_root_layout.addWidget(run_group)
+
+            results_group = QtWidgets.QGroupBox("Results")
+            results_layout = QtWidgets.QVBoxLayout(results_group)
+            results_layout.addWidget(self.result_headline)
+            results_layout.addWidget(self.summary)
+            ui_components.style_group_title(results_group)
+            single_root_layout.addWidget(results_group)
+
+            single_root_layout.addWidget(self.comparison_group)
+            single_root_layout.addStretch(1)
+        else:
+            # Minimal-Qt fallback: a flat, ungrouped form (see the has_tabs branch above).
+            layout.addRow("Selection", self.selection)
+            layout.addRow("Orientation mode", self.orientation_mode)
+            layout.addRow(self.context_status)
+            layout.addRow("Orientation JSON", self.orientation_file)
+            json_row = QtWidgets.QHBoxLayout()
+            json_row.addWidget(self.pdbtm_json)
+            json_row.addWidget(self.browse_pdbtm_json)
+            layout.addRow("PDBTM JSON", json_row)
+            pdb_row = QtWidgets.QHBoxLayout()
+            pdb_row.addWidget(self.transformed_pdb)
+            pdb_row.addWidget(self.browse_transformed_pdb)
+            layout.addRow("Transformed PDB", pdb_row)
+            layout.addRow("Current assembly (optional)", self.biological_assembly)
+            layout.addRow("PDBTM source", self.pdbtm_source)
+            layout.addRow("Canonical record ID", self.cached_record_id)
+            fetch_row = QtWidgets.QHBoxLayout()
+            fetch_row.addWidget(self.fetch_button)
+            fetch_row.addWidget(self.cancel_button)
+            layout.addRow(fetch_row)
+            layout.addRow("Cache status", self.cache_status)
+            layout.addRow("Cache metadata", self.cache_metadata)
+            cache_actions_row = QtWidgets.QHBoxLayout()
+            cache_actions_row.addWidget(self.use_cached_button)
+            cache_actions_row.addWidget(self.open_cache_location_button)
+            cache_actions_row.addWidget(self.clear_cached_button)
+            layout.addRow(cache_actions_row)
+            layout.addRow("Orientation source", self.orientation_source)
+            layout.addRow("zmin", self.zmin)
+            layout.addRow("zmax", self.zmax)
+            layout.addRow("Ligand selection", self.ligand)
+            layout.addRow("Cutoff", self.cutoff)
+            layout.addRow("Export path", self.export_path)
+            layout.addRow(self.analyze_context)
+            layout.addRow("Exposure quality", self.exposure_quality)
+            layout.addRow("Exposure backend", self.exposure_backend)
+            buttons = QtWidgets.QHBoxLayout()
+            for label, callback in (
+                ("Run QC", self.run_qc),
+                ("Show Slab", self.show_slab),
+                ("Colour Hydropathy", self.colour_hydropathy),
+                ("Ligand Shell", self.ligand_shell),
+                ("Export JSON", self.export_json),
+            ):
+                button = QtWidgets.QPushButton(label)
+                button.clicked.connect(callback)
+                buttons.addWidget(button)
+                self.action_buttons.append(button)
+            layout.addRow(buttons)
+            layout.addRow(self.result_headline)
+            layout.addRow("Summary", self.summary)
+            layout.addRow(self.comparison_group)
 
         self.orientation_mode.currentTextChanged.connect(self._update_orientation_mode)
         self.browse_pdbtm_json.clicked.connect(self._browse_pdbtm_json)
@@ -442,6 +541,8 @@ class MembraneVQCDialog:
             self.comparison_pdbtm_source.currentTextChanged,
         ):
             signal.connect(self._on_comparison_input_changed)
+        self.selection.textChanged.connect(self._update_context_status)
+        self._last_result_available = False
         self.batch_panel = None
         if self.tabs is not None:
             self.batch_panel = BatchReviewPanel(
@@ -456,6 +557,8 @@ class MembraneVQCDialog:
         self.window.finished.connect(self._on_dialog_finished)
         self._update_orientation_mode()
         self._sync_comparison_controls()
+        self._sync_result_actions()
+        self._update_context_status()
 
     def show(self):
         if self.batch_panel is not None:
@@ -712,7 +815,14 @@ class MembraneVQCDialog:
         self.orientation_file.setEnabled(planar)
         self.biological_assembly.setEnabled(pdbtm)
         self.orientation_source.setText("manual_global_z" if legacy else "unavailable")
+        form = getattr(self, "_orientation_form", None)
+        if form is not None:
+            ui_components.set_row_visible(form, self.zmin, legacy)
+            ui_components.set_row_visible(form, self.zmax, legacy)
+            ui_components.set_row_visible(form, self.orientation_file, planar)
+            ui_components.set_row_visible(form, self.biological_assembly, pdbtm)
         self._sync_pdbtm_controls()
+        self._update_context_status()
 
     def _is_cached_source(self) -> bool:
         return str(self.pdbtm_source.currentText()) == PDBTM_SOURCE_CACHED
@@ -736,6 +846,41 @@ class MembraneVQCDialog:
         self.use_cached_button.setEnabled(cached and not busy)
         self.clear_cached_button.setEnabled(cached and not busy)
         self.open_cache_location_button.setEnabled(mode_is_pdbtm)
+        form = getattr(self, "_orientation_form", None)
+        if form is not None:
+            ui_components.set_row_visible(form, self._json_row, local)
+            ui_components.set_row_visible(form, self._pdb_row, local)
+            ui_components.set_row_visible(form, self.pdbtm_source, mode_is_pdbtm)
+            ui_components.set_row_visible(form, self.cached_record_id, mode_is_pdbtm)
+            ui_components.set_row_visible(form, self._fetch_row, cached)
+            ui_components.set_row_visible(form, self.cache_status, cached)
+            ui_components.set_row_visible(form, self.cache_metadata, cached)
+            ui_components.set_row_visible(form, self._cache_actions_row, cached)
+
+    def _update_context_status(self, *_):
+        if not hasattr(self, "context_status"):
+            return
+        selection = str(self.selection.text()).strip() or "(no selection)"
+        mode = self.orientation_mode.currentText()
+        self.context_status.setText(
+            ui_theme.format_status(
+                ui_theme.CATEGORY_NEUTRAL, f"Ready to analyze {selection} using {mode}."
+            )
+        )
+
+    def _sync_result_actions(self):
+        export_button = self.action_buttons[-1] if self.action_buttons else None
+        if export_button is None:
+            return
+        export_button.setEnabled(self._last_result_available)
+        if self._last_result_available:
+            ui_components.style_primary(export_button)
+        elif hasattr(export_button, "setStyleSheet"):
+            export_button.setStyleSheet("")
+
+    def _set_result_headline(self, category, text):
+        if hasattr(self, "result_headline"):
+            self.result_headline.setText(ui_theme.format_status(category, text))
 
     def _next_request_id(self) -> str:
         self._request_seq += 1
@@ -1446,18 +1591,23 @@ class MembraneVQCDialog:
     def _execute(self, status, operation, render):
         self._set_busy(True)
         self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_BUSY, status))
+        self._set_result_headline(ui_theme.CATEGORY_BUSY, status)
         try:
             application = getattr(self.QtWidgets, "QApplication", None)
             if application is not None:
                 application.processEvents()
             result = operation()
             self.summary.setPlainText(render(result))
+            category, headline = _headline_for_result(result)
+            self._set_result_headline(category, headline)
+            self._last_result_available = True
             return result
         except Exception as exc:
             self._show_error(str(exc) or exc.__class__.__name__)
             return None
         finally:
             self._set_busy(False)
+            self._sync_result_actions()
 
     def _set_busy(self, busy):
         for button in self.action_buttons:
@@ -1466,6 +1616,7 @@ class MembraneVQCDialog:
     def _show_error(self, message):
         text = f"Membrane Visual QC could not complete the action:\n{message}"
         self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_ERROR, text))
+        self._set_result_headline(ui_theme.CATEGORY_ERROR, "The last action could not complete.")
         message_box = getattr(self.QtWidgets, "QMessageBox", None)
         if message_box is not None:
             message_box.warning(self.window, "Membrane Visual QC", text)
@@ -1481,6 +1632,29 @@ class MembraneVQCDialog:
     def _set_comparison_status(self, category, message):
         """Set comparison_status text with a supplementary, non-exclusive status glyph."""
         self.comparison_status.setText(ui_theme.format_status(category, message))
+
+
+def _headline_for_result(result) -> tuple[str, str]:
+    """Derive a compact (category, text) status headline from a raw action result.
+
+    Visual-only: this never renames or reinterprets ``docs/status_vocabulary.md``'s
+    ``summary.overall_status`` values -- it only picks which glyph/color category best
+    represents them at a glance, from the operation's own return value (not by re-parsing
+    already-rendered text). Non-report results (a membrane object, a residue/neighbour list, a
+    list of written export paths) have no such status and get a generic completion headline.
+    """
+    if isinstance(result, dict) and "summary" in result:
+        overall = result["summary"].get("overall_status")
+        if overall == "REVIEW_ITEMS":
+            count = len(result.get("review_items", []))
+            return ui_theme.CATEGORY_REVIEW, f"REVIEW_ITEMS ({count})"
+        if overall == "NO_FLAGS":
+            return ui_theme.CATEGORY_SUCCESS, "NO_FLAGS"
+        if overall == "INSUFFICIENT_CONTEXT":
+            return ui_theme.CATEGORY_REVIEW, "INSUFFICIENT_CONTEXT"
+        if overall == "ANALYSIS_ERROR":
+            return ui_theme.CATEGORY_ERROR, "ANALYSIS_ERROR"
+    return ui_theme.CATEGORY_SUCCESS, "Completed"
 
 
 def _orientation_source(value) -> str:
