@@ -27,8 +27,9 @@ not redesign the plugin GUI itself -- GUI/UX polish remains a separate, later ph
 
 ## v0.9.0 GUI/UX polish phase
 
-A dedicated session (draft PR, `design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on
-top of the visual-identity work above, across three implementation passes on the same branch (see
+A dedicated session ([PR #37](https://github.com/TrPavel/membrane-visual-qc/pull/37),
+`design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on top of the visual-identity work
+above, across three implementation passes on the same branch (see
 `docs/manual_v0.9.0_ui_acceptance.md` for the full account).
 
 **Pass 1** (colors/typography): a small internal design system (`membrane_vqc/ui_theme.py` for
@@ -66,6 +67,30 @@ format, output layout, command signature, or status literal changed in any pass.
 acceptance (`docs/manual_v0.9.0_ui_acceptance.md`) and the actual screenshot/GIF capture
 (`docs/screenshot_capture_plan.md`) remain outstanding owner actions, since this repository's own
 environment cannot open a graphical PyMOL session.
+
+PR #37 passed the owner's real-PyMOL UI review and was squash-merged as `cb13432` onto `main`; its
+branch was deleted. The active package/build identity remained `0.9.0.dev0` throughout (this phase
+changed no version literal).
+
+## v0.9.0 scientific-foundation README phase
+
+A dedicated session ([branch](https://github.com/TrPavel/membrane-visual-qc/tree/docs/v0.9.0-scientific-readme)
+`docs/v0.9.0-scientific-readme`) reorganized `README.md` around a scientific-method foundation on
+top of the visual-identity and GUI/UX work above: a compact "Scientific foundation" section with
+implementation-backed equations (`docs/scientific_background.md`, the exact function/file behind
+every equation and classification rule); a literature-backed reference set
+(`docs/references.bib`, `CITATION.cff`) with a proper software-citation section replacing the
+previous "no formal citation is available yet" placeholder; one original geometry schematic
+(`docs/assets/diagrams/membrane-geometry.svg`); the single oversized Mermaid workflow diagram split
+into two small, readable ones (single-structure path, batch path); and a reorganized information
+hierarchy (hero, real-product-preview notice, what it does, scientific foundation, how it works,
+core workflows, quick start, real example output, safety and scientific boundaries, documentation,
+installation and compatibility, citation and references, development status) that moves detail into
+canonical docs instead of duplicating it. Real screenshots remain not yet captured in this
+repository's own environment -- `docs/screenshot_capture_plan.md` was updated to name the exact
+five-screenshot-plus-demo set this README is written to receive once captured; no placeholder image
+was committed. This phase changes no runtime, scientific, batch, schema, contract, or cache-format
+behavior, and does not redesign the plugin GUI itself.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 

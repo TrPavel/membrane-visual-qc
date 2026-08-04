@@ -57,6 +57,7 @@ using.
 | [Status vocabulary](status_vocabulary.md) | One canonical table of every status/error literal this project uses, where it appears, and its operational meaning. |
 | [Offline guarantees and safety](offline_and_safety.md) | Exactly which code touches the network, the coordinate-preservation guarantee, and filesystem-safety behaviors (atomic writes, path containment, symlink protection). |
 | [Batch review dialog reference](stage5b_gui_batch.md) | Detailed reference for the **Batch review** dialog itself: controls, state machine, main-thread execution model, cancellation, and history. |
+| [Scientific background](scientific_background.md) | Methods reference: every equation and classification rule this project implements, mapped to its exact function/file, plus the literature that motivates each one ([references.bib](references.bib)). |
 
 ## Scientific boundaries
 
@@ -66,6 +67,7 @@ What a result reports, and -- just as importantly -- what it deliberately does n
 |---|---|
 | [Scientific interpretation](scientific_interpretation.md) | The consolidated scientific-wording boundary: what's reported, what's not claimed, comparison and membrane-context limits, `REVIEW_ITEMS` usage, and the vocabulary this project uses and avoids. |
 | [Known limitations](known_limitations.md) | Full list of intentionally unsupported behaviors, by release, including the Windows-paths safety boundary. Read this before interpreting any result. |
+| [Scientific background](scientific_background.md) | What is actually calculated, classified, or visualized (with equations), versus what is an external-source interpretation or a manual-review cue -- read this before treating any equation or reference as a validation claim. |
 
 ## Installation and maintenance
 
@@ -131,8 +133,10 @@ historical graphical-acceptance record across v0.1.0-v0.3.0.
 now also summarized in the Tutorial), [`visual_identity.md`](visual_identity.md) (the README's own
 branding/design conventions -- a different thing from the PyMOL color legend above),
 [`screenshot_capture_plan.md`](screenshot_capture_plan.md) (the reproducible plan for capturing a
-current, real GUI screenshot and demo, not yet done in this repository's own environment), and
-`Report.md` at the repository root (implementation status notes).
+current, real GUI screenshot and demo, not yet done in this repository's own environment),
+[`references.bib`](references.bib) (the full bibliography behind `scientific_background.md`),
+`../CITATION.cff` at the repository root (software citation metadata -- see the README's Citation
+and references section), and `Report.md` at the repository root (implementation status notes).
 
 ## Keeping this map accurate
 

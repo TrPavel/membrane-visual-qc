@@ -56,6 +56,18 @@ label or table cell instead of another color.
 - Update this file (and re-upload) only on a deliberate visual refresh, not for routine content
   changes -- it deliberately omits a version number so it does not need to change every release.
 
+## Scientific diagrams
+
+- `docs/assets/diagrams/membrane-geometry.svg` -- the one original schematic illustrating the
+  signed-distance/classification geometry in `docs/scientific_background.md` and README's
+  Scientific foundation section. Self-contained (opaque white card background, no external
+  references, no embedded fonts) so it stays readable on both GitHub themes without a separate
+  dark variant -- see `docs/scientific_background.md` for what each labeled symbol means.
+- A new scientific diagram must be geometrically consistent with the implementation it illustrates
+  (cite the exact function/file in its caption or the surrounding prose) and must not imply a
+  physical simulation, biological correctness, or a validation claim -- see
+  `docs/scientific_interpretation.md`.
+
 ## Screenshot conventions
 
 No current screenshot of the plugin dialog exists yet -- see `docs/screenshot_capture_plan.md` for
