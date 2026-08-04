@@ -28,10 +28,10 @@ Distributed as a **GitHub prerelease** (not on PyPI). Current published release:
 development line: **`0.9.0.dev0`**.
 
 <p align="center">
-  <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab: a loaded structure with the membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
+  <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab in Legacy global-z mode: a loaded structure with the manually defined membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
 </p>
 
-<p align="center"><sub>Single structure tab -- structure loaded, membrane boundaries drawn, a completed run's Results panel populated (real screenshot, own capture against the current UI).</sub></p>
+<p align="center"><sub>Single structure tab, <strong>Legacy global-z</strong> mode -- a manually defined <code>zmin</code>/<code>zmax</code> slab, not a source-derived PDBTM/OPM orientation (real screenshot, own capture against the current UI).</sub></p>
 
 ## Real product preview
 
@@ -66,7 +66,7 @@ real-PyMOL-reviewed passes most recently merged in [PR #37](https://github.com/T
   <img src="docs/assets/demos/membrane-visual-qc-demo.gif" alt="Animated demo: the Single structure tab ready to run, then a completed NO_FLAGS result, then the Batch review tab showing a finished five-mode run" width="880">
 </p>
 
-<p align="center"><sub>Structure and mode selected -&gt; <code>Run QC</code> -&gt; result appears -&gt; Batch review. Static frames above show the same states without motion.</sub></p>
+<p align="center"><sub>A 3-frame slideshow assembled from real, individually captured states -- structure/mode ready -&gt; <code>Run QC</code> result -&gt; Batch review -- not a continuous screen recording; see <a href="docs/screenshot_capture_plan.md">docs/screenshot_capture_plan.md</a> for exactly how it was built.</sub></p>
 
 Capture provenance and exact composition for every image above: [docs/screenshot_capture_plan.md](docs/screenshot_capture_plan.md).
 

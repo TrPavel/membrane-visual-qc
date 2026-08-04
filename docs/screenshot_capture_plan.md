@@ -57,12 +57,13 @@ replacement if a real-time capture tool becomes available.
 
 ### Unused captures
 
-Two additional screenshots captured in the same session were not integrated: a PyMOL-viewport-only
-shot with no dialog visible, and a **Batch review** shot in the `READY` (not-yet-run) state. Neither
-matches a required composition (every required shot needs the dialog visible; this plan's shots are
-all post-run states). They were left in `docs/assets/screenshots/` under their original
-`Screenshot <timestamp>.png` names, unreferenced from README -- delete them or repurpose them for a
-future capture pass at the owner's discretion.
+Two additional screenshots captured in the same session were reviewed but not integrated: a
+PyMOL-viewport-only shot with no dialog visible, and a **Batch review** shot in the `READY`
+(not-yet-run) state. Neither matches a required composition (every required shot needs the dialog
+visible; this plan's shots are all post-run states). A later review pass removed them from the
+repository rather than keeping unreferenced, non-conforming-named files (`Screenshot
+<timestamp>.png`) in `docs/assets/screenshots/`; recapture the equivalent state directly if either
+is needed for a future shot.
 
 ## Common capture settings
 
