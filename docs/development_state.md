@@ -27,8 +27,9 @@ not redesign the plugin GUI itself -- GUI/UX polish remains a separate, later ph
 
 ## v0.9.0 GUI/UX polish phase
 
-A dedicated session (draft PR, `design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on
-top of the visual-identity work above, across three implementation passes on the same branch (see
+A dedicated session ([PR #37](https://github.com/TrPavel/membrane-visual-qc/pull/37),
+`design/v0.9.0-ui-ux-polish`) restyled the plugin dialog itself on top of the visual-identity work
+above, across three implementation passes on the same branch (see
 `docs/manual_v0.9.0_ui_acceptance.md` for the full account).
 
 **Pass 1** (colors/typography): a small internal design system (`membrane_vqc/ui_theme.py` for
@@ -66,6 +67,42 @@ format, output layout, command signature, or status literal changed in any pass.
 acceptance (`docs/manual_v0.9.0_ui_acceptance.md`) and the actual screenshot/GIF capture
 (`docs/screenshot_capture_plan.md`) remain outstanding owner actions, since this repository's own
 environment cannot open a graphical PyMOL session.
+
+PR #37 passed the owner's real-PyMOL UI review and was squash-merged as `cb13432` onto `main`; its
+branch was deleted. The active package/build identity remained `0.9.0.dev0` throughout (this phase
+changed no version literal).
+
+## v0.9.0 scientific-foundation README phase
+
+A dedicated session ([branch](https://github.com/TrPavel/membrane-visual-qc/tree/docs/v0.9.0-scientific-readme)
+`docs/v0.9.0-scientific-readme`) reorganized `README.md` around a scientific-method foundation on
+top of the visual-identity and GUI/UX work above: a compact "Scientific foundation" section with
+implementation-backed equations (`docs/scientific_background.md`, the exact function/file behind
+every equation and classification rule); a literature-backed reference set
+(`docs/references.bib`, `CITATION.cff`) with a proper software-citation section replacing the
+previous "no formal citation is available yet" placeholder; one original geometry schematic
+(`docs/assets/diagrams/membrane-geometry.svg`); the single oversized Mermaid workflow diagram split
+into two small, readable ones (single-structure path, batch path); and a reorganized information
+hierarchy (hero, real-product-preview notice, what it does, scientific foundation, how it works,
+core workflows, quick start, real example output, safety and scientific boundaries, documentation,
+installation and compatibility, citation and references, development status) that moves detail into
+canonical docs instead of duplicating it. `docs/screenshot_capture_plan.md` named the exact
+five-screenshot-plus-demo set this README was written to receive; no placeholder image was ever
+committed. The owner captured four of the five required screenshots against the final PR #37 UI and
+`0.9.0.dev0` (hero, single-structure-result, batch-review-completed, source-comparison-result),
+which were reviewed, renamed into place, and wired into README with accurate captions --
+`batch-review-completed.png`'s captured run differs from the composition originally planned
+(`COMPLETED` with no rejected job, rather than `COMPLETED_WITH_ERRORS`), so its caption describes
+what it actually shows rather than the original target; the separately documented v0.8.0
+`COMPLETED_WITH_ERRORS` matrix in "Real example output" was left unchanged. The remaining
+`recovery-state.png` and the demo were then captured in an assisted session -- with the owner's
+explicit approval, Claude Code used `computer-use` access (granted only to the already-open PyMOL
+process, `pythonw.exe`, after the resolver traced the Start Menu "PyMOL" shortcut to a `cmd.exe`
+wrapper that could only be granted click-only access) to trigger a `zmin >= zmax` validation error
+for `recovery-state.png`, then captured three individual states (idle, completed result, finished
+Batch review run) and assembled them into `membrane-visual-qc-demo.gif` with Pillow, since no
+real-time screen-recording tool was available. This phase changes no runtime, scientific, batch,
+schema, contract, or cache-format behavior, and does not redesign the plugin GUI itself.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 

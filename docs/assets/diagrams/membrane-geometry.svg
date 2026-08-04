@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="mvqc-geometry-title mvqc-geometry-desc">
+  <title id="mvqc-geometry-title">Planar membrane geometry used by Membrane Visual QC</title>
+  <desc id="mvqc-geometry-desc">Schematic cross-section of the signed-distance classification implemented in membrane_vqc/orientation.py: a residue point r_i is projected onto the membrane normal n through the orientation centre c, giving signed distance d_i, which is then classified as core, interface, or outside against the lower and upper offsets. This is a coordinate-frame diagram, not a physical bilayer simulation.</desc>
+
+  <rect x="1.5" y="1.5" width="717" height="457" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <text x="28" y="34" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#0B1220">Planar membrane geometry (schematic)</text>
+  <text x="28" y="53" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#55606B">Coordinate-frame classification implemented in membrane_vqc/orientation.py -- not a physical bilayer simulation.</text>
+
+  <!-- Region bands (top = positive side along the normal, bottom = negative side) -->
+  <g>
+    <rect x="150" y="88" width="360" height="52" fill="#F1F5F9"/>
+    <rect x="150" y="140" width="360" height="35" fill="#0F766E" fill-opacity="0.12"/>
+    <rect x="150" y="175" width="360" height="100" fill="#0F766E" fill-opacity="0.24"/>
+    <rect x="150" y="275" width="360" height="35" fill="#0F766E" fill-opacity="0.12"/>
+    <rect x="150" y="310" width="360" height="52" fill="#F1F5F9"/>
+  </g>
+
+  <!-- Boundary lines -->
+  <line x1="150" y1="140" x2="510" y2="140" stroke="#64748B" stroke-width="1.25" stroke-dasharray="4 3"/>
+  <line x1="150" y1="175" x2="510" y2="175" stroke="#0B1220" stroke-width="2"/>
+  <line x1="150" y1="225" x2="510" y2="225" stroke="#94A3B8" stroke-width="1.25" stroke-dasharray="2 3"/>
+  <line x1="150" y1="275" x2="510" y2="275" stroke="#0B1220" stroke-width="2"/>
+  <line x1="150" y1="310" x2="510" y2="310" stroke="#64748B" stroke-width="1.25" stroke-dasharray="4 3"/>
+
+  <!-- Region labels -->
+  <text x="158" y="118" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#55606B">outside</text>
+  <text x="158" y="161" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#0F766E">upper interface</text>
+  <text x="158" y="203" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0F766E">core</text>
+  <text x="158" y="296" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#0F766E">lower interface</text>
+  <text x="158" y="340" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#55606B">outside</text>
+
+  <!-- Boundary offset labels (right of bands) -->
+  <text x="516" y="144" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#55606B">upper_offset + interface_width</text>
+  <text x="516" y="179" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#0B1220">upper_offset (U)</text>
+  <text x="516" y="279" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#0B1220">lower_offset (L)</text>
+  <text x="516" y="314" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#55606B">lower_offset - interface_width</text>
+
+  <!-- Normal axis with arrowhead -->
+  <defs>
+    <marker id="mvqc-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0F766E"/>
+    </marker>
+  </defs>
+  <line x1="595" y1="340" x2="595" y2="98" stroke="#0F766E" stroke-width="2.25" marker-end="url(#mvqc-arrow)"/>
+  <text x="604" y="106" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0F766E">n</text>
+  <text x="530" y="358" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#55606B">membrane normal</text>
+
+  <!-- Centre point c at d=0 -->
+  <circle cx="595" cy="225" r="4.5" fill="#0B1220"/>
+  <text x="604" y="229" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0B1220">c (d = 0)</text>
+
+  <!-- Residue point r_i and its projection onto n -->
+  <circle cx="230" cy="196" r="5" fill="#B45309"/>
+  <text x="212" y="188" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#B45309">r_i</text>
+  <line x1="230" y1="196" x2="595" y2="196" stroke="#B45309" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <circle cx="595" cy="196" r="3.5" fill="#B45309"/>
+
+  <!-- d_i segment along the normal, from c to the projected point -->
+  <line x1="595" y1="225" x2="595" y2="196" stroke="#B45309" stroke-width="3.5"/>
+  <text x="604" y="214" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#B45309">d_i</text>
+
+  <!-- Legend -->
+  <g font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#334155">
+    <text x="28" y="392" font-weight="700" fill="#0B1220">Legend</text>
+    <text x="28" y="410">n -- unit membrane normal · c -- orientation centre</text>
+    <text x="28" y="426">r_i -- residue representative point (C-alpha, or residue-atom average if no C-alpha)</text>
+    <text x="28" y="442">d_i = n . (r_i - c) -- signed distance from the midplane, in angstroms (Å)</text>
+  </g>
+</svg>

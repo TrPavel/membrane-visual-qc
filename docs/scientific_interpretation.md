@@ -100,6 +100,10 @@ user-facing document with negation-aware checks -- see that file for the exact r
 
 ## See also
 
+[docs/scientific_background.md](scientific_background.md) for the methods reference this page's
+boundaries apply to -- every equation and classification rule, mapped to its exact implementing
+function, plus the literature that motivates each one.
+
 [docs/known_limitations.md](known_limitations.md) for the full, release-by-release list of what is
 intentionally unsupported (not just the scientific-wording boundary covered here); the "Windows
 paths" and "Installation and upgrade" sections there are operational, not scientific, limitations.
