@@ -13,7 +13,7 @@ deterministically without any real threading or Qt.
 
 from types import SimpleNamespace
 
-from membrane_vqc import gui
+from membrane_vqc import gui, ui_theme
 
 
 class FakeText:
@@ -242,7 +242,9 @@ def test_fetch_failure_surfaces_the_safe_message():
     )
 
     assert dialog._retrieval_state == gui.RETRIEVAL_FAILED
-    assert dialog.cache_status.value == "The PDBTM service is currently unreachable."
+    assert dialog.cache_status.value == ui_theme.format_status(
+        ui_theme.CATEGORY_ERROR, "The PDBTM service is currently unreachable."
+    )
 
 
 # --- Use cached pair selects only the exact validated result ------------------

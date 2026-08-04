@@ -20,6 +20,7 @@ from .batch_result_browser import (
 )
 from .batch_runner import BatchExecutionFailed, BatchInputRejected, BatchRunSession, MANIFEST_NAME
 from .constants import VERSION
+from . import ui_components, ui_theme
 
 
 IDLE = "IDLE"
@@ -33,6 +34,31 @@ FAILED = "FAILED"
 BATCH_STATES = (IDLE, VALIDATING, READY, RUNNING, CANCELLING, COMPLETED, CANCELLED, FAILED)
 MAX_SESSION_HISTORY = 20
 MAX_STATUS_TEXT = 256
+
+# Visual-only default category per GUI state (see ui_theme) -- callers of _set_state may pass an
+# explicit `category=` to override this, e.g. to distinguish a COMPLETED_WITH_ERRORS outcome
+# (still reported as the unchanged FAILED state literal) from a true batch-start failure.
+_STATE_CATEGORY = {
+    IDLE: ui_theme.CATEGORY_NEUTRAL,
+    VALIDATING: ui_theme.CATEGORY_BUSY,
+    READY: ui_theme.CATEGORY_NEUTRAL,
+    RUNNING: ui_theme.CATEGORY_BUSY,
+    CANCELLING: ui_theme.CATEGORY_BUSY,
+    COMPLETED: ui_theme.CATEGORY_SUCCESS,
+    CANCELLED: ui_theme.CATEGORY_CANCELLED,
+    FAILED: ui_theme.CATEGORY_ERROR,
+}
+
+# Visual-only category for a verified result bundle's own `overall_status` (the
+# mvqc-batch-result-1.0 contract field -- see docs/status_vocabulary.md#3 -- a different
+# vocabulary from _STATE_CATEGORY/BATCH_STATES above). COMPLETED_WITH_ERRORS is deliberately
+# "review", never "error": it is not a total failure.
+_OVERALL_STATUS_CATEGORY = {
+    "COMPLETED": ui_theme.CATEGORY_SUCCESS,
+    "COMPLETED_WITH_ERRORS": ui_theme.CATEGORY_REVIEW,
+    "FAILED_FAST": ui_theme.CATEGORY_ERROR,
+    "CANCELLED": ui_theme.CATEGORY_CANCELLED,
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,21 +147,29 @@ class BatchReviewPanel:
         self.plan_path = self.QtWidgets.QLineEdit("")
         self.browse_plan_button = self.QtWidgets.QPushButton("Browse plan…")
         self.validate_button = self.QtWidgets.QPushButton("Validate")
+        ui_components.style_primary(self.validate_button)
         plan_row = self.QtWidgets.QHBoxLayout()
         plan_row.addWidget(self.plan_path)
         plan_row.addWidget(self.browse_plan_button)
         plan_row.addWidget(self.validate_button)
-        self.plan_contract_status = self.QtWidgets.QLabel("Not validated")
-        self.plan_sha = self.QtWidgets.QLabel("")
-        self.plan_job_count = self.QtWidgets.QLabel("0")
-        self.failure_policy = self.QtWidgets.QLabel("")
-        self.overwrite_policy = self.QtWidgets.QLabel("")
         plan_layout.addRow("Plan file", plan_row)
-        plan_layout.addRow("Contract", self.plan_contract_status)
-        plan_layout.addRow("Plan SHA-256", self.plan_sha)
-        plan_layout.addRow("Jobs", self.plan_job_count)
-        plan_layout.addRow("Failure policy", self.failure_policy)
-        plan_layout.addRow("Overwrite policy", self.overwrite_policy)
+        plan_grid = ui_components.metadata_grid(
+            self.QtWidgets,
+            [
+                ("contract", "Contract", "Not validated"),
+                ("sha", "Plan SHA-256", ui_theme.EMPTY_VALUE),
+                ("jobs", "Jobs", ui_theme.EMPTY_VALUE),
+                ("failure_policy", "Failure policy", ui_theme.EMPTY_VALUE),
+                ("overwrite_policy", "Overwrite policy", ui_theme.EMPTY_VALUE),
+            ],
+        )
+        self.plan_contract_status = plan_grid.values["contract"]
+        self.plan_sha = plan_grid.values["sha"]
+        self.plan_job_count = plan_grid.values["jobs"]
+        self.failure_policy = plan_grid.values["failure_policy"]
+        self.overwrite_policy = plan_grid.values["overwrite_policy"]
+        plan_layout.addRow(plan_grid)
+        ui_components.style_group_title(plan_group)
         layout.addWidget(plan_group)
 
         output_group = self.QtWidgets.QGroupBox("Output")
@@ -146,30 +180,49 @@ class BatchReviewPanel:
         output_row.addWidget(self.output_path)
         output_row.addWidget(self.browse_output_button)
         output_layout.addRow("Output directory", output_row)
+        ui_components.style_group_title(output_group)
         layout.addWidget(output_group)
 
         execution_group = self.QtWidgets.QGroupBox("Execution")
         execution_layout = self.QtWidgets.QFormLayout(execution_group)
         self.run_button = self.QtWidgets.QPushButton("Run batch")
         self.cancel_button = self.QtWidgets.QPushButton("Cancel")
+        ui_components.style_primary(self.run_button)
         action_row = self.QtWidgets.QHBoxLayout()
         action_row.addWidget(self.run_button)
         action_row.addWidget(self.cancel_button)
-        self.progress = self.QtWidgets.QProgressBar()
-        self.progress_label = self.QtWidgets.QLabel("0 / 0")
-        self.current_job = self.QtWidgets.QLabel("")
-        self.current_mode = self.QtWidgets.QLabel("")
-        self.run_state = self.QtWidgets.QLabel(IDLE)
-        self.status_message = self.QtWidgets.QLabel("Select and validate a plan explicitly.")
         execution_layout.addRow(action_row)
+        self.progress = self.QtWidgets.QProgressBar()
         execution_layout.addRow("Progress", self.progress)
-        execution_layout.addRow("Completed / total", self.progress_label)
-        execution_layout.addRow("Current job", self.current_job)
-        execution_layout.addRow("Current mode", self.current_mode)
-        execution_layout.addRow("Run state", self.run_state)
-        execution_layout.addRow("Status", self.status_message)
+        execution_grid = ui_components.metadata_grid(
+            self.QtWidgets,
+            [
+                ("completed_total", "Completed / total", ui_theme.EMPTY_VALUE),
+                ("current_job", "Current job", ui_theme.EMPTY_VALUE),
+                ("current_mode", "Current mode", ui_theme.EMPTY_VALUE),
+                ("run_state", "Run state", IDLE),
+            ],
+        )
+        self.progress_label = execution_grid.values["completed_total"]
+        self.current_job = execution_grid.values["current_job"]
+        self.current_mode = execution_grid.values["current_mode"]
+        self.run_state = execution_grid.values["run_state"]
+        execution_layout.addRow(execution_grid)
+        self.status_message = self.QtWidgets.QLabel(
+            ui_theme.format_status(
+                ui_theme.CATEGORY_NEUTRAL, "Select and validate a plan explicitly."
+            )
+        )
+        if hasattr(self.status_message, "setWordWrap"):
+            self.status_message.setWordWrap(True)
+        execution_layout.addRow(self.status_message)
+        ui_components.style_group_title(execution_group)
         layout.addWidget(execution_group)
 
+        self.queue_empty_label = ui_components.empty_state_label(
+            self.QtWidgets, "Validate a plan to populate the job queue."
+        )
+        layout.addWidget(self.queue_empty_label)
         self.queue = self.QtWidgets.QTableWidget(0, 8)
         self.queue.setHorizontalHeaderLabels(
             [
@@ -183,14 +236,33 @@ class BatchReviewPanel:
                 "Error code",
             ]
         )
+        ui_components.stretch_last_table_section(self.queue, section=3)
+        if hasattr(self.queue, "setMinimumHeight"):
+            self.queue.setMinimumHeight(160)
         layout.addWidget(self.queue)
 
         results_group = self.QtWidgets.QGroupBox("Results")
-        results_layout = self.QtWidgets.QFormLayout(results_group)
+        results_layout = self.QtWidgets.QVBoxLayout(results_group)
+        self.batch_result_headline = self.QtWidgets.QLabel(
+            ui_theme.format_status(ui_theme.CATEGORY_NEUTRAL, "No batch run yet.")
+        )
+        results_layout.addWidget(self.batch_result_headline)
+        summary_form = self.QtWidgets.QFormLayout()
         self.result_summary = self.QtWidgets.QTextEdit()
         self.result_summary.setReadOnly(True)
+        ui_components.cap_height(self.result_summary, ui_theme.COMPACT_RESULT_HEIGHT)
+        ui_components.empty_state_placeholder(
+            self.result_summary, "Run or open a batch result to see its summary."
+        )
         self.selected_job_details = self.QtWidgets.QTextEdit()
         self.selected_job_details.setReadOnly(True)
+        ui_components.cap_height(self.selected_job_details, ui_theme.COMPACT_RESULT_HEIGHT)
+        ui_components.empty_state_placeholder(
+            self.selected_job_details, "Select a job in the queue to see its details."
+        )
+        summary_form.addRow("Run summary", self.result_summary)
+        summary_form.addRow("Selected job", self.selected_job_details)
+        results_layout.addLayout(summary_form)
         self.open_manifest_button = self.QtWidgets.QPushButton("Open result manifest")
         self.open_output_button = self.QtWidgets.QPushButton("Open output directory")
         self.reveal_report_button = self.QtWidgets.QPushButton("Reveal selected report")
@@ -203,17 +275,23 @@ class BatchReviewPanel:
             self.reveal_csv_button,
         ):
             result_actions.addWidget(button)
-        results_layout.addRow("Run summary", self.result_summary)
-        results_layout.addRow("Selected job", self.selected_job_details)
-        results_layout.addRow(result_actions)
+        results_layout.addLayout(result_actions)
+        ui_components.style_group_title(results_group)
         layout.addWidget(results_group)
 
-        history_group = self.QtWidgets.QGroupBox("Current-session history")
-        history_layout = self.QtWidgets.QVBoxLayout(history_group)
+        history_group, history_inner = ui_components.make_collapsible_group(
+            self.QtWidgets, "Current-session history", checked=False
+        )
+        history_layout = self.QtWidgets.QVBoxLayout(history_inner)
+        self.history_empty_label = ui_components.empty_state_label(
+            self.QtWidgets, "No batch runs yet this session."
+        )
+        history_layout.addWidget(self.history_empty_label)
         self.history_table = self.QtWidgets.QTableWidget(0, 5)
         self.history_table.setHorizontalHeaderLabels(
             ["Plan", "Status", "Completed", "Jobs", "Identity core"]
         )
+        ui_components.stretch_last_table_section(self.history_table, section=0)
         history_layout.addWidget(self.history_table)
         history_actions = self.QtWidgets.QHBoxLayout()
         self.open_existing_button = self.QtWidgets.QPushButton("Open existing result manifest…")
@@ -226,6 +304,7 @@ class BatchReviewPanel:
         ):
             history_actions.addWidget(button)
         history_layout.addLayout(history_actions)
+        ui_components.style_group_title(history_group)
         layout.addWidget(history_group)
 
         self.plan_path.textChanged.connect(self._on_plan_edited)
@@ -244,13 +323,16 @@ class BatchReviewPanel:
         self.open_history_button.clicked.connect(self._open_selected_history)
         self.clear_history_button.clicked.connect(self.clear_history)
 
-    def _set_state(self, state: str, message: str) -> None:
+    def _set_state(self, state: str, message: str, *, category: str | None = None) -> None:
         if state not in BATCH_STATES:
             raise ValueError("invalid batch GUI state")
         self.state = state
         if self._ui_active:
             self.run_state.setText(state)
-            self.status_message.setText(str(message)[:MAX_STATUS_TEXT])
+            resolved_category = _STATE_CATEGORY.get(state) if category is None else category
+            self.status_message.setText(
+                ui_theme.format_status(resolved_category, str(message)[:MAX_STATUS_TEXT])
+            )
             self._sync_controls()
 
     def _on_plan_edited(self, *_):
@@ -262,10 +344,12 @@ class BatchReviewPanel:
         self._selected_bundle = None
         self._clear_queue()
         self.plan_contract_status.setText("Not validated")
-        self.plan_sha.setText("")
-        self.plan_job_count.setText("0")
-        self.failure_policy.setText("")
-        self.overwrite_policy.setText("")
+        self.plan_sha.setText(ui_theme.EMPTY_VALUE)
+        self.plan_job_count.setText(ui_theme.EMPTY_VALUE)
+        self.failure_policy.setText(ui_theme.EMPTY_VALUE)
+        self.overwrite_policy.setText(ui_theme.EMPTY_VALUE)
+        self.current_job.setText(ui_theme.EMPTY_VALUE)
+        self.current_mode.setText(ui_theme.EMPTY_VALUE)
         self._set_state(IDLE, "Plan path changed; validate explicitly.")
 
     def _browse_plan(self):
@@ -334,12 +418,19 @@ class BatchReviewPanel:
         self.progress.setRange(0, len(jobs))
         self.progress.setValue(0)
         self.progress_label.setText(f"0 / {len(jobs)}")
+        self._set_queue_empty(len(jobs) == 0)
 
     def _clear_queue(self):
         self.queue.setRowCount(0)
         self.progress.setRange(0, 0)
         self.progress.setValue(0)
-        self.progress_label.setText("0 / 0")
+        self.progress_label.setText(ui_theme.EMPTY_VALUE)
+        self._set_queue_empty(True)
+
+    def _set_queue_empty(self, empty: bool) -> None:
+        label = getattr(self, "queue_empty_label", None)
+        if label is not None and hasattr(label, "setVisible"):
+            label.setVisible(empty)
 
     def _next_request_id(self) -> str:
         self.request_sequence += 1
@@ -461,20 +552,40 @@ class BatchReviewPanel:
         self.completed_result = bundle
         self._selected_bundle = bundle
         self._add_history(snapshot.path.name, bundle)
-        if result["overall_status"] == "CANCELLED":
+        overall_status = result["overall_status"]
+        if overall_status == "CANCELLED":
             state = CANCELLED
-        elif result["overall_status"] in {"FAILED_FAST", "COMPLETED_WITH_ERRORS"}:
+            category = ui_theme.CATEGORY_CANCELLED
+            message = "Batch run was cancelled."
+        elif overall_status == "COMPLETED_WITH_ERRORS":
+            # A real state distinction from FAILED_FAST: some jobs still reached SUCCESS or
+            # REVIEW_ITEMS and their outputs remain valid -- this is not a total failure, even
+            # though it reuses the same FAILED GUI-state literal (see docs/status_vocabulary.md
+            # -- COMPLETED_WITH_ERRORS must be distinguishable from a total failure).
             state = FAILED
+            category = ui_theme.CATEGORY_REVIEW
+            message = (
+                "Batch completed with errors: one or more jobs failed or were rejected; "
+                "every other job's output remains valid -- see the queue below."
+            )
+        elif overall_status == "FAILED_FAST":
+            state = FAILED
+            category = ui_theme.CATEGORY_ERROR
+            message = "Batch stopped after the first failure (fail_fast); later jobs were skipped."
         else:
             state = COMPLETED
+            category = ui_theme.CATEGORY_SUCCESS
+            message = "Batch result finalized and verified."
         if deliver:
             self._render_bundle(bundle)
-            self._set_state(state, "Batch result finalized and verified.")
+            self._set_state(state, message, category=category)
         else:
             self.state = state
             if self._ui_active:
                 self.run_state.setText(state)
-                self.status_message.setText("Prior batch finalized after dialog close.")
+                self.status_message.setText(
+                    ui_theme.format_status(category, "Prior batch finalized after dialog close.")
+                )
                 self._sync_controls()
         self.set_single_run_busy(False)
 
@@ -504,7 +615,11 @@ class BatchReviewPanel:
             self.state = FAILED
             if self._ui_active:
                 self.run_state.setText(FAILED)
-                self.status_message.setText("Prior batch failed after dialog close.")
+                self.status_message.setText(
+                    ui_theme.format_status(
+                        ui_theme.CATEGORY_ERROR, "Prior batch failed after dialog close."
+                    )
+                )
                 self._sync_controls()
         self.set_single_run_busy(False)
 
@@ -576,6 +691,9 @@ class BatchReviewPanel:
             )
             for column, value in enumerate(values):
                 self.history_table.setItem(row, column, self.QtWidgets.QTableWidgetItem(str(value)))
+        label = getattr(self, "history_empty_label", None)
+        if label is not None and hasattr(label, "setVisible"):
+            label.setVisible(len(self.history) == 0)
 
     def _open_existing(self):
         if self.state in {RUNNING, CANCELLING}:
@@ -614,6 +732,14 @@ class BatchReviewPanel:
 
     def _render_bundle(self, bundle: VerifiedBatchResult):
         counts = ", ".join(f"{key}={value}" for key, value in bundle.counts.items())
+        headline_label = getattr(self, "batch_result_headline", None)
+        if headline_label is not None and hasattr(headline_label, "setText"):
+            category = _OVERALL_STATUS_CATEGORY.get(
+                bundle.overall_status, ui_theme.CATEGORY_NEUTRAL
+            )
+            headline_label.setText(
+                ui_theme.format_status(category, f"{bundle.overall_status} · {counts}")
+            )
         self.result_summary.setPlainText(
             "\n".join(
                 (
@@ -629,6 +755,7 @@ class BatchReviewPanel:
                 )
             )
         )
+        ui_components.cap_height(self.result_summary, ui_theme.EXPANDED_RESULT_HEIGHT)
         self.queue.setRowCount(len(bundle.jobs))
         for row, job in enumerate(bundle.jobs):
             values = (
@@ -643,6 +770,7 @@ class BatchReviewPanel:
             )
             for column, value in enumerate(values):
                 self.queue.setItem(row, column, self.QtWidgets.QTableWidgetItem(value))
+        self._set_queue_empty(len(bundle.jobs) == 0)
         self._render_selected_job()
 
     def _selected_job(self):
@@ -656,6 +784,7 @@ class BatchReviewPanel:
         job = self._selected_job()
         if job is None:
             self.selected_job_details.setPlainText("")
+            ui_components.cap_height(self.selected_job_details, ui_theme.COMPACT_RESULT_HEIGHT)
             self._sync_controls()
             return
         lines = [
@@ -670,6 +799,7 @@ class BatchReviewPanel:
         for key, value in job.summary.items():
             lines.append(f"{key.replace('_', ' ').title()}: {value}")
         self.selected_job_details.setPlainText("\n".join(lines))
+        ui_components.cap_height(self.selected_job_details, ui_theme.EXPANDED_RESULT_HEIGHT)
         self._sync_controls()
 
     def _open_local(self, path: Path) -> bool:

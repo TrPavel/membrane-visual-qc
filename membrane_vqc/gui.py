@@ -55,6 +55,7 @@ from .pdbtm_report_provenance import build_pdbtm_acquisition_provenance
 from .pdbtm_provider import canonicalize_record_id
 from .pdbtm_worker import WorkerFailure
 from .qc import format_summary
+from . import ui_components, ui_theme
 
 _DIALOG = None
 LEGACY_MODE = "Legacy global-z"
@@ -228,22 +229,30 @@ class MembraneVQCDialog:
         self.window.setWindowTitle(DIALOG_TITLE)
         self.tabs = None
         self.single_page = None
-        if all(
+        has_tabs = all(
             hasattr(QtWidgets, name)
             for name in ("QTabWidget", "QVBoxLayout", "QWidget", "QTableWidget", "QScrollArea")
-        ):
+        )
+        single_root_layout = None
+        layout = None
+        if has_tabs:
             root_layout = QtWidgets.QVBoxLayout(self.window)
             self.tabs = QtWidgets.QTabWidget(self.window)
             root_layout.addWidget(self.tabs)
             self.single_page = QtWidgets.QWidget(self.tabs)
-            layout = QtWidgets.QFormLayout(self.single_page)
+            single_root_layout = QtWidgets.QVBoxLayout(self.single_page)
             self.tabs.addTab(_wrap_scrollable(QtWidgets, self.single_page), "Single structure")
         else:
+            # Minimal-Qt fallback (no QTabWidget/QScrollArea etc.): a plain flat form on the
+            # dialog itself. Not exercised by any real Qt build this project tests against; kept
+            # simple and unstructured deliberately, since the grouped/collapsible layout below
+            # depends on widgets this branch doesn't have.
             layout = QtWidgets.QFormLayout(self.window)
 
         self.selection = QtWidgets.QLineEdit("all")
         self.orientation_mode = QtWidgets.QComboBox()
         self.orientation_mode.addItems([LEGACY_MODE, ORIENTATION_FILE_MODE, PDBTM_MODE])
+        self.context_status = QtWidgets.QLabel("")
         self.orientation_file = QtWidgets.QLineEdit("")
         self.pdbtm_json = QtWidgets.QLineEdit("")
         self.transformed_pdb = QtWidgets.QLineEdit("")
@@ -258,6 +267,10 @@ class MembraneVQCDialog:
         self.cache_status = QtWidgets.QLabel("")
         self.cache_metadata = QtWidgets.QTextEdit()
         self.cache_metadata.setReadOnly(True)
+        ui_components.cap_height(self.cache_metadata, 110)
+        ui_components.empty_state_placeholder(
+            self.cache_metadata, "Select and validate a cached PDBTM pair to see its metadata."
+        )
         self.use_cached_button = QtWidgets.QPushButton("Use cached pair")
         self.open_cache_location_button = QtWidgets.QPushButton("Open cache location")
         self.clear_cached_button = QtWidgets.QPushButton("Clear cached record")
@@ -273,11 +286,20 @@ class MembraneVQCDialog:
         self.exposure_quality.setCurrentText("Standard")
         self.exposure_backend = QtWidgets.QComboBox()
         self.exposure_backend.addItems(["Built-in", "Auto", "FreeSASA reference"])
+        self.result_headline = QtWidgets.QLabel(
+            ui_theme.format_status(ui_theme.CATEGORY_NEUTRAL, "No result yet.")
+        )
         self.summary = QtWidgets.QTextEdit()
         self.summary.setReadOnly(True)
+        ui_components.cap_height(self.summary, ui_theme.COMPACT_RESULT_HEIGHT)
+        ui_components.empty_state_placeholder(
+            self.summary, "Run QC to generate a structured summary."
+        )
 
-        self.comparison_group = QtWidgets.QGroupBox("Compare orientation sources")
-        comparison_layout = QtWidgets.QFormLayout(self.comparison_group)
+        self.comparison_group, comparison_inner = ui_components.make_collapsible_group(
+            QtWidgets, "Source comparison (optional)", checked=False
+        )
+        comparison_layout = QtWidgets.QFormLayout(comparison_inner)
         self.comparison_pdbtm_source = QtWidgets.QComboBox()
         self.comparison_pdbtm_source.addItems([PDBTM_SOURCE_LOCAL, PDBTM_SOURCE_CACHED])
         self.comparison_record_id = QtWidgets.QLineEdit("")
@@ -287,9 +309,15 @@ class MembraneVQCDialog:
         opm_row = QtWidgets.QHBoxLayout()
         opm_row.addWidget(self.comparison_opm_path)
         opm_row.addWidget(self.browse_comparison_opm)
-        self.comparison_status = QtWidgets.QLabel("No comparison has been run.")
+        self.comparison_status = QtWidgets.QLabel(
+            ui_theme.format_status(ui_theme.CATEGORY_NEUTRAL, "No comparison has been run.")
+        )
         self.comparison_metrics = QtWidgets.QTextEdit()
         self.comparison_metrics.setReadOnly(True)
+        ui_components.cap_height(self.comparison_metrics, ui_theme.COMPACT_RESULT_HEIGHT)
+        ui_components.empty_state_placeholder(
+            self.comparison_metrics, "Run Compare to generate geometric comparison metrics."
+        )
         self.comparison_export_path = QtWidgets.QLineEdit("reports/orientation_comparison.json")
         self.compare_button = QtWidgets.QPushButton("Compare")
         self.comparison_cancel_button = QtWidgets.QPushButton("Cancel")
@@ -301,9 +329,10 @@ class MembraneVQCDialog:
         comparison_layout.addRow("PDBTM source summary", self.comparison_pdbtm_summary)
         comparison_layout.addRow("Local OPM file", opm_row)
         comparison_layout.addRow(
-            QtWidgets.QLabel(
+            ui_components.helper_label(
+                QtWidgets,
                 "Geometric review only: neither provider is preferred; no fitting, coordinate "
-                "mutation, consensus, ranking, or biological verdict is performed."
+                "mutation, consensus, ranking, or biological verdict is performed.",
             )
         )
         comparison_actions = QtWidgets.QHBoxLayout()
@@ -315,10 +344,12 @@ class MembraneVQCDialog:
             self.clear_comparison_button,
         ):
             comparison_actions.addWidget(button)
+        ui_components.style_primary(self.compare_button)
         comparison_layout.addRow(comparison_actions)
         comparison_layout.addRow("Comparison status", self.comparison_status)
         comparison_layout.addRow("Comparison metrics", self.comparison_metrics)
         comparison_layout.addRow("Comparison export", self.comparison_export_path)
+        ui_components.style_group_title(self.comparison_group)
 
         if QtGui is not None:
             numeric = QtGui.QDoubleValidator()
@@ -330,57 +361,194 @@ class MembraneVQCDialog:
             self.zmax.setValidator(numeric)
             self.cutoff.setValidator(positive)
 
-        layout.addRow("Selection", self.selection)
-        layout.addRow("Orientation mode", self.orientation_mode)
-        layout.addRow("Orientation JSON", self.orientation_file)
-        json_row = QtWidgets.QHBoxLayout()
-        json_row.addWidget(self.pdbtm_json)
-        json_row.addWidget(self.browse_pdbtm_json)
-        layout.addRow("PDBTM JSON", json_row)
-        pdb_row = QtWidgets.QHBoxLayout()
-        pdb_row.addWidget(self.transformed_pdb)
-        pdb_row.addWidget(self.browse_transformed_pdb)
-        layout.addRow("Transformed PDB", pdb_row)
-        layout.addRow("Current assembly (optional)", self.biological_assembly)
-        layout.addRow("PDBTM source", self.pdbtm_source)
-        layout.addRow("Canonical record ID", self.cached_record_id)
-        fetch_row = QtWidgets.QHBoxLayout()
-        fetch_row.addWidget(self.fetch_button)
-        fetch_row.addWidget(self.cancel_button)
-        layout.addRow(fetch_row)
-        layout.addRow("Cache status", self.cache_status)
-        layout.addRow("Cache metadata", self.cache_metadata)
-        cache_actions_row = QtWidgets.QHBoxLayout()
-        cache_actions_row.addWidget(self.use_cached_button)
-        cache_actions_row.addWidget(self.open_cache_location_button)
-        cache_actions_row.addWidget(self.clear_cached_button)
-        layout.addRow(cache_actions_row)
-        layout.addRow("Orientation source", self.orientation_source)
-        layout.addRow("zmin", self.zmin)
-        layout.addRow("zmax", self.zmax)
-        layout.addRow("Ligand selection", self.ligand)
-        layout.addRow("Cutoff", self.cutoff)
-        layout.addRow("Export path", self.export_path)
-        layout.addRow(self.analyze_context)
-        layout.addRow("Exposure quality", self.exposure_quality)
-        layout.addRow("Exposure backend", self.exposure_backend)
-
-        buttons = QtWidgets.QHBoxLayout()
+        self._planar_container = None
+        self._pdbtm_container = None
+        self._pdbtm_local_container = None
+        self._pdbtm_cache_container = None
+        self._legacy_container = None
         self.action_buttons = []
-        for label, callback in (
-            ("Run QC", self.run_qc),
-            ("Show Slab", self.show_slab),
-            ("Colour Hydropathy", self.colour_hydropathy),
-            ("Ligand Shell", self.ligand_shell),
-            ("Export JSON", self.export_json),
-        ):
-            button = QtWidgets.QPushButton(label)
-            button.clicked.connect(callback)
-            buttons.addWidget(button)
-            self.action_buttons.append(button)
-        layout.addRow(buttons)
-        layout.addRow("Summary", self.summary)
-        layout.addRow(self.comparison_group)
+        if has_tabs:
+            context_group = QtWidgets.QGroupBox("Structure & mode")
+            context_form = QtWidgets.QFormLayout(context_group)
+            context_form.addRow("Selection", self.selection)
+            context_form.addRow("Orientation mode", self.orientation_mode)
+            context_form.addRow(self.context_status)
+            ui_components.style_group_title(context_group)
+            single_root_layout.addWidget(context_group)
+
+            # A mode-specific field that lives in a shared QFormLayout and is hidden via
+            # setVisible() does NOT release the vertical space QFormLayout reserves for that
+            # row's spacing (only the row's own content collapses; confirmed empirically against
+            # this project's exact PyQt5 5.15.11/Qt 5.15.15 build -- ~6px of residual spacing per
+            # hidden row, invisible with one or two hidden rows but a clearly visible gap with the
+            # ~10 rows this group can hide). A QVBoxLayout of whole QWidget containers does not
+            # have this problem: a hidden child widget contributes neither height nor spacing to
+            # its parent QVBoxLayout's size hint. Each mode's fields therefore live in their own
+            # small container widget, and only entire containers are shown/hidden -- never
+            # individual QFormLayout rows within the outer group.
+            orientation_group = QtWidgets.QGroupBox("Orientation source")
+            orientation_outer = QtWidgets.QVBoxLayout(orientation_group)
+            orientation_outer.addWidget(
+                ui_components.helper_label(
+                    QtWidgets, "The fields below adapt to the selected orientation mode."
+                )
+            )
+
+            self._planar_container, planar_form = ui_components.mode_container(
+                QtWidgets, orientation_outer
+            )
+            planar_form.addRow("Orientation JSON", self.orientation_file)
+
+            self._pdbtm_container = QtWidgets.QWidget()
+            pdbtm_outer = QtWidgets.QVBoxLayout(self._pdbtm_container)
+            pdbtm_outer.setContentsMargins(0, 0, 0, 0)
+
+            self._pdbtm_local_container, pdbtm_local_form = ui_components.mode_container(
+                QtWidgets, pdbtm_outer
+            )
+            json_row = QtWidgets.QHBoxLayout()
+            json_row.addWidget(self.pdbtm_json)
+            json_row.addWidget(self.browse_pdbtm_json)
+            pdbtm_local_form.addRow("PDBTM JSON", json_row)
+            pdb_row = QtWidgets.QHBoxLayout()
+            pdb_row.addWidget(self.transformed_pdb)
+            pdb_row.addWidget(self.browse_transformed_pdb)
+            pdbtm_local_form.addRow("Transformed PDB", pdb_row)
+
+            _, pdbtm_shared_form = ui_components.mode_container(QtWidgets, pdbtm_outer)
+            pdbtm_shared_form.addRow("Current assembly (optional)", self.biological_assembly)
+            pdbtm_shared_form.addRow("PDBTM source", self.pdbtm_source)
+            pdbtm_shared_form.addRow("Canonical record ID", self.cached_record_id)
+
+            self._pdbtm_cache_container, pdbtm_cache_form = ui_components.mode_container(
+                QtWidgets, pdbtm_outer
+            )
+            fetch_row = QtWidgets.QHBoxLayout()
+            fetch_row.addWidget(self.fetch_button)
+            fetch_row.addWidget(self.cancel_button)
+            pdbtm_cache_form.addRow(fetch_row)
+            pdbtm_cache_form.addRow("Cache status", self.cache_status)
+            pdbtm_cache_form.addRow("Cache metadata", self.cache_metadata)
+            cache_actions_row = QtWidgets.QHBoxLayout()
+            cache_actions_row.addWidget(self.use_cached_button)
+            cache_actions_row.addWidget(self.open_cache_location_button)
+            cache_actions_row.addWidget(self.clear_cached_button)
+            pdbtm_cache_form.addRow(cache_actions_row)
+
+            orientation_outer.addWidget(self._pdbtm_container)
+
+            self._legacy_container, legacy_form = ui_components.mode_container(
+                QtWidgets, orientation_outer
+            )
+            legacy_form.addRow("zmin", self.zmin)
+            legacy_form.addRow("zmax", self.zmax)
+
+            _, resolved_form = ui_components.mode_container(QtWidgets, orientation_outer)
+            resolved_form.addRow("Resolved orientation", self.orientation_source)
+
+            ui_components.style_group_title(orientation_group)
+            single_root_layout.addWidget(orientation_group)
+
+            analysis_group = QtWidgets.QGroupBox("Analysis options")
+            analysis_form = QtWidgets.QFormLayout(analysis_group)
+            analysis_form.addRow("Ligand selection", self.ligand)
+            analysis_form.addRow("Cutoff", self.cutoff)
+            analysis_form.addRow("Export path", self.export_path)
+            ui_components.style_group_title(analysis_group)
+            single_root_layout.addWidget(analysis_group)
+
+            advanced_group, advanced_inner = ui_components.make_collapsible_group(
+                QtWidgets, "Advanced analysis (optional)", checked=False
+            )
+            advanced_form = QtWidgets.QFormLayout(advanced_inner)
+            advanced_form.addRow(self.analyze_context)
+            advanced_form.addRow("Exposure quality", self.exposure_quality)
+            advanced_form.addRow("Exposure backend", self.exposure_backend)
+            ui_components.style_group_title(advanced_group)
+            single_root_layout.addWidget(advanced_group)
+
+            run_group = QtWidgets.QGroupBox("Run")
+            run_layout = QtWidgets.QVBoxLayout(run_group)
+            buttons = QtWidgets.QHBoxLayout()
+            for label, callback in (
+                ("Run QC", self.run_qc),
+                ("Show Slab", self.show_slab),
+                ("Colour Hydropathy", self.colour_hydropathy),
+                ("Ligand Shell", self.ligand_shell),
+                ("Export JSON", self.export_json),
+            ):
+                button = QtWidgets.QPushButton(label)
+                button.clicked.connect(callback)
+                buttons.addWidget(button)
+                self.action_buttons.append(button)
+            ui_components.style_primary(self.action_buttons[0])  # Run QC
+            self.action_buttons[-1].setEnabled(False)  # Export JSON, until a result exists
+            run_layout.addLayout(buttons)
+            ui_components.style_group_title(run_group)
+            single_root_layout.addWidget(run_group)
+
+            results_group = QtWidgets.QGroupBox("Results")
+            results_layout = QtWidgets.QVBoxLayout(results_group)
+            results_layout.addWidget(self.result_headline)
+            results_layout.addWidget(self.summary)
+            ui_components.style_group_title(results_group)
+            single_root_layout.addWidget(results_group)
+
+            single_root_layout.addWidget(self.comparison_group)
+            single_root_layout.addStretch(1)
+        else:
+            # Minimal-Qt fallback: a flat, ungrouped form (see the has_tabs branch above).
+            layout.addRow("Selection", self.selection)
+            layout.addRow("Orientation mode", self.orientation_mode)
+            layout.addRow(self.context_status)
+            layout.addRow("Orientation JSON", self.orientation_file)
+            json_row = QtWidgets.QHBoxLayout()
+            json_row.addWidget(self.pdbtm_json)
+            json_row.addWidget(self.browse_pdbtm_json)
+            layout.addRow("PDBTM JSON", json_row)
+            pdb_row = QtWidgets.QHBoxLayout()
+            pdb_row.addWidget(self.transformed_pdb)
+            pdb_row.addWidget(self.browse_transformed_pdb)
+            layout.addRow("Transformed PDB", pdb_row)
+            layout.addRow("Current assembly (optional)", self.biological_assembly)
+            layout.addRow("PDBTM source", self.pdbtm_source)
+            layout.addRow("Canonical record ID", self.cached_record_id)
+            fetch_row = QtWidgets.QHBoxLayout()
+            fetch_row.addWidget(self.fetch_button)
+            fetch_row.addWidget(self.cancel_button)
+            layout.addRow(fetch_row)
+            layout.addRow("Cache status", self.cache_status)
+            layout.addRow("Cache metadata", self.cache_metadata)
+            cache_actions_row = QtWidgets.QHBoxLayout()
+            cache_actions_row.addWidget(self.use_cached_button)
+            cache_actions_row.addWidget(self.open_cache_location_button)
+            cache_actions_row.addWidget(self.clear_cached_button)
+            layout.addRow(cache_actions_row)
+            layout.addRow("Orientation source", self.orientation_source)
+            layout.addRow("zmin", self.zmin)
+            layout.addRow("zmax", self.zmax)
+            layout.addRow("Ligand selection", self.ligand)
+            layout.addRow("Cutoff", self.cutoff)
+            layout.addRow("Export path", self.export_path)
+            layout.addRow(self.analyze_context)
+            layout.addRow("Exposure quality", self.exposure_quality)
+            layout.addRow("Exposure backend", self.exposure_backend)
+            buttons = QtWidgets.QHBoxLayout()
+            for label, callback in (
+                ("Run QC", self.run_qc),
+                ("Show Slab", self.show_slab),
+                ("Colour Hydropathy", self.colour_hydropathy),
+                ("Ligand Shell", self.ligand_shell),
+                ("Export JSON", self.export_json),
+            ):
+                button = QtWidgets.QPushButton(label)
+                button.clicked.connect(callback)
+                buttons.addWidget(button)
+                self.action_buttons.append(button)
+            layout.addRow(buttons)
+            layout.addRow(self.result_headline)
+            layout.addRow("Summary", self.summary)
+            layout.addRow(self.comparison_group)
 
         self.orientation_mode.currentTextChanged.connect(self._update_orientation_mode)
         self.browse_pdbtm_json.clicked.connect(self._browse_pdbtm_json)
@@ -409,6 +577,8 @@ class MembraneVQCDialog:
             self.comparison_pdbtm_source.currentTextChanged,
         ):
             signal.connect(self._on_comparison_input_changed)
+        self.selection.textChanged.connect(self._update_context_status)
+        self._last_result_available = False
         self.batch_panel = None
         if self.tabs is not None:
             self.batch_panel = BatchReviewPanel(
@@ -423,6 +593,8 @@ class MembraneVQCDialog:
         self.window.finished.connect(self._on_dialog_finished)
         self._update_orientation_mode()
         self._sync_comparison_controls()
+        self._sync_result_actions()
+        self._update_context_status()
 
     def show(self):
         if self.batch_panel is not None:
@@ -679,7 +851,17 @@ class MembraneVQCDialog:
         self.orientation_file.setEnabled(planar)
         self.biological_assembly.setEnabled(pdbtm)
         self.orientation_source.setText("manual_global_z" if legacy else "unavailable")
+        legacy_container = getattr(self, "_legacy_container", None)
+        if legacy_container is not None:
+            legacy_container.setVisible(legacy)
+        planar_container = getattr(self, "_planar_container", None)
+        if planar_container is not None:
+            planar_container.setVisible(planar)
+        pdbtm_container = getattr(self, "_pdbtm_container", None)
+        if pdbtm_container is not None:
+            pdbtm_container.setVisible(pdbtm)
         self._sync_pdbtm_controls()
+        self._update_context_status()
 
     def _is_cached_source(self) -> bool:
         return str(self.pdbtm_source.currentText()) == PDBTM_SOURCE_CACHED
@@ -703,6 +885,46 @@ class MembraneVQCDialog:
         self.use_cached_button.setEnabled(cached and not busy)
         self.clear_cached_button.setEnabled(cached and not busy)
         self.open_cache_location_button.setEnabled(mode_is_pdbtm)
+        pdbtm_local_container = getattr(self, "_pdbtm_local_container", None)
+        if pdbtm_local_container is not None:
+            pdbtm_local_container.setVisible(local)
+        pdbtm_cache_container = getattr(self, "_pdbtm_cache_container", None)
+        if pdbtm_cache_container is not None:
+            pdbtm_cache_container.setVisible(cached)
+
+    def _update_context_status(self, *_):
+        if not hasattr(self, "context_status"):
+            return
+        selection = str(self.selection.text()).strip() or "(no selection)"
+        mode = self.orientation_mode.currentText()
+        self.context_status.setText(
+            ui_theme.format_status(
+                ui_theme.CATEGORY_NEUTRAL, f"Ready to analyze {selection} using {mode}."
+            )
+        )
+
+    def _sync_result_actions(self):
+        result_available = getattr(self, "_last_result_available", False)
+        summary = getattr(self, "summary", None)
+        if summary is not None:
+            height = (
+                ui_theme.EXPANDED_RESULT_HEIGHT
+                if result_available
+                else ui_theme.COMPACT_RESULT_HEIGHT
+            )
+            ui_components.cap_height(summary, height)
+        export_button = self.action_buttons[-1] if self.action_buttons else None
+        if export_button is None:
+            return
+        export_button.setEnabled(result_available)
+        if result_available:
+            ui_components.style_primary(export_button)
+        elif hasattr(export_button, "setStyleSheet"):
+            export_button.setStyleSheet("")
+
+    def _set_result_headline(self, category, text):
+        if hasattr(self, "result_headline"):
+            self.result_headline.setText(ui_theme.format_status(category, text))
 
     def _next_request_id(self) -> str:
         self._request_seq += 1
@@ -844,7 +1066,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._retrieval_state = RETRIEVAL_INSPECTING_CACHE
-        self.cache_status.setText("Checking cached status\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Checking cached status\u2026")
         self._sync_pdbtm_controls()
         worker.request_inspect.emit(request_id, canonical)
 
@@ -861,17 +1083,20 @@ class MembraneVQCDialog:
         self._pending_request_id = None
         if isinstance(result, WorkerFailure):
             self._retrieval_state = RETRIEVAL_FAILED
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         self._retrieval_state = RETRIEVAL_IDLE
         self._last_inspect = (result.canonical_record_id, result.cache_generation)
         if result.record_present and result.active_snapshot_id is not None:
-            self.cache_status.setText(
-                f"Cached snapshot available ({result.snapshot_count} retained)."
+            self._set_cache_status(
+                ui_theme.CATEGORY_SUCCESS,
+                f"Cached snapshot available ({result.snapshot_count} retained).",
             )
         else:
-            self.cache_status.setText("No validated cached PDBTM pair is available.")
+            self._set_cache_status(
+                ui_theme.CATEGORY_NEUTRAL, "No validated cached PDBTM pair is available."
+            )
         self._sync_pdbtm_controls()
 
     def _on_fetch_clicked(self):
@@ -888,7 +1113,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._retrieval_state = RETRIEVAL_FETCHING
-        self.cache_status.setText("Retrieving PDBTM pair\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Retrieving PDBTM pair\u2026")
         self._sync_pdbtm_controls()
         worker.request_fetch.emit(request_id, canonical)
 
@@ -899,7 +1124,7 @@ class MembraneVQCDialog:
         self._pending_request_id = None
         if isinstance(result, WorkerFailure):
             self._retrieval_state = RETRIEVAL_FAILED
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         self._retrieval_state = RETRIEVAL_AVAILABLE
@@ -907,8 +1132,9 @@ class MembraneVQCDialog:
         # whatever an earlier inspect captured; discard that now-unreliable
         # value rather than let a later Use cached pair attach a stale one.
         self._last_inspect = (None, None)
-        self.cache_status.setText(
-            "A new validated snapshot is available. Press Use cached pair to select it."
+        self._set_cache_status(
+            ui_theme.CATEGORY_SUCCESS,
+            "A new validated snapshot is available. Press Use cached pair to select it.",
         )
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -921,7 +1147,7 @@ class MembraneVQCDialog:
         self._sync_pdbtm_controls()
         self._invalidate_active_request(request_cancel=True)
         self._retrieval_state = RETRIEVAL_CANCELLED
-        self.cache_status.setText("PDBTM retrieval was cancelled.")
+        self._set_cache_status(ui_theme.CATEGORY_CANCELLED, "PDBTM retrieval was cancelled.")
         self._sync_pdbtm_controls()
 
     def _on_use_cached_clicked(self):
@@ -940,7 +1166,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._pending_use_cached_record_id = canonical
-        self.cache_status.setText("Validating cached pair\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Validating cached pair\u2026")
         self._sync_pdbtm_controls()
         worker.request_use_cached.emit(request_id, canonical)
 
@@ -958,7 +1184,7 @@ class MembraneVQCDialog:
             self._cached_snapshot_record_id = None
             self._cached_snapshot_generation = None
             self._selection_state = SELECTION_CACHED_SELECTION_UNAVAILABLE
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             if hasattr(self, "comparison_status"):
                 self._on_comparison_input_changed()
@@ -968,7 +1194,7 @@ class MembraneVQCDialog:
         last_record_id, last_generation = self._last_inspect
         self._cached_snapshot_generation = last_generation if last_record_id == record_id else None
         self._selection_state = SELECTION_CACHED_SELECTED
-        self.cache_status.setText("Validated cached pair selected.")
+        self._set_cache_status(ui_theme.CATEGORY_SUCCESS, "Validated cached pair selected.")
         self._render_cache_metadata(result)
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -1012,7 +1238,7 @@ class MembraneVQCDialog:
         request_id = self._next_request_id()
         self._pending_request_id = request_id
         self._pending_clear_record_id = canonical
-        self.cache_status.setText("Clearing cached record\u2026")
+        self._set_cache_status(ui_theme.CATEGORY_BUSY, "Clearing cached record\u2026")
         self._sync_pdbtm_controls()
         worker.request_clear.emit(request_id, canonical)
 
@@ -1023,7 +1249,7 @@ class MembraneVQCDialog:
         cleared_record_id = self._pending_clear_record_id
         self._pending_clear_record_id = None
         if isinstance(result, WorkerFailure):
-            self.cache_status.setText(result.message)
+            self._set_cache_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_pdbtm_controls()
             return
         if self._cached_snapshot_record_id == cleared_record_id:
@@ -1031,7 +1257,7 @@ class MembraneVQCDialog:
             self._cached_snapshot_record_id = None
             self._cached_snapshot_generation = None
             self._selection_state = SELECTION_CACHED_UNSELECTED
-        self.cache_status.setText("Cached record cleared.")
+        self._set_cache_status(ui_theme.CATEGORY_NEUTRAL, "Cached record cleared.")
         self.cache_metadata.setPlainText("")
         self._sync_pdbtm_controls()
         if hasattr(self, "comparison_status"):
@@ -1063,7 +1289,9 @@ class MembraneVQCDialog:
 
     def _on_comparison_input_changed(self, *_):
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison inputs changed; run Compare explicitly.")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_NEUTRAL, "Comparison inputs changed; run Compare explicitly."
+        )
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
 
@@ -1091,6 +1319,10 @@ class MembraneVQCDialog:
                 self.comparison_pdbtm_summary.setText("Validated cache: no selected pair")
         else:
             self.comparison_pdbtm_summary.setText("Explicit local JSON + transformed PDB")
+        ui_components.cap_height(
+            self.comparison_metrics,
+            ui_theme.EXPANDED_RESULT_HEIGHT if result_ready else ui_theme.COMPACT_RESULT_HEIGHT,
+        )
 
     def _ensure_comparison_worker(self):
         if self._comparison_worker is not None:
@@ -1181,7 +1413,9 @@ class MembraneVQCDialog:
         self._comparison_operation = operation
         self._comparison_snapshot = snapshot
         self._comparison_used_cache = cached
-        self.comparison_status.setText("Comparing explicit PDBTM and OPM evidence\u2026")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_BUSY, "Comparing explicit PDBTM and OPM evidence\u2026"
+        )
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
         worker.request_compare.emit(request_id, request, operation)
@@ -1190,7 +1424,7 @@ class MembraneVQCDialog:
         if self._pending_comparison_id is None:
             return
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison cancelled.")
+        self._set_comparison_status(ui_theme.CATEGORY_CANCELLED, "Comparison cancelled.")
         self._sync_comparison_controls()
 
     def _on_comparison_finished(self, request_id, result):
@@ -1200,7 +1434,7 @@ class MembraneVQCDialog:
         self._comparison_operation = None
         if isinstance(result, ComparisonWorkerFailure):
             self._comparison_snapshot = None
-            self.comparison_status.setText(result.message)
+            self._set_comparison_status(ui_theme.CATEGORY_ERROR, result.message)
             self._sync_comparison_controls()
             return
         snapshot = self._comparison_snapshot
@@ -1210,8 +1444,9 @@ class MembraneVQCDialog:
             biological_assembly=str(self.biological_assembly.text()).strip() or None,
         ):
             self._invalidate_comparison()
-            self.comparison_status.setText(
-                "Selected-object coordinates changed; comparison result was discarded."
+            self._set_comparison_status(
+                ui_theme.CATEGORY_REVIEW,
+                "Selected-object coordinates changed; comparison result was discarded.",
             )
             self._sync_comparison_controls()
             return
@@ -1219,12 +1454,14 @@ class MembraneVQCDialog:
             report = self._build_gui_comparison_report(result, snapshot)
         except Exception as exc:
             self._invalidate_comparison()
-            self.comparison_status.setText(str(exc) or exc.__class__.__name__)
+            self._set_comparison_status(ui_theme.CATEGORY_ERROR, str(exc) or exc.__class__.__name__)
             self._sync_comparison_controls()
             return
         self._comparison_result = result
         self._comparison_report = report
-        self.comparison_status.setText("Geometric comparison ready; neither source was preferred.")
+        self._set_comparison_status(
+            ui_theme.CATEGORY_SUCCESS, "Geometric comparison ready; neither source was preferred."
+        )
         self.comparison_metrics.setPlainText(_comparison_summary(result.comparison))
         self._sync_comparison_controls()
 
@@ -1319,8 +1556,9 @@ class MembraneVQCDialog:
                 self._comparison_snapshot,
                 str(self.selection.text()).strip(),
             )
-            self.comparison_status.setText(
-                "Both provider boundaries are shown for geometric review."
+            self._set_comparison_status(
+                ui_theme.CATEGORY_SUCCESS,
+                "Both provider boundaries are shown for geometric review.",
             )
         except Exception as exc:
             try:
@@ -1335,13 +1573,15 @@ class MembraneVQCDialog:
         try:
             output = parse_export_path(self.comparison_export_path.text())
             export_comparison_report(self._comparison_report, output)
-            self.comparison_status.setText(f"Comparison report exported: {output.name}")
+            self._set_comparison_status(
+                ui_theme.CATEGORY_SUCCESS, f"Comparison report exported: {output.name}"
+            )
         except Exception as exc:
             self._show_error(str(exc) or exc.__class__.__name__)
 
     def _on_clear_comparison_clicked(self):
         self._invalidate_comparison(request_cancel=True)
-        self.comparison_status.setText("Comparison output cleared.")
+        self._set_comparison_status(ui_theme.CATEGORY_NEUTRAL, "Comparison output cleared.")
         self.comparison_metrics.setPlainText("")
         self._sync_comparison_controls()
 
@@ -1398,19 +1638,24 @@ class MembraneVQCDialog:
 
     def _execute(self, status, operation, render):
         self._set_busy(True)
-        self.summary.setPlainText(status)
+        self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_BUSY, status))
+        self._set_result_headline(ui_theme.CATEGORY_BUSY, status)
         try:
             application = getattr(self.QtWidgets, "QApplication", None)
             if application is not None:
                 application.processEvents()
             result = operation()
             self.summary.setPlainText(render(result))
+            category, headline = _headline_for_result(result)
+            self._set_result_headline(category, headline)
+            self._last_result_available = True
             return result
         except Exception as exc:
             self._show_error(str(exc) or exc.__class__.__name__)
             return None
         finally:
             self._set_busy(False)
+            self._sync_result_actions()
 
     def _set_busy(self, busy):
         for button in self.action_buttons:
@@ -1418,10 +1663,46 @@ class MembraneVQCDialog:
 
     def _show_error(self, message):
         text = f"Membrane Visual QC could not complete the action:\n{message}"
-        self.summary.setPlainText(text)
+        self.summary.setPlainText(ui_theme.format_status(ui_theme.CATEGORY_ERROR, text))
+        self._set_result_headline(ui_theme.CATEGORY_ERROR, "The last action could not complete.")
         message_box = getattr(self.QtWidgets, "QMessageBox", None)
         if message_box is not None:
             message_box.warning(self.window, "Membrane Visual QC", text)
+
+    def _set_cache_status(self, category, message):
+        """Set cache_status text with a supplementary, non-exclusive status glyph.
+
+        *category* is a visual grouping only (see ui_theme) -- it is never itself a status
+        literal and carries no scientific meaning.
+        """
+        self.cache_status.setText(ui_theme.format_status(category, message))
+
+    def _set_comparison_status(self, category, message):
+        """Set comparison_status text with a supplementary, non-exclusive status glyph."""
+        self.comparison_status.setText(ui_theme.format_status(category, message))
+
+
+def _headline_for_result(result) -> tuple[str, str]:
+    """Derive a compact (category, text) status headline from a raw action result.
+
+    Visual-only: this never renames or reinterprets ``docs/status_vocabulary.md``'s
+    ``summary.overall_status`` values -- it only picks which glyph/color category best
+    represents them at a glance, from the operation's own return value (not by re-parsing
+    already-rendered text). Non-report results (a membrane object, a residue/neighbour list, a
+    list of written export paths) have no such status and get a generic completion headline.
+    """
+    if isinstance(result, dict) and "summary" in result:
+        overall = result["summary"].get("overall_status")
+        if overall == "REVIEW_ITEMS":
+            count = len(result.get("review_items", []))
+            return ui_theme.CATEGORY_REVIEW, f"REVIEW_ITEMS ({count})"
+        if overall == "NO_FLAGS":
+            return ui_theme.CATEGORY_SUCCESS, "NO_FLAGS"
+        if overall == "INSUFFICIENT_CONTEXT":
+            return ui_theme.CATEGORY_REVIEW, "INSUFFICIENT_CONTEXT"
+        if overall == "ANALYSIS_ERROR":
+            return ui_theme.CATEGORY_ERROR, "ANALYSIS_ERROR"
+    return ui_theme.CATEGORY_SUCCESS, "Completed"
 
 
 def _orientation_source(value) -> str:
