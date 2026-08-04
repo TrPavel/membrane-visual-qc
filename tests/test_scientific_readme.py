@@ -187,23 +187,36 @@ def test_readme_no_longer_claims_no_formal_citation_is_available():
 # ---------------------------------------------------------------------------
 
 
-def test_readme_does_not_reference_unfcaptured_screenshot_or_demo_assets():
+_PLANNED_SCREENSHOT_ASSETS = (
+    "docs/assets/screenshots/hero-single-structure.png",
+    "docs/assets/screenshots/single-structure-result.png",
+    "docs/assets/screenshots/batch-review-completed.png",
+    "docs/assets/screenshots/source-comparison-result.png",
+    "docs/assets/screenshots/recovery-state.png",
+)
+
+
+def test_readme_screenshot_references_match_what_actually_exists_on_disk():
+    """A captured screenshot must be wired into README, and README must never reference one
+    that hasn't been captured -- disk presence and README presence must always agree."""
     text = _readme()
-    for planned in (
-        "docs/assets/screenshots/hero-single-structure.png",
-        "docs/assets/screenshots/single-structure-result.png",
-        "docs/assets/screenshots/batch-review-completed.png",
-        "docs/assets/screenshots/source-comparison-result.png",
-        "docs/assets/screenshots/recovery-state.png",
-        "docs/assets/demos/membrane-visual-qc-demo",
-    ):
-        assert planned not in text, (
-            f"README references planned screenshot/demo asset {planned!r} before it has been "
-            "captured -- see docs/screenshot_capture_plan.md"
+    for relative in _PLANNED_SCREENSHOT_ASSETS:
+        exists = (ROOT / relative).is_file()
+        referenced = relative in text
+        assert exists == referenced, (
+            f"{relative}: exists on disk = {exists}, referenced in README = {referenced} -- "
+            "see docs/screenshot_capture_plan.md"
         )
-    assert not (ROOT / "docs" / "assets" / "screenshots").exists() or not any(
-        (ROOT / "docs" / "assets" / "screenshots").iterdir()
-    ), "a screenshot exists on disk but README was not updated to reference it"
+
+
+def test_readme_does_not_reference_uncaptured_demo_asset():
+    text = _readme()
+    demo_dir = ROOT / "docs" / "assets" / "demos"
+    demo_captured = demo_dir.is_dir() and any(demo_dir.iterdir())
+    assert "docs/assets/demos/membrane-visual-qc-demo" not in text or demo_captured, (
+        "README references the demo asset before it has been captured -- "
+        "see docs/screenshot_capture_plan.md"
+    )
 
 
 def test_readme_real_product_preview_section_links_the_capture_plan():

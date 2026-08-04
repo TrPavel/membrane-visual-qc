@@ -86,11 +86,17 @@ into two small, readable ones (single-structure path, batch path); and a reorgan
 hierarchy (hero, real-product-preview notice, what it does, scientific foundation, how it works,
 core workflows, quick start, real example output, safety and scientific boundaries, documentation,
 installation and compatibility, citation and references, development status) that moves detail into
-canonical docs instead of duplicating it. Real screenshots remain not yet captured in this
-repository's own environment -- `docs/screenshot_capture_plan.md` was updated to name the exact
-five-screenshot-plus-demo set this README is written to receive once captured; no placeholder image
-was committed. This phase changes no runtime, scientific, batch, schema, contract, or cache-format
-behavior, and does not redesign the plugin GUI itself.
+canonical docs instead of duplicating it. `docs/screenshot_capture_plan.md` named the exact
+five-screenshot-plus-demo set this README was written to receive; no placeholder image was ever
+committed. The owner subsequently captured four of the five required screenshots against the final
+PR #37 UI and `0.9.0.dev0` (hero, single-structure-result, batch-review-completed,
+source-comparison-result), which were reviewed, renamed into place, and wired into README with
+accurate captions -- `batch-review-completed.png`'s captured run differs from the composition
+originally planned (`COMPLETED` with no rejected job, rather than `COMPLETED_WITH_ERRORS`), so its
+caption describes what it actually shows rather than the original target; the separately documented
+v0.8.0 `COMPLETED_WITH_ERRORS` matrix in "Real example output" was left unchanged. `recovery-state.png`
+and the demo remain outstanding. This phase changes no runtime, scientific, batch, schema, contract,
+or cache-format behavior, and does not redesign the plugin GUI itself.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 

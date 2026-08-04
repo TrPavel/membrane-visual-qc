@@ -27,16 +27,38 @@
 Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.8.0**. Active
 development line: **`0.9.0.dev0`**.
 
+<p align="center">
+  <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab: a loaded structure with the membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
+</p>
+
+<p align="center"><sub>Single structure tab -- structure loaded, membrane boundaries drawn, a completed run's Results panel populated (real screenshot, own capture against the current UI).</sub></p>
+
 ## Real product preview
 
-A real screenshot of the current dialog (the structure restructured across three real-PyMOL-reviewed
-passes, most recently merged in [PR #37](https://github.com/TrPavel/membrane-visual-qc/pull/37)) is
-not yet captured in this repository's own environment -- it cannot open a graphical PyMOL session.
-[docs/screenshot_capture_plan.md](docs/screenshot_capture_plan.md) is the exact, reproducible plan
-and required filenames (`docs/assets/screenshots/`, `docs/assets/demos/`) for the owner or any
-contributor with a real PyMOL install to capture them; this document will start rendering images
-in place of this notice once real, current-UI files exist there -- no placeholder or reconstructed
-image is used in the meantime.
+Owner-captured, current-UI screenshots (against `0.9.0.dev0`, the dialog restructured across three
+real-PyMOL-reviewed passes most recently merged in [PR #37](https://github.com/TrPavel/membrane-visual-qc/pull/37)):
+
+<p align="center">
+  <img src="docs/assets/screenshots/single-structure-result.png" alt="Single structure tab after a completed QC run: ligand-shell residues highlighted in the PyMOL viewport, a REVIEW_ITEMS (39) result headline, and Export JSON enabled" width="880">
+</p>
+
+<p align="center"><sub>A completed run with ligand-shell residues highlighted and 39 flagged review items -- <code>REVIEW_ITEMS</code> is a manual-review cue, not an error; see <a href="docs/status_vocabulary.md">status vocabulary</a>.</sub></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/batch-review-completed.png" alt="Batch review tab after running the five-mode plan: all five jobs' status column, and a completed Results panel" width="880">
+</p>
+
+<p align="center"><sub>This <code>0.9.0.dev0</code> run of the five-mode plan completed 4 jobs and flagged 1 for review (overall <code>COMPLETED</code>). The separately documented v0.8.0 run below hit one <code>INPUT_REJECTED</code> job instead (<code>COMPLETED_WITH_ERRORS</code>) -- both are real, typed operational outcomes, not a pass/fail score; see <a href="#real-example-output">Real example output</a>.</sub></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/source-comparison-result.png" alt="Batch review's Selected job panel showing the completed PDBTM-OPM comparison job: REVIEW_ITEMS status, report schema 1.5, and a measurable_geometric_difference comparison band" width="880">
+</p>
+
+<p align="center"><sub>The PDBTM-OPM comparison job's own result (captured from Batch review's Selected job panel). The comparison never selects a preferred source or constructs a consensus -- see <a href="#scientific-foundation">Scientific foundation</a>.</sub></p>
+
+One recovery/error-state screenshot and a short demo remain outstanding owner captures --
+[docs/screenshot_capture_plan.md](docs/screenshot_capture_plan.md) has the exact, reproducible plan
+and required filenames for the rest; no placeholder or reconstructed image is used in the meantime.
 
 ## What it does
 

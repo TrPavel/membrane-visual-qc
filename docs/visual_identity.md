@@ -70,8 +70,8 @@ label or table cell instead of another color.
 
 ## Screenshot conventions
 
-No current screenshot of the plugin dialog exists yet -- see `docs/screenshot_capture_plan.md` for
-the exact capture plan. Once captured, screenshots must:
+Four of five required current-UI screenshots are captured (see `docs/screenshot_capture_plan.md`
+for status and the remaining recovery-state/demo capture plan). Every screenshot must:
 
 - live under `docs/assets/screenshots/` (demos under `docs/assets/demos/`);
 - be named descriptively (`hero-single-structure.png`, not `screenshot1.png`);
