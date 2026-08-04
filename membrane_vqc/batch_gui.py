@@ -11,6 +11,7 @@ import uuid
 
 from .batch_contracts import BatchContractError, load_plan
 from .batch_executor import PymolBatchExecutor, _git_commit
+from .batch_paths import BatchPathError
 from .batch_result_browser import (
     BatchResultBrowserError,
     VerifiedArtifact,
@@ -476,7 +477,13 @@ class BatchReviewPanel:
                 cancel_requested=self.cancellation.is_cancelled,
             )
             self.session.start()
-        except (BatchContractError, BatchInputRejected, BatchExecutionFailed, OSError):
+        except (
+            BatchContractError,
+            BatchInputRejected,
+            BatchExecutionFailed,
+            BatchPathError,
+            OSError,
+        ):
             self.session = None
             self.current_request_id = None
             self.cancellation = None
@@ -720,7 +727,7 @@ class BatchReviewPanel:
             return False
         try:
             bundle = inspect_result_bundle(path)
-        except BatchResultBrowserError:
+        except (BatchResultBrowserError, BatchPathError):
             self._set_state(FAILED, "RESULT_BUNDLE_INVALID")
             return False
         self.completed_result = bundle
@@ -820,7 +827,7 @@ class BatchReviewPanel:
             if current.manifest_sha256 != bundle.manifest_sha256:
                 raise BatchResultBrowserError("RESULT_MANIFEST_CHANGED")
             opened = self._open_local(bundle.manifest_path)
-        except BatchResultBrowserError:
+        except (BatchResultBrowserError, BatchPathError):
             opened = False
         if not opened:
             self._set_state(self.state, "RESULT_MANIFEST_UNAVAILABLE")
@@ -836,7 +843,7 @@ class BatchReviewPanel:
             opened = current.output_root == bundle.output_root and self._open_local(
                 bundle.output_root
             )
-        except BatchResultBrowserError:
+        except (BatchResultBrowserError, BatchPathError):
             opened = False
         if not opened:
             self._set_state(self.state, "OUTPUT_DIRECTORY_UNAVAILABLE")
@@ -851,7 +858,7 @@ class BatchReviewPanel:
             return
         try:
             opened = self._open_local(revalidate_artifact(bundle, artifact))
-        except BatchResultBrowserError:
+        except (BatchResultBrowserError, BatchPathError):
             opened = False
         if not opened:
             self._set_state(self.state, "OUTPUT_UNAVAILABLE")
