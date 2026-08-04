@@ -88,15 +88,21 @@ core workflows, quick start, real example output, safety and scientific boundari
 installation and compatibility, citation and references, development status) that moves detail into
 canonical docs instead of duplicating it. `docs/screenshot_capture_plan.md` named the exact
 five-screenshot-plus-demo set this README was written to receive; no placeholder image was ever
-committed. The owner subsequently captured four of the five required screenshots against the final
-PR #37 UI and `0.9.0.dev0` (hero, single-structure-result, batch-review-completed,
-source-comparison-result), which were reviewed, renamed into place, and wired into README with
-accurate captions -- `batch-review-completed.png`'s captured run differs from the composition
-originally planned (`COMPLETED` with no rejected job, rather than `COMPLETED_WITH_ERRORS`), so its
-caption describes what it actually shows rather than the original target; the separately documented
-v0.8.0 `COMPLETED_WITH_ERRORS` matrix in "Real example output" was left unchanged. `recovery-state.png`
-and the demo remain outstanding. This phase changes no runtime, scientific, batch, schema, contract,
-or cache-format behavior, and does not redesign the plugin GUI itself.
+committed. The owner captured four of the five required screenshots against the final PR #37 UI and
+`0.9.0.dev0` (hero, single-structure-result, batch-review-completed, source-comparison-result),
+which were reviewed, renamed into place, and wired into README with accurate captions --
+`batch-review-completed.png`'s captured run differs from the composition originally planned
+(`COMPLETED` with no rejected job, rather than `COMPLETED_WITH_ERRORS`), so its caption describes
+what it actually shows rather than the original target; the separately documented v0.8.0
+`COMPLETED_WITH_ERRORS` matrix in "Real example output" was left unchanged. The remaining
+`recovery-state.png` and the demo were then captured in an assisted session -- with the owner's
+explicit approval, Claude Code used `computer-use` access (granted only to the already-open PyMOL
+process, `pythonw.exe`, after the resolver traced the Start Menu "PyMOL" shortcut to a `cmd.exe`
+wrapper that could only be granted click-only access) to trigger a `zmin >= zmax` validation error
+for `recovery-state.png`, then captured three individual states (idle, completed result, finished
+Batch review run) and assembled them into `membrane-visual-qc-demo.gif` with Pillow, since no
+real-time screen-recording tool was available. This phase changes no runtime, scientific, batch,
+schema, contract, or cache-format behavior, and does not redesign the plugin GUI itself.
 
 ## Post-v0.6.0 compatibility and documentation release (v0.7.0)
 

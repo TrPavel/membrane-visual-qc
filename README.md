@@ -56,9 +56,19 @@ real-PyMOL-reviewed passes most recently merged in [PR #37](https://github.com/T
 
 <p align="center"><sub>The PDBTM-OPM comparison job's own result (captured from Batch review's Selected job panel). The comparison never selects a preferred source or constructs a consensus -- see <a href="#scientific-foundation">Scientific foundation</a>.</sub></p>
 
-One recovery/error-state screenshot and a short demo remain outstanding owner captures --
-[docs/screenshot_capture_plan.md](docs/screenshot_capture_plan.md) has the exact, reproducible plan
-and required filenames for the rest; no placeholder or reconstructed image is used in the meantime.
+<p align="center">
+  <img src="docs/assets/screenshots/recovery-state.png" alt="A validation-error dialog reading 'Membrane Visual QC could not complete the action: zmin must be less than zmax', shown over the Single structure tab with the invalid values still visible" width="880">
+</p>
+
+<p align="center"><sub>An invalid <code>zmin</code>/<code>zmax</code> pair is rejected with a clear, typed message before any analysis runs -- no raw traceback.</sub></p>
+
+<p align="center">
+  <img src="docs/assets/demos/membrane-visual-qc-demo.gif" alt="Animated demo: the Single structure tab ready to run, then a completed NO_FLAGS result, then the Batch review tab showing a finished five-mode run" width="880">
+</p>
+
+<p align="center"><sub>Structure and mode selected -&gt; <code>Run QC</code> -&gt; result appears -&gt; Batch review. Static frames above show the same states without motion.</sub></p>
+
+Capture provenance and exact composition for every image above: [docs/screenshot_capture_plan.md](docs/screenshot_capture_plan.md).
 
 ## What it does
 

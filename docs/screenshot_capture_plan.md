@@ -1,12 +1,17 @@
 # Screenshot and demo capture plan
 
-Status: **4 of 5 required screenshots captured** (owner-captured, 2026-08-04, against `0.9.0.dev0`
-and the final PR #37 UI); `recovery-state.png` and the demo remain outstanding. The assets in
-`docs/screenshots/` (singular) predate the five-mode/Batch review GUI, show an intentional error
-state, and one embeds a local checkout path -- they remain valid only as historical validation
-evidence (see `docs/manual_gui_validation.md`, `Report.md`), not as current visual-identity assets,
-and were not used here. This document is the exact, reproducible plan for the owner (or any
-contributor with a real PyMOL install) to capture the one remaining screenshot and the demo.
+Status: **complete** -- all 5 required screenshots and the demo are captured (2026-08-04, against
+`0.9.0.dev0` and the final PR #37 UI). `hero-single-structure.png`, `single-structure-result.png`,
+`batch-review-completed.png`, and `source-comparison-result.png` were owner-captured;
+`recovery-state.png` and `membrane-visual-qc-demo.gif` were captured in an assisted session (Claude
+Code driving the already-open PyMOL session via `computer-use`, with the owner's explicit
+in-conversation approval for that specific access and the specific recovery scenario to trigger --
+see the session transcript for the exact exchange). The assets in `docs/screenshots/` (singular)
+predate the five-mode/Batch review GUI, show an intentional error state, and one embeds a local
+checkout path -- they remain valid only as historical validation evidence (see
+`docs/manual_gui_validation.md`, `Report.md`), not as current visual-identity assets, and were not
+used here. This document remains the reference for what each shot must show, for any future
+recapture.
 
 Do not commit a file claimed to be current unless it was captured against the exact
 `membrane_vqc.constants.VERSION` in the checkout at capture time, against the final,
@@ -24,8 +29,8 @@ plan was written, recapture rather than reuse an older image.
 | `docs/assets/screenshots/single-structure-result.png` | **captured** | The same tab after a completed QC run: a useful orientation source, populated Results (`REVIEW_ITEMS (39)`), `Export JSON` enabled. |
 | `docs/assets/screenshots/batch-review-completed.png` | **captured** -- different composition than originally planned; see note below | **Batch review** after the five-mode plan finishes, with a job selected so its details are populated. |
 | `docs/assets/screenshots/source-comparison-result.png` | **captured** -- from Batch review, not the Single structure tab's comparison panel; see note below | The completed PDBTM-OPM comparison job's own result: populated metrics (comparison band, comparable), captured from Batch review's Selected job panel. |
-| `docs/assets/screenshots/recovery-state.png` | **outstanding** | One concise, useful recovery/error state (e.g. a rejected batch job, or a clear validation message) -- no raw traceback, and not used as the hero. |
-| `docs/assets/demos/membrane-visual-qc-demo.gif` (or `.webp`) | **outstanding** | 8-15 seconds: structure loaded -> mode selected -> Run QC -> result appears -> optional switch to Batch review. Clean loop, reasonable file size. |
+| `docs/assets/screenshots/recovery-state.png` | **captured** | The `zmin`/`zmax` validation-error dialog on the Single structure tab -- a clear, typed message, no raw traceback. |
+| `docs/assets/demos/membrane-visual-qc-demo.gif` | **captured** | 3 held frames (9s total, looping): Single structure ready -> completed `NO_FLAGS` result -> Batch review's finished five-mode run. Built from individually captured PNGs, not a real-time screen recording -- see note below. |
 
 ### Note on `batch-review-completed.png`'s composition
 
@@ -39,6 +44,16 @@ states the actual numbers shown rather than the originally planned ones; the v0.
 future recapture that reproduces an `INPUT_REJECTED` job under `continue_on_error` would give full
 parity with the originally planned composition, but is not required to keep the current screenshot
 in place.
+
+### Note on `membrane-visual-qc-demo.gif`'s construction
+
+This environment has no screen-recording tool available to the assisted-capture session, so the
+demo is not a real-time recording: it is three individually captured PNG frames (idle/ready,
+completed result, Batch review finished) held for 2.5-3.3 seconds each and assembled into a looping
+GIF with Pillow. This satisfies the spirit of the required sequence (structure/mode selected -> Run
+QC -> result appears -> Batch review) and the length/looping/no-fabrication requirements, but it is
+a slideshow of real states, not smooth motion -- a genuine screen recording remains a valid future
+replacement if a real-time capture tool becomes available.
 
 ### Unused captures
 
@@ -121,15 +136,16 @@ future capture pass at the owner's discretion.
   tab's dedicated panel or the PyMOL viewport. README's caption states the boundary text since the
   image itself doesn't show it.
 
-## Shot 5 -- recovery-state.png (outstanding)
+## Shot 5 -- recovery-state.png (captured)
 
 - **Setup**: trigger one concise, realistic recovery/error state -- for example, a single
   `INPUT_REJECTED` batch job's status, or a clear pre-execution validation message (e.g.
   `zmin >= zmax`). The dialog must show a readable, typed message, not a raw Python traceback.
 - **Do not use this shot as the hero** (Shot 1 is the hero); this shot's purpose is to show the
   dialog's error/recovery presentation is calm and readable, not alarming.
+- **Captured as**: the `zmin >= zmax` pre-execution validation message.
 
-## Demo -- membrane-visual-qc-demo.gif (or .webp) (outstanding)
+## Demo -- membrane-visual-qc-demo.gif (or .webp) (captured)
 
 - **Length**: 8-15 seconds, reasonable file size (well under 6 MB), looping cleanly (first and last
   frame should look like a natural loop point).
@@ -146,14 +162,14 @@ future capture pass at the owner's discretion.
   this document is trying to avoid.
 - **No private filesystem path** anywhere in frame, same rule as the static screenshots.
 
-## After capturing the remaining files (recovery-state.png, the demo)
+## After capturing (for any future recapture)
 
 1. Save each file exactly as named in [Required files](#required-files) above.
-2. Update `README.md`'s "Real product preview" section to reference the real files instead of the
-   current outstanding-items note, following `docs/visual_identity.md`'s screenshot conventions
-   (descriptive alt text, a short caption, no private paths).
+2. Update `README.md`'s "Real product preview" section to reference the real files, following
+   `docs/visual_identity.md`'s screenshot conventions (descriptive alt text, a short caption, no
+   private paths).
 3. Run `pytest tests/test_visual_identity.py tests/test_scientific_readme.py` to confirm the new
    `<img>` references resolve, have alt text, and do not reintroduce a stale-version or
    private-path violation.
-4. Update this document's **Status** line once captured, naming the exact
-   `membrane_vqc.constants.VERSION` the shots were captured against.
+4. Update this document's **Status** line, naming the exact `membrane_vqc.constants.VERSION` the
+   shots were captured against.

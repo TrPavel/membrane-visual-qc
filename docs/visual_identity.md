@@ -70,8 +70,8 @@ label or table cell instead of another color.
 
 ## Screenshot conventions
 
-Four of five required current-UI screenshots are captured (see `docs/screenshot_capture_plan.md`
-for status and the remaining recovery-state/demo capture plan). Every screenshot must:
+All required current-UI screenshots and the demo are captured (see `docs/screenshot_capture_plan.md`
+for status and the exact composition each one shows). Every screenshot must:
 
 - live under `docs/assets/screenshots/` (demos under `docs/assets/demos/`);
 - be named descriptively (`hero-single-structure.png`, not `screenshot1.png`);
