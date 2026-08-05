@@ -13,6 +13,7 @@ from membrane_vqc.batch_gui import (
     RUNNING,
     BatchReviewPanel,
 )
+from membrane_vqc.batch_paths import BatchPathError
 from membrane_vqc.batch_result_browser import VerifiedBatchResult, VerifiedJob
 
 
@@ -376,6 +377,41 @@ def test_validation_populates_five_ordered_rows_and_edits_invalidate(monkeypatch
     assert panel.state == IDLE
     assert panel.validated_plan is None
     assert panel.queue.rows == 0
+
+
+def test_run_batch_reserved_output_name_failure_is_caught_not_raised(monkeypatch, tmp_path):
+    """Regression test: a job id that collides with a reserved Windows device name
+    (e.g. "con") passes plan validation but makes BatchRunSession.start() raise
+    BatchPathError from safe_output_name(). Before this fix, run_batch()'s except-tuple
+    didn't include BatchPathError, so this exception propagated uncaught out of the
+    Run button's Qt slot instead of producing a clean FAILED state."""
+    panel = _panel(monkeypatch)
+    _ready_panel(panel, tmp_path)
+
+    def _raise_start(self):
+        raise BatchPathError("output name contains a reserved Windows component")
+
+    monkeypatch.setattr(FakeSession, "start", _raise_start)
+    panel.run_batch()
+    assert panel.state == FAILED
+    assert panel.session is None
+
+
+def test_open_result_reserved_output_name_failure_is_caught_not_raised(monkeypatch, tmp_path):
+    """Regression test: inspect_result_bundle() can raise BatchPathError (a sibling,
+    not a subclass, of BatchResultBrowserError) if a manifest references a reserved
+    output name. Before this fix, open_result()'s except-tuple only caught
+    BatchResultBrowserError, so this exception propagated uncaught."""
+    panel = _panel(monkeypatch)
+    import membrane_vqc.batch_gui as module
+
+    def _raise_inspect(path):
+        raise BatchPathError("output name contains a reserved Windows component")
+
+    monkeypatch.setattr(module, "inspect_result_bundle", _raise_inspect)
+    result = panel.open_result(str(tmp_path / "batch-result.json"))
+    assert result is False
+    assert panel.state == FAILED
 
 
 def test_invalid_plan_never_leaves_prior_plan_current(monkeypatch, tmp_path):
