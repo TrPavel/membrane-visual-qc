@@ -1,0 +1,62 @@
+{
+  "batch_job_status": [
+    "SUCCESS",
+    "REVIEW_ITEMS",
+    "INSUFFICIENT_CONTEXT",
+    "ANALYSIS_ERROR",
+    "INPUT_REJECTED",
+    "CANCELLED",
+    "SKIPPED_DEPENDENCY"
+  ],
+  "batch_run_overall_status": [
+    "CANCELLED",
+    "COMPLETED",
+    "COMPLETED_WITH_ERRORS",
+    "FAILED_FAST"
+  ],
+  "cache_provider_error_codes": [
+    "CACHE_CLEAR_FAILED",
+    "CACHE_CONFLICT",
+    "CACHE_CORRUPT",
+    "CACHE_DURABILITY_UNCERTAIN",
+    "CACHE_FORMAT_UNSUPPORTED",
+    "CACHE_MISS",
+    "CACHE_OPEN_FAILED",
+    "CACHE_WRITE_FAILED",
+    "COMPANION_ID_MISMATCH",
+    "INVALID_RECORD_ID",
+    "NETWORK_TIMEOUT",
+    "NETWORK_UNAVAILABLE",
+    "PAIR_VALIDATION_FAILED",
+    "PROVIDER_NOT_FOUND",
+    "PROVIDER_RATE_LIMITED",
+    "PROVIDER_RESPONSE_INVALID",
+    "PROVIDER_SERVER_ERROR",
+    "PROXY_UNSUPPORTED",
+    "REDIRECT_DISALLOWED",
+    "RESPONSE_TOO_LARGE",
+    "RETRIEVAL_CANCELLED",
+    "TLS_ERROR"
+  ],
+  "gui_batch_states": [
+    "IDLE",
+    "VALIDATING",
+    "READY",
+    "RUNNING",
+    "CANCELLING",
+    "COMPLETED",
+    "CANCELLED",
+    "FAILED"
+  ],
+  "report_overall_status": [
+    "NO_FLAGS",
+    "REVIEW_ITEMS",
+    "INSUFFICIENT_CONTEXT",
+    "ANALYSIS_ERROR"
+  ],
+  "result_bundle_artifact_availability": [
+    "MISSING",
+    "VERIFIED"
+  ],
+  "source": "docs/status_vocabulary.md (canonical prose); values below are live imports"
+}

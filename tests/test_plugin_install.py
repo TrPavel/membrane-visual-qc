@@ -248,6 +248,78 @@ print("OK")
     assert "OK" in completed.stdout
 
 
+def test_installed_entrypoint_registers_once_with_a_pymol_stub(tmp_path):
+    """Simulated registration only; real graphical menu acceptance remains manual."""
+    zip_path = _build_fresh_zip(tmp_path)
+    install_root = _extract(zip_path, tmp_path / "stub-install")
+    neutral_cwd = tmp_path / "stub-neutral"
+    neutral_cwd.mkdir()
+
+    script = f"""
+import sys, types
+sys.path.insert(0, {str(install_root.parent)!r})
+pymol = types.ModuleType("pymol")
+plugins = types.ModuleType("pymol.plugins")
+class CmdStub:
+    def extend(self, name, callback):
+        pass
+pymol.cmd = CmdStub()
+class QtNotAvailableError(Exception):
+    pass
+calls = []
+def addmenuitemqt(label, callback):
+    calls.append((label, callback.__name__))
+plugins.QtNotAvailableError = QtNotAvailableError
+plugins.addmenuitemqt = addmenuitemqt
+pymol.plugins = plugins
+sys.modules["pymol"] = pymol
+sys.modules["pymol.plugins"] = plugins
+import membrane_vqc
+membrane_vqc.__init_plugin__()
+membrane_vqc.__init_plugin__()
+assert calls == [("Membrane Visual QC", "show_dialog")], calls
+print("STUB_REGISTRATION_OK")
+"""
+    completed = _run_isolated(script, cwd=neutral_cwd)
+    assert completed.returncode == 0, completed.stderr
+    assert "STUB_REGISTRATION_OK" in completed.stdout
+
+
+def test_installed_entrypoint_handles_qt_unavailable_without_traceback(tmp_path):
+    zip_path = _build_fresh_zip(tmp_path)
+    install_root = _extract(zip_path, tmp_path / "headless-install")
+    neutral_cwd = tmp_path / "headless-neutral"
+    neutral_cwd.mkdir()
+
+    script = f"""
+import sys, types
+sys.path.insert(0, {str(install_root.parent)!r})
+pymol = types.ModuleType("pymol")
+plugins = types.ModuleType("pymol.plugins")
+class CmdStub:
+    def extend(self, name, callback):
+        pass
+pymol.cmd = CmdStub()
+class QtNotAvailableError(Exception):
+    pass
+def addmenuitemqt(label, callback):
+    raise QtNotAvailableError("headless")
+plugins.QtNotAvailableError = QtNotAvailableError
+plugins.addmenuitemqt = addmenuitemqt
+pymol.plugins = plugins
+sys.modules["pymol"] = pymol
+sys.modules["pymol.plugins"] = plugins
+import membrane_vqc
+membrane_vqc.__init_plugin__()
+assert membrane_vqc._MENU_REGISTERED is False
+print("QT_UNAVAILABLE_CLEAN")
+"""
+    completed = _run_isolated(script, cwd=neutral_cwd)
+    assert completed.returncode == 0, completed.stderr
+    assert "Traceback" not in completed.stderr
+    assert "QT_UNAVAILABLE_CLEAN" in completed.stdout
+
+
 def test_schemas_are_reachable_by_path_from_the_extracted_install(tmp_path):
     zip_path = _build_fresh_zip(tmp_path)
     install_root = _extract(zip_path, tmp_path / "install")
@@ -304,3 +376,50 @@ print("VERSION=" + membrane_vqc.__version__)
     assert completed.returncode == 0, completed.stderr
     assert f"VERSION={project_version(ROOT)}" in completed.stdout
     assert install_root.is_dir()
+
+
+def test_read_only_install_supports_restart_and_external_cache(tmp_path):
+    """The packaged tree is runtime-read-only; user cache lives elsewhere."""
+    import stat
+
+    zip_path = _build_fresh_zip(tmp_path)
+    install_root = _extract(zip_path, tmp_path / "read only install")
+    neutral_cwd = tmp_path / "read-only-neutral"
+    neutral_cwd.mkdir()
+    cache_root = tmp_path / "external cache"
+    before = {
+        path.relative_to(install_root): path.read_bytes()
+        for path in install_root.rglob("*")
+        if path.is_file()
+    }
+    for path in install_root.rglob("*"):
+        if path.is_file():
+            path.chmod(stat.S_IREAD)
+
+    script = f"""
+import sys
+sys.path.insert(0, {str(install_root.parent)!r})
+import membrane_vqc
+from membrane_vqc.pdbtm_cache import CacheRepository
+repo = CacheRepository({str(cache_root)!r})
+repo.initialize()
+print("VERSION=" + membrane_vqc.__version__)
+"""
+    try:
+        first = _run_isolated(script, cwd=neutral_cwd)
+        second = _run_isolated(script, cwd=neutral_cwd)
+    finally:
+        for path in install_root.rglob("*"):
+            if path.is_file():
+                path.chmod(stat.S_IREAD | stat.S_IWRITE)
+
+    assert first.returncode == second.returncode == 0, first.stderr + second.stderr
+    assert first.stdout == second.stdout == f"VERSION={project_version(ROOT)}\n"
+    assert cache_root.is_dir()
+    after = {
+        path.relative_to(install_root): path.read_bytes()
+        for path in install_root.rglob("*")
+        if path.is_file()
+    }
+    assert after == before
+    assert not any(path.name == "__pycache__" for path in install_root.rglob("*"))

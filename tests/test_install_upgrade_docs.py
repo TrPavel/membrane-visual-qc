@@ -21,30 +21,16 @@ def test_readme_links_to_the_upgrade_guide_and_compatibility_statement():
     assert "docs/compatibility.md" in text
 
 
-def test_upgrade_guide_names_the_supported_v060_upgrade_path():
+def test_upgrade_guide_names_the_prepared_v080_to_v090_path_without_fabricating_acceptance():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
-    assert "v0.6.0" in text
-    assert "0.7.x" in text
-    # The exact verified v0.6.0 asset identity must not silently drift from
-    # docs/v0.6.0_release_evidence.json.
-    assert "7126e51acc6514e3fb73ed0113200d8da376ca75e5f128aef556db2194046960" in text
+    assert "v0.8.0" in text
+    assert "v0.9.0" in text
+    assert "pending" in text.lower()
+    assert "clean replacement" in text.lower()
+    assert "rollback" in text.lower()
 
 
-def test_upgrade_guide_does_not_claim_an_untested_active_development_upgrade_path():
-    """v0.7.0 and v0.8.0 have now both been published as real releases (see
-    docs/v0.7.0_release_evidence.json and docs/v0.8.0_release_evidence.json), so
-    docs/upgrade_guide.md's "v0.6.0 -> 0.7.x" framing is no longer "the current dev
-    line" -- it is a completed, harness-tested pair, and the prose remains accurate as
-    written. v0.7.0 -> v0.8.0 was verified only by owner-observed manual acceptance
-    (docs/v0.8.0_install_upgrade_manual_evidence.json), not by the automated
-    tests/test_plugin_install.py / tests/test_plugin_upgrade.py harness this guide
-    itself requires before naming a path "supported" (see
-    docs/upgrade_guide.md#3-recommended-installation-method), so it is intentionally not
-    added to the guide's own supported-path list here. What this test guards is the
-    *next* transition: nobody should silently extend the guide to claim 0.8.x -> 0.9.x
-    is supported just because 0.9.x becomes the active development line -- see
-    docs/upgrade_guide.md#1-supported-upgrade-path ("Any earlier version... not
-    supported by this guide")."""
+def test_upgrade_guide_matches_the_v090_release_line():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     version = project_version(ROOT)
     assert version.startswith("0.9."), (
@@ -52,7 +38,7 @@ def test_upgrade_guide_does_not_claim_an_untested_active_development_upgrade_pat
         "upgrade path has been harness-tested (update the guide and this test together) "
         "or this test itself is stale"
     )
-    assert "0.9.x" not in text
+    assert "v0.8.0 to v0.9.0" in text
 
 
 def test_compatibility_statement_matches_supported_schema_and_contract_versions():

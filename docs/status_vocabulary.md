@@ -11,7 +11,7 @@ the authoritative source enumerations this table is extracted from).
 Every vocabulary on this page is a frozen v1.0 candidate contract, additive-only (existing values
 never renamed or removed; new values may be added) -- see
 `docs/v1.0_contract_freeze.md#5-batchsingle-structure-status-vocabulary-frozen` and
-`docs/versioning_policy.md#4-error-code-vocabulary`.
+`docs/versioning_policy.md#5-error-code-vocabulary`.
 
 None of these statuses are a biological verdict. "Success" means the software completed its
 deterministic geometric/statistical procedure, not that the input is a biologically correct

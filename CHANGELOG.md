@@ -6,6 +6,30 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
+Publication evidence and real-PyMOL acceptance for v0.9.0 remain pending.
+
+## [0.9.0] - PENDING
+
+### Added
+
+- Added a generated machine-readable inventory under `docs/contracts/` for public PyMOL commands,
+  batch/report contracts, status/outcome vocabulary, comparison bands, CSV columns, output paths,
+  cache records, and the public Python API, with anti-drift regression tests.
+- Added the frozen-artifact v0.9.0 manual acceptance record and the v0.8.0-to-v0.9.0 clean-upgrade,
+  rollback, installation, and uninstall procedure.
+
+### Changed
+
+- Defined the explicit 1.x compatibility policy: frozen contracts, permitted additive changes,
+  documented/versioned scientific threshold changes, and changes requiring 2.0.
+- Expanded installed-ZIP acceptance to cover simulated PyMOL registration, headless Qt failure,
+  read-only installation, external cache state, and deterministic restart in isolated subprocesses.
+
+### Fixed
+
+- Converted unexpected PDBTM-cache Qt worker exceptions into safe user failures while retaining
+  diagnostic exception logs, preventing normal GUI callbacks from emitting uncaught tracebacks.
+
 ### Changed
 
 - Reopened development as `0.9.0.dev0` after publishing the v0.8.0 GitHub prerelease.

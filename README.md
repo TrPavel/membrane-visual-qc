@@ -24,8 +24,8 @@
 > Membrane Visual QC is a review assistant. It does not prove that a structure is correct, stable,
 > membrane-inserted, or experimentally validated -- see [Scientific interpretation](docs/scientific_interpretation.md).
 
-Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.8.0**. Active
-development line: **`0.9.0.dev0`**.
+Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.8.0**. The
+frozen release candidate is **`0.9.0`**, pending formal manual acceptance and publication.
 
 <p align="center">
   <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab in Legacy global-z mode: a loaded structure with the manually defined membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
@@ -288,7 +288,7 @@ Start PyMOL in the checkout root and run `run load_mvqc.py`. Do not execute
 
 Use GitHub's **Cite this repository** action (top of this repository's page, reads `CITATION.cff`)
 to cite Membrane Visual QC as software. `CITATION.cff` intentionally names the latest **published**
-release (`v0.8.0`), not the untagged `0.9.0.dev0` development line -- cite the exact release version
+release (`v0.8.0`), not the unpublished `0.9.0` release candidate -- cite the exact release version
 you used, together with its release URL, not just the repository in general.
 
 Citing this software is not a substitute for citing the source databases/methods an optional
@@ -326,11 +326,9 @@ The implementation is clean-room and does not copy GPL PyMOL plugin code. MIT-li
 
 ## Development status
 
-Active development: **`0.9.0.dev0`**, reopened after publishing v0.8.0 (a contract-freeze and
-documentation-consolidation release -- see [docs/v0.8.0_release_notes.md](docs/v0.8.0_release_notes.md)
-and [docs/v1.0_contract_freeze.md](docs/v1.0_contract_freeze.md)). This session's own scope is this
-scientific-foundation/README pass; it changes no runtime, scientific, batch, schema, contract, or
-cache-format behavior, and does not redesign the plugin GUI itself -- the GUI/UX polish phase is
-already merged (`PR #36` visual identity, `PR #37` GUI/UX restructuring). Next: continued hardening
-toward a stable v1.0. Full history: [docs/development_state.md](docs/development_state.md) and
-[CHANGELOG.md](CHANGELOG.md).
+Release candidate: **`0.9.0`**, prepared from the v0.8.0 successor line and blocked on the exact
+frozen-artifact manual acceptance in
+[docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md). Prior UI and
+screenshot interactions are not represented as that clean-install/upgrade acceptance. No
+`1.0.0rc1` work begins until v0.9.0 is accepted. Full history:
+[docs/development_state.md](docs/development_state.md) and [CHANGELOG.md](CHANGELOG.md).

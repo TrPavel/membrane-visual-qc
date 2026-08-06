@@ -166,10 +166,10 @@ def _sentence_windows(text: str, needle: str):
         yield text[start:end]
 
 
-def test_readme_states_the_current_active_version_only_once_as_devN():
+def test_readme_states_the_current_release_candidate_version():
     text = _readme_text()
     assert VERSION in text, f"README does not mention the active version {VERSION!r}"
-    assert VERSION.endswith(".dev0")
+    assert VERSION == "0.9.0"
     # The previously *published* version (0.8.0) may still appear (install instructions, release
     # verification section) but must never be described as the active development line.
     assert "0.8.0" in text

@@ -1,0 +1,4 @@
+{
+  "cache_contract": "pdbtm-api-v1/cache-v1",
+  "source": "membrane_vqc/pdbtm_cache_contract.py"
+}

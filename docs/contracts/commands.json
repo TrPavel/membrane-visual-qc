@@ -1,0 +1,77 @@
+{
+  "commands": {
+    "mvqc_batch_run": {
+      "fail_fast": 0,
+      "output_dir": "",
+      "plan": "",
+      "quiet": 1,
+      "run_id": ""
+    },
+    "mvqc_check": {
+      "analyze_context": 0,
+      "cutoff": 5.0,
+      "export_path": "",
+      "exposure_backend": "Built-in",
+      "exposure_quality": "Standard",
+      "input_path": "",
+      "ligand": "organic",
+      "quiet": 1,
+      "selection": "all",
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "mvqc_check_orientation": {
+      "analyze_context": 0,
+      "cutoff": 5.0,
+      "export_path": "",
+      "exposure_backend": "Built-in",
+      "exposure_quality": "Standard",
+      "input_path": "",
+      "ligand": "organic",
+      "orientation_file": "",
+      "quiet": 1,
+      "selection": "all"
+    },
+    "mvqc_check_pdbtm": {
+      "analyze_context": 0,
+      "biological_assembly": "",
+      "cutoff": 5.0,
+      "export_path": "",
+      "exposure_backend": "Built-in",
+      "exposure_quality": "Standard",
+      "input_path": "",
+      "ligand": "organic",
+      "pdbtm_json": "",
+      "quiet": 1,
+      "selection": "all",
+      "transformed_pdb": ""
+    },
+    "mvqc_clear": {},
+    "mvqc_color_hydropathy": {
+      "selection": "all"
+    },
+    "mvqc_export": {
+      "path": "reports/mvqc_report.json"
+    },
+    "mvqc_ligand_shell": {
+      "cutoff": 5.0,
+      "ligand": "organic",
+      "protein": "all"
+    },
+    "mvqc_slab": {
+      "zmax": 15.0,
+      "zmin": -15.0
+    },
+    "mvqc_slab_orientation": {
+      "orientation_file": "",
+      "selection": "all"
+    },
+    "mvqc_slab_pdbtm": {
+      "biological_assembly": "",
+      "pdbtm_json": "",
+      "selection": "all",
+      "transformed_pdb": ""
+    }
+  },
+  "source": "membrane_vqc/commands.py:register_commands()"
+}
