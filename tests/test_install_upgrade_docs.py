@@ -21,24 +21,28 @@ def test_readme_links_to_the_upgrade_guide_and_compatibility_statement():
     assert "docs/compatibility.md" in text
 
 
-def test_upgrade_guide_names_the_prepared_v080_to_v090_path_without_fabricating_acceptance():
+def test_upgrade_guide_names_the_owner_accepted_v080_to_v090_path():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     assert "v0.8.0" in text
     assert "v0.9.0" in text
-    assert "pending" in text.lower()
+    assert "owner-accepted" in text.lower()
     assert "clean replacement" in text.lower()
     assert "rollback" in text.lower()
 
 
-def test_upgrade_guide_matches_the_v090_release_line():
+def test_upgrade_guide_matches_the_v090_baseline_for_the_v100rc1_line():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     version = project_version(ROOT)
-    assert version.startswith("0.9."), (
-        f"active version is now {version!r}; if this no longer matches, either a new "
-        "upgrade path has been harness-tested (update the guide and this test together) "
-        "or this test itself is stale"
-    )
+    assert version == "1.0.0rc1.dev0"
     assert "v0.8.0 to v0.9.0" in text
+
+
+def test_v090_manual_acceptance_is_anchored_to_the_published_frozen_artifact():
+    text = (ROOT / "docs" / "releases" / "v0.9.0_manual_acceptance.md").read_text("utf-8")
+    assert "Status: **PASS — OWNER ACCEPTED**" in text
+    assert "READY TO PUBLISH v0.9.0" in text
+    assert "205044" in text
+    assert "9bab918b266db7f260820e6f6d13cc8ab579748a16c077ebd508e511a556c068" in text
 
 
 def test_compatibility_statement_matches_supported_schema_and_contract_versions():

@@ -1,5 +1,5 @@
-# This CITATION.cff intentionally names the latest *published* release (v0.8.0), not the active
-# `0.9.0.dev0` development line -- see README.md's Citation and references section. Update this
+# This CITATION.cff intentionally names the latest *published* release (v0.9.0), not the active
+# `1.0.0rc1.dev0` development line -- see README.md's Citation and references section. Update this
 # file's `version`/`date-released` as part of each future release (docs/release_checklist.md), not
 # on every commit.
 cff-version: 1.2.0
@@ -9,8 +9,8 @@ message: >-
   in general.
 title: Membrane Visual QC
 type: software
-version: 0.8.0
-date-released: "2026-08-02"
+version: 0.9.0
+date-released: "2026-08-06"
 url: https://github.com/TrPavel/membrane-visual-qc
 repository-code: https://github.com/TrPavel/membrane-visual-qc
 license: MIT

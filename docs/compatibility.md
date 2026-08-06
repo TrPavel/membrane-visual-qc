@@ -1,7 +1,7 @@
 # Compatibility statement
 
-The current supported compatibility contract for Membrane Visual QC, as of the frozen `0.9.0`
-release candidate (following the published `0.8.0` release). This is a
+The current supported compatibility contract for Membrane Visual QC, as of the published `v0.9.0`
+prerelease and the reopened `1.0.0rc1.dev0` development line. This is a
 statement of what is actually verified
 by this repository's own evidence (tests, CI, manual acceptance records) versus what is inherited
 from PyMOL itself and outside this project's control. It does not invent guarantees beyond that
@@ -47,8 +47,11 @@ tested range is not proven by repository evidence.
 
 - **v0.6.0 → `0.7.x`**: verified by `tests/test_plugin_upgrade.py` against the genuine published
   v0.6.0 asset. See `docs/upgrade_guide.md`.
-- No other version pair is currently verified. Do not assume support for upgrading from v0.5.0 or
-  earlier directly to `0.7.x`.
+- **v0.8.0 → v0.9.0**: verified by automated installed-ZIP coverage and the owner-observed
+  frozen-artifact clean replacement, retained supported data, rollback, and final reinstall in
+  `docs/releases/v0.9.0_manual_acceptance.md`.
+- No other version pair is currently verified. Do not assume support for arbitrary historical
+  direct upgrades.
 - **Clean replacement is the recommended and supported upgrade model.** Overlay installation (new
   ZIP extracted directly over an old install without removing it first) is not known to cause a
   problem for the v0.6.0 → `0.7.x` transition specifically (the packaged file *set* is identical
@@ -99,7 +102,7 @@ silently misread, but no automatic migration between cache format versions curre
 ## What CI cannot prove
 
 Automated CI never launches a real PyMOL process with a graphical Plugin Manager, so the following
-remain manual-verification-only, tracked in `docs/manual_install_upgrade_checklist.md`:
+remain manual-verification-only, tracked in the applicable version-specific acceptance record:
 
 - The actual graphical "Install New Plugin" flow and its file-placement/removal behavior.
 - Qt menu-item registration actually appearing in a running PyMOL session.

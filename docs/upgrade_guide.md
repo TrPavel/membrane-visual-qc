@@ -1,16 +1,16 @@
 # Upgrade guide: v0.8.0 to v0.9.0
 
 This guide defines the v0.8.0-to-v0.9.0 clean-replacement procedure. Automated installed-ZIP
-coverage verifies package isolation and upgrade mechanics; the real PyMOL upgrade result remains
-**pending** until `docs/releases/v0.9.0_manual_acceptance.md` is completed against the frozen ZIP.
-Do not describe this path as manually accepted before that record passes.
+coverage verifies package isolation and upgrade mechanics; the owner-run frozen-artifact record in
+`docs/releases/v0.9.0_manual_acceptance.md` also records PASS for the real PyMOL upgrade, rollback,
+and final reinstall.
 See `docs/compatibility.md` for the supported-surface boundary and `docs/troubleshooting.md` for
 the full symptom guide.
 
 ## 1. Supported upgrade path
 
-- **v0.8.0 to v0.9.0**: prepared and automated-harness-covered; formal real-PyMOL acceptance is
-  pending the frozen-artifact checklist.
+- **v0.8.0 to v0.9.0**: automated-harness-covered and owner-accepted against the published frozen
+  artifact, including rollback and final reinstall.
 - Older installations: upgrade sequentially using their release documentation, or perform a clean
   v0.9.0 install while retaining user-owned reports and outputs. No arbitrary historical in-place
   upgrade is promised.

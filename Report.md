@@ -11,8 +11,9 @@ documentation set. It changes no scientific algorithm, report schema, batch cont
 format. v0.8.0 was published as a GitHub prerelease for limited public testing on 2026-08-02: a
 contract-freeze and documentation-consolidation release with no scientific, GUI, batch execution,
 cache-format, report-schema, or batch-contract behavior changes of its own -- see
-`docs/v1.0_contract_freeze.md` and `docs/v0.8.0_release_notes.md`. Development has reopened as
-`0.9.0`; formal frozen-artifact manual acceptance remains pending before publication.
+`docs/v1.0_contract_freeze.md` and `docs/v0.8.0_release_notes.md`. v0.9.0 was owner-accepted and
+published as a GitHub prerelease on 2026-08-06; development has reopened as `1.0.0rc1.dev0`, with
+v0.9.0 as its immutable accepted baseline.
 
 The exact v0.7.0 publication evidence is frozen in `docs/v0.7.0_release_evidence.json`; downloaded
 assets were byte-verified against the authoritative post-merge workflow. The `0.7.0.dev0`
@@ -27,8 +28,9 @@ dedicated multi-round harness as the v0.6.0 pair -- see `docs/compatibility_matr
 v0.8.0 publication evidence -- release PR #34, squash commit, post-merge workflow, annotated tag,
 GitHub prerelease URL/timestamp, and all four asset hashes -- is frozen in
 `docs/v0.8.0_release_evidence.json`; downloaded assets were independently re-verified byte-identical
-to the authoritative post-merge workflow. Historical v0.1.0-v0.7.0 evidence below remains
-intentionally unchanged. PyPI is not used.
+to the authoritative post-merge workflow. Historical v0.1.0-v0.8.0 evidence below remains
+intentionally unchanged. The equivalent v0.9.0 acceptance, CI, tag, prerelease, and two approved
+asset identities are frozen in `docs/v0.9.0_release_evidence.json`. PyPI is not used.
 
 ## Environment
 

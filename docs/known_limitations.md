@@ -1,10 +1,10 @@
 # Known Limitations
 
-## v0.9.0 release-candidate limitations
+## v0.9.0 limitations
 
-- Formal graphical acceptance is limited to the owner-run frozen-artifact checklist. Earlier
-  Single structure, slab, hydropathy, Batch review, and comparison interactions performed during
-  documentation/screenshot work are not a clean-install or v0.8.0-upgrade acceptance run.
+- Formal graphical acceptance is limited to the completed owner-run frozen-artifact checklist in
+  `docs/releases/v0.9.0_manual_acceptance.md`. Earlier documentation/screenshot interactions are
+  supplementary and are not substituted for that release acceptance.
 - The installed-ZIP harness uses a PyMOL stub for menu registration and cannot prove that a real
   graphical Plugin Manager displays the entry; that remains a manual acceptance step.
 - Graphical validation remains Windows/Incentive-PyMOL-only. Linux, macOS, and other PyMOL
