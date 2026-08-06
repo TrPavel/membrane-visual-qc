@@ -20,7 +20,7 @@ Markdown.
 | `commands.json` | The 11 public PyMOL commands and their exact parameter/default sets. |
 | `batch_plan_contract.json` | `mvqc-batch-plan-1.0`/`mvqc-batch-result-1.0`, the 5 modes, job statuses, run-level outcomes, size/count limits. |
 | `report_schemas.json` | Report schema versions 1.0-1.5, current/legacy/context/adapter/acquisition version constants, and the schema filenames on disk. |
-| `status_vocabulary.json` | Every status/outcome/error-code literal this project defines, across all 6 distinct vocabularies (report, batch job, batch run, GUI state, cache/provider error, result-bundle availability) -- these are genuinely different vocabularies; see [docs/status_vocabulary.md](../status_vocabulary.md). |
+| `status_vocabulary.json` | Every frozen status/outcome/error-code literal this project defines, including report, batch job/run, GUI state and operational failures, cache/provider errors, and result-bundle availability/integrity codes; see [docs/status_vocabulary.md](../status_vocabulary.md). |
 | `comparison.json` | The PDBTM-OPM comparison method identifier, its 3 result bands, and the 3 review thresholds (5°/2Å/2Å) -- **not** part of the 1.x freeze commitment, included here for completeness. |
 | `csv_columns.json` | The single-structure flags CSV's exact column order. |
 | `output_paths.json` | The batch manifest filename and per-job artifact naming pattern. |

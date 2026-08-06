@@ -1,7 +1,7 @@
 # Compatibility statement
 
 The current supported compatibility contract for Membrane Visual QC, as of the published `v0.9.0`
-prerelease and the reopened `1.0.0rc1.dev0` development line. This is a
+prerelease and the frozen `1.0.0rc1` candidate. This is a
 statement of what is actually verified
 by this repository's own evidence (tests, CI, manual acceptance records) versus what is inherited
 from PyMOL itself and outside this project's control. It does not invent guarantees beyond that
@@ -50,6 +50,9 @@ tested range is not proven by repository evidence.
 - **v0.8.0 → v0.9.0**: verified by automated installed-ZIP coverage and the owner-observed
   frozen-artifact clean replacement, retained supported data, rollback, and final reinstall in
   `docs/releases/v0.9.0_manual_acceptance.md`.
+- **v0.9.0 to v1.0.0rc1**: automated installed-ZIP, clean-replacement, and stale-module safety are
+  verified. Exact frozen-artifact graphical upgrade and rollback remain pending the uncompleted
+  `docs/releases/1.0.0rc1_manual_acceptance.md` checklist and are not yet claimed as owner-verified.
 - No other version pair is currently verified. Do not assume support for arbitrary historical
   direct upgrades.
 - **Clean replacement is the recommended and supported upgrade model.** Overlay installation (new
@@ -85,8 +88,8 @@ plugin's own install directory (`membrane_vqc.pdbtm_cache.select_cache_root()`:
 format-version discriminator is baked into that path segment and an internal `format.json`
 literal; an incompatible future format is expected to fail closed with a clear error rather than
 silently misread, but no automatic migration between cache format versions currently exists. See
-`docs/upgrade_guide.md` for what this means in practice across the v0.6.0 → `0.7.x` upgrade
-(nothing -- the cache code is unchanged between those two versions).
+`docs/upgrade_guide.md` for what this means in practice. `cache-v1` remains unchanged through
+v1.0.0rc1, so the verified clean-replacement paths require no cache migration.
 
 ## Intentionally unsupported behaviors
 

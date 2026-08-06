@@ -191,6 +191,10 @@ applied to make them match. If neither match, the source is rejected as inapplic
 runs against mismatched coordinates. This is an offline geometric applicability check, not a
 statement that the PDBTM assignment is biologically correct.
 
+The `0.002` Å envelope is retained unchanged from the owner-accepted v0.9.0 baseline for RC
+compatibility. It is an identity/serialization tolerance for the paired PDBTM transformed-coordinate
+workflow, not a scientific classification threshold and not an allowance to fit coordinates.
+
 ## 11. OPM source handling
 
 `membrane_vqc/opm_adapter.py` parses an explicit local, legacy-format oriented-PDB file (never
@@ -206,6 +210,13 @@ with at least 2 Å of off-axis extent, to reject a degenerate or coincidental ma
 dummy-atom labels distinguish the two boundary surfaces only; the code explicitly does not treat
 them as inside/outside biology (`directional_topology_available = False`, enforced in
 `OpmOrientationEvidence.__post_init__`).
+
+The OPM `0.003` Å envelope is intentionally retained unchanged from v0.9.0 rather than unified
+during release hardening. OPM enters through a separately parsed legacy oriented-PDB source and is
+also guarded by the minimum-evidence and spatial-extent checks above. The `0.001` Å difference from
+the PDBTM envelope is therefore treated as a source-adapter compatibility detail, not as scientific
+evidence or a comparison threshold. Changing either value requires explicit versioned rationale and
+regression evidence under `docs/versioning_policy.md`.
 
 ## 12. PDBTM–OPM geometric comparison
 

@@ -7,14 +7,14 @@ already followed through v0.1.0-v0.7.0; it does not retroactively change any pas
 
 ## 1. Package version (`membrane_vqc.constants.VERSION`, `pyproject.toml`)
 
-- **Pre-1.0 (current)**: `0.MINOR.PATCH`, with an optional `.devN` suffix for active development
+- **Pre-1.0 history**: `0.MINOR.PATCH`, with an optional `.devN` suffix for active development
   between releases (for example `0.8.0.dev0`). A MINOR bump ships new features or fixes; this
   project does not currently use PATCH releases pre-1.0 -- every release to date has bumped MINOR.
   Any 0.x release may in principle change behavior in a way that would be "breaking" under strict
   semver; in practice this project has kept every genuinely public interface
   (`docs/v1.0_contract_freeze.md`) additive-only since v0.4.0, and intends to keep doing so through
   v1.0.
-- **At v1.0**: standard semantic versioning begins. MAJOR changes signal a breaking change to a
+- **At v1.0 and its release candidates**: standard semantic versioning applies. MAJOR changes signal a breaking change to a
   frozen interface; MINOR adds capability without breaking one; PATCH fixes a defect without
   changing any documented contract.
 - The active version always lives in exactly two places, kept in agreement by
@@ -49,11 +49,11 @@ each frozen item is verified, this section states *what is promised*.
 - **Output-directory layout and deterministic filename rules** -- `batch-result.json`, flat output
   root, `<job_id>.json`/`<job_id>.csv` naming via `safe_output_name()`, atomic-publish semantics, and
   the collision/rollback rules in `docs/outputs_and_manifests.md`.
-- **The documented status and outcome vocabulary** -- every literal in `docs/status_vocabulary.md`
-  (once that document is verified exhaustive per `docs/releases/1.0.0_readiness.md` item R-2). A
+- **The documented status and outcome vocabulary** -- every literal in `docs/status_vocabulary.md`,
+  verified exhaustive by the machine-readable inventory and RC contract tests. A
   status string's meaning, once released, is never redefined.
 - **CSV column contracts** -- `CSV_FIELDS` (`membrane_vqc/report.py`) and the equivalent per-job
-  batch CSV columns, once pinned by a regression test (`docs/releases/1.0.0_readiness.md` item R-1).
+  batch CSV columns, pinned by the RC contract-freeze regression tests.
 
 ### Allowed within 1.x (minor version bump, no deprecation needed)
 

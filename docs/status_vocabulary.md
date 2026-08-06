@@ -127,10 +127,32 @@ in a manifest) when a plan, result bundle, or output path itself is structurally
 | Code | Where it appears | Meaning |
 |---|---|---|
 | `RESULT_MANIFEST_INVALID` | Opening a result bundle | The selected `batch-result.json` failed contract/JSON validation. |
+| `RESULT_MANIFEST_CHANGED` | Reopening the current result | The manifest changed after it was verified and is not opened as stale evidence. |
 | `REPORT_INVALID` | Opening a result bundle, or during a batch run's own report write-back | A referenced report file failed schema/semantic validation. |
+| `REPORT_JSON_INVALID` | Opening a result bundle | A referenced report is missing, unreadable, malformed JSON, or not a JSON object. |
+| `REPORT_SCHEMA_MISMATCH` | Opening a result bundle | The report's declared schema differs from the schema recorded by the manifest. |
+| `REPORT_RESULT_CONTRADICTION` | Opening a result bundle | The report's review outcome contradicts the job status recorded by the manifest. |
 | `OUTPUT_COLLISION` | Batch execution | An output path already exists and is not owned by the current run under the active `overwrite` policy. |
 | `OUTPUT_SIZE_INVALID` / `OUTPUT_UNAVAILABLE` / `OUTPUT_IDENTITY_CHANGED` / `OUTPUT_PATH_UNSAFE` | Opening a result bundle | The referenced artifact's size, readability, byte identity, or path safety failed re-verification at open time. |
+| `OUTPUT_INVENTORY_INVALID` | Opening a result bundle | The manifest's declared report/CSV inventory is internally inconsistent. |
+| `OUTPUT_TOTAL_LIMIT_EXCEEDED` | Opening a result bundle | The total verified output size exceeds the bounded result-browser limit. |
 | `SAME_BATCH_ROLLED_BACK` | Batch execution under `overwrite: same_batch` | A replacement run failed partway and the prior verified output set was restored byte-for-byte; nothing partial was published. |
+
+## 9. Batch review GUI operational error codes
+
+These codes are displayed when the GUI itself cannot validate, start, continue, finalize, or reopen
+a batch operation. They are not job statuses and are never biological outcomes.
+
+| Code | Meaning |
+|---|---|
+| `PLAN_INVALID` | The selected plan could not be parsed or validated. |
+| `OUTPUT_DIRECTORY_UNAVAILABLE` | The selected output directory could not be resolved safely. |
+| `BATCH_START_FAILED` | Queue initialization failed before a job started. |
+| `BATCH_EXECUTION_FAILED` | The active queue could not continue through its guarded execution path. |
+| `BATCH_FINALIZE_FAILED` | The queue completed work but could not publish or inspect its final manifest safely. |
+| `RESULT_BUNDLE_INVALID` | The selected result bundle failed integrity or contract verification. |
+| `RESULT_MANIFEST_UNAVAILABLE` | A previously verified manifest is no longer available for the requested action. |
+| `OUTPUT_UNAVAILABLE` | A referenced output cannot be opened or revealed safely. |
 
 ## What these vocabularies never express
 

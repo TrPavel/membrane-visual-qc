@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import sys
 import time
+from types import ModuleType
 
 import pytest
 
@@ -33,6 +35,37 @@ ROOT = Path(__file__).resolve().parents[1]
 # call would) lets Python garbage-collect it, tearing down Qt mid-session and crashing the next
 # test's widget construction.
 _APPLICATION = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+
+
+def test_real_qt_show_dialog_reuses_singleton_without_widget_or_timer_accumulation(monkeypatch):
+    import membrane_vqc.gui as module
+
+    pymol_module = ModuleType("pymol")
+    qt_module = ModuleType("pymol.Qt")
+    qt_module.QtCore = QtCore
+    qt_module.QtGui = QtGui
+    qt_module.QtWidgets = QtWidgets
+    pymol_module.Qt = qt_module
+    monkeypatch.setitem(sys.modules, "pymol", pymol_module)
+    monkeypatch.setitem(sys.modules, "pymol.Qt", qt_module)
+    monkeypatch.setattr(module, "_DIALOG", None)
+
+    first = module.show_dialog()
+    QtWidgets.QApplication.processEvents()
+    widget_count = len(first.window.findChildren(QtWidgets.QWidget))
+    timer_count = len(first.window.findChildren(QtCore.QTimer))
+
+    first.window.close()
+    QtWidgets.QApplication.processEvents()
+    second = module.show_dialog()
+    QtWidgets.QApplication.processEvents()
+
+    assert second is first
+    assert len(second.window.findChildren(QtWidgets.QWidget)) == widget_count
+    assert len(second.window.findChildren(QtCore.QTimer)) == timer_count
+
+    second.window.close()
+    QtWidgets.QApplication.processEvents()
 
 
 def test_real_qt_primary_actions_are_styled_and_secondary_actions_are_not():

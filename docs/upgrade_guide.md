@@ -1,16 +1,36 @@
-# Upgrade guide: v0.8.0 to v0.9.0
+# Upgrade guide: clean replacement and rollback
 
-This guide defines the v0.8.0-to-v0.9.0 clean-replacement procedure. Automated installed-ZIP
-coverage verifies package isolation and upgrade mechanics; the owner-run frozen-artifact record in
-`docs/releases/v0.9.0_manual_acceptance.md` also records PASS for the real PyMOL upgrade, rollback,
-and final reinstall.
+This guide preserves the owner-accepted v0.8.0-to-v0.9.0 procedure and defines the focused
+v0.9.0-to-v1.0.0rc1 clean-replacement path. Automated installed-ZIP coverage verifies package
+isolation and upgrade mechanics. The RC path remains manual-acceptance pending until the exact
+frozen artifact is exercised using `docs/releases/1.0.0rc1_manual_acceptance.md`.
 See `docs/compatibility.md` for the supported-surface boundary and `docs/troubleshooting.md` for
 the full symptom guide.
+
+## RC path: v0.9.0 to v1.0.0rc1
+
+1. Download and checksum-verify the published `MembraneVisualQC-0.9.0.zip` for rollback and the
+   frozen `MembraneVisualQC-1.0.0rc1.zip` candidate for upgrade.
+2. Record the current plugin version and exact install, external output, and PDBTM-cache locations.
+   Keep all user-owned reports, plans, result bundles, outputs, and cache outside the plugin tree.
+3. Fully exit PyMOL, remove the exact v0.9.0 plugin directory, confirm it is absent, and install the
+   RC ZIP through **Plugin > Plugin Manager > Install New Plugin**. Never overlay the new ZIP.
+4. Fully exit and restart PyMOL. Confirm displayed version `1.0.0rc1`, exactly one menu entry and
+   dialog, then execute the focused RC acceptance checklist.
+5. Confirm retained reports (schemas 1.0-1.5), batch plans/results, and `cache-v1` data validate
+   without being rewritten. Session-only history is intentionally not persisted.
+6. For rollback, fully exit PyMOL, remove the RC plugin directory, reinstall the checksum-verified
+   v0.9.0 ZIP, restart, and confirm displayed version `0.9.0`. This is another clean replacement.
+
+The frozen RC size and SHA-256 are recorded in the acceptance checklist after deterministic build.
+No manual PASS is implied by this procedure or by automated tests.
 
 ## 1. Supported upgrade path
 
 - **v0.8.0 to v0.9.0**: automated-harness-covered and owner-accepted against the published frozen
   artifact, including rollback and final reinstall.
+- **v0.9.0 to v1.0.0rc1**: automated-harness-covered; exact frozen-artifact graphical upgrade and
+  rollback are required by the RC checklist and remain pending owner execution.
 - Older installations: upgrade sequentially using their release documentation, or perform a clean
   v0.9.0 install while retaining user-owned reports and outputs. No arbitrary historical in-place
   upgrade is promised.

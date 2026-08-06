@@ -4,7 +4,7 @@ Snapshot date: 2026-08-06 (Europe/Moscow).
 
 Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. v0.9.0
 was owner-accepted and published as a GitHub prerelease on 2026-08-06; it is the immutable baseline
-for the reopened `1.0.0rc1.dev0` line. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+for the frozen `1.0.0rc1` candidate. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
 cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM
 adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate
 coordinates, choose a source, create consensus, rank providers, or make a biological verdict. Exact
