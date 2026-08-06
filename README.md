@@ -24,8 +24,8 @@
 > Membrane Visual QC is a review assistant. It does not prove that a structure is correct, stable,
 > membrane-inserted, or experimentally validated -- see [Scientific interpretation](docs/scientific_interpretation.md).
 
-Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.8.0**. The
-frozen release candidate is **`0.9.0`**, pending formal manual acceptance and publication.
+Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.9.0**. It is
+the owner-accepted baseline for the active **`1.0.0rc1.dev0`** development line.
 
 <p align="center">
   <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab in Legacy global-z mode: a loaded structure with the manually defined membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
@@ -258,8 +258,8 @@ guides directly:
 
 ## Installation and compatibility
 
-Download `MembraneVisualQC-0.8.0.zip` and its `.zip.sha256` checksum from the
-[v0.8.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.8.0), verify
+Download `MembraneVisualQC-0.9.0.zip` and its `.zip.sha256` checksum from the
+[v0.9.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.9.0), verify
 the checksum, install through PyMOL Plugin Manager using **clean replacement**, and fully restart
 PyMOL. GitHub Releases is the only distribution channel; this project is not published to PyPI.
 
@@ -288,8 +288,8 @@ Start PyMOL in the checkout root and run `run load_mvqc.py`. Do not execute
 
 Use GitHub's **Cite this repository** action (top of this repository's page, reads `CITATION.cff`)
 to cite Membrane Visual QC as software. `CITATION.cff` intentionally names the latest **published**
-release (`v0.8.0`), not the unpublished `0.9.0` release candidate -- cite the exact release version
-you used, together with its release URL, not just the repository in general.
+release (`v0.9.0`), not the active `1.0.0rc1.dev0` development line -- cite the exact release
+version you used, together with its release URL, not just the repository in general.
 
 Citing this software is not a substitute for citing the source databases/methods an optional
 workflow drew on -- cite these separately when that workflow was used:
@@ -314,7 +314,7 @@ Full records and exactly what each supports: [docs/references.bib](docs/referenc
   title   = {Membrane Visual QC},
   author  = {Trofimchik, Pavel},
   year    = {2026},
-  version = {0.8.0},
+  version = {0.9.0},
   url     = {https://github.com/TrPavel/membrane-visual-qc},
   note    = {GitHub prerelease; cite the exact version you used}
 }
@@ -326,9 +326,9 @@ The implementation is clean-room and does not copy GPL PyMOL plugin code. MIT-li
 
 ## Development status
 
-Release candidate: **`0.9.0`**, prepared from the v0.8.0 successor line and blocked on the exact
-frozen-artifact manual acceptance in
-[docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md). Prior UI and
-screenshot interactions are not represented as that clean-install/upgrade acceptance. No
-`1.0.0rc1` work begins until v0.9.0 is accepted. Full history:
+Published baseline: **`v0.9.0`**, accepted through the exact frozen-artifact procedure in
+[docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md), with
+immutable publication metadata in [docs/v0.9.0_release_evidence.json](docs/v0.9.0_release_evidence.json).
+Development is reopened as **`1.0.0rc1.dev0`**; no feature work is part of the release-evidence PR.
+Full history:
 [docs/development_state.md](docs/development_state.md) and [CHANGELOG.md](CHANGELOG.md).

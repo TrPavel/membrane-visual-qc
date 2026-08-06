@@ -155,7 +155,7 @@ includes scientific thresholds/heuristics, GUI layout, and internal module struc
 ## 8. Relationship to `docs/upgrade_guide.md`
 
 `docs/upgrade_guide.md` documents the *installation and data-compatibility* mechanics of a specific
-version pair (currently v0.8.0 -> v0.9.0, with formal manual acceptance still pending). This page
+version pair (currently v0.8.0 -> v0.9.0, with formal manual acceptance complete). This page
 governs the *interface* contract
 across all versions. A version pair can be interface-compatible per this policy while still needing
 its own dedicated, harness-tested upgrade guide entry before this project claims the upgrade path

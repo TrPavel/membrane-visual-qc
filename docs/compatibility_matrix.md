@@ -65,18 +65,18 @@ restored in v0.7.0; see `docs/adr/0001-report-schema-versioning.md`.
 | v0.6.0 | v0.7.0 | **Verified** -- automated harness (`tests/test_plugin_install.py`, `tests/test_plugin_upgrade.py`) against the genuine v0.6.0 asset, plus owner-observed real-PyMOL clean-install/upgrade/rollback (`docs/manual_install_upgrade_checklist.md`) |
 | Any release before v0.6.0 | v0.7.x or later | **Not verified.** Upgrade to v0.6.0 first, confirm it works, then follow the verified path above (`docs/upgrade_guide.md#1-supported-upgrade-path`) |
 | v0.7.0 | v0.8.0 | **Verified by owner-observed manual smoke test only** -- clean-replacement upgrade, version display, and outputs/cache preservation confirmed (`docs/v0.8.0_install_upgrade_manual_evidence.json`). No automated `tests/test_plugin_install.py` / `tests/test_plugin_upgrade.py` harness exists for this pair, and rollback was not exercised; `docs/upgrade_guide.md` is intentionally not extended to name this pair "supported" until such a harness exists |
-| v0.8.0 | v0.9.0 | **Prepared, not yet manually accepted** -- installed-ZIP mechanics are automated and `docs/upgrade_guide.md` defines clean replacement/rollback; support remains provisional until `docs/releases/v0.9.0_manual_acceptance.md` records a real-PyMOL PASS against the frozen ZIP |
+| v0.8.0 | v0.9.0 | **Verified** -- automated installed-ZIP coverage plus owner-observed frozen-artifact clean replacement, supported retained data, rollback, and final v0.9.0 reinstall (`docs/releases/v0.9.0_manual_acceptance.md`) |
 
 ## Cache format support by release
 
 | Release | Cache format |
 |---|---|
-| v0.5.0-v0.7.0 | `cache-v1`, unchanged byte-for-byte since introduction. No migration needed across the v0.6.0 -> v0.7.0 upgrade because none exists to do. |
+| v0.5.0-v0.9.0 | `cache-v1`, unchanged byte-for-byte since introduction. No migration is needed across the verified clean-replacement paths because none exists to do. |
 
 ## What CI cannot prove (unchanged from `docs/compatibility.md`)
 
 The actual graphical "Install New Plugin" flow, Qt menu-item registration in a running session,
 duplicate-plugin-entry behavior after an overlay install, and full close/reopen `QThread` lifecycle
 under a genuinely installed (not source-tree) plugin all remain manual-verification-only --
-tracked per version in `docs/manual_install_upgrade_checklist.md`, not assumed from this matrix or
-from passing CI alone.
+tracked in the applicable version-specific manual acceptance record, not assumed from this matrix
+or from passing CI alone.

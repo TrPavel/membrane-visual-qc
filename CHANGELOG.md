@@ -6,9 +6,9 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
-Publication evidence and real-PyMOL acceptance for v0.9.0 remain pending.
+Reopened development as `1.0.0rc1.dev0`; v0.9.0 is the accepted baseline.
 
-## [0.9.0] - PENDING
+## [0.9.0] - 2026-08-06
 
 ### Added
 
