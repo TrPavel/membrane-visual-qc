@@ -1,0 +1,13 @@
+{
+  "single_structure_flags_csv": [
+    "model",
+    "chain",
+    "resi",
+    "resn",
+    "classification",
+    "severity",
+    "reason",
+    "z"
+  ],
+  "source": "membrane_vqc/report.py:CSV_FIELDS"
+}

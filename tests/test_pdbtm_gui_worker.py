@@ -11,6 +11,8 @@ is outside the scope of ordinary CI.
 
 from __future__ import annotations
 
+import pytest
+
 from membrane_vqc.pdbtm_errors import Stage4BError, Stage4BErrorCode
 from membrane_vqc.pdbtm_gui_worker import make_worker_class
 from membrane_vqc.pdbtm_worker import WorkerFailure
@@ -235,3 +237,45 @@ def test_direct_operation_cancel_is_observed_by_the_blocking_fetch_call():
     assert operations[0].is_cancelled()
     assert isinstance(results[0][1], WorkerFailure)
     assert results[0][1].code == "RETRIEVAL_CANCELLED"
+
+
+@pytest.mark.parametrize(
+    ("operation", "result_name", "signal_name"),
+    [
+        ("inspect", "inspect_result", "inspect_finished"),
+        ("fetch", "fetch_result", "fetch_finished"),
+        ("use_cached_pair", "use_cached_result", "use_cached_finished"),
+        ("clear", "clear_result", "clear_finished"),
+    ],
+)
+def test_unexpected_worker_exception_is_logged_and_becomes_safe_failure(
+    operation, result_name, signal_name, caplog
+):
+    """R-3 regression: an unexpected Exception must not escape a Qt slot.
+
+    The user-visible failure is deliberately traceback-free, while ``logger.exception`` keeps
+    diagnostic evidence so programming errors are not silently hidden.
+    """
+    orchestrator = RecordingOrchestrator(**{result_name: RuntimeError(f"boom in {operation}")})
+    worker = _worker(orchestrator)
+    results = []
+    getattr(worker, signal_name).connect(lambda rid, res: results.append((rid, res)))
+
+    if operation == "inspect":
+        worker.request_inspect.emit("req-r3", "1pcr")
+    elif operation == "fetch":
+        worker.request_fetch.emit("req-r3", "1pcr")
+    elif operation == "use_cached_pair":
+        worker.request_use_cached.emit("req-r3", "1pcr")
+    else:
+        worker.request_clear.emit("req-r3", "1pcr")
+
+    assert len(results) == 1
+    request_id, failure = results[0]
+    assert request_id == "req-r3"
+    assert isinstance(failure, WorkerFailure)
+    assert failure.code == "UNEXPECTED_ERROR"
+    assert "Traceback" not in failure.message
+    assert "boom in" not in failure.message
+    assert any("unexpected error" in record.message for record in caplog.records)
+    assert any(record.exc_info for record in caplog.records)

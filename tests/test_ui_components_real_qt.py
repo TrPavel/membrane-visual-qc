@@ -467,7 +467,7 @@ def test_real_qt_batch_result_and_selected_job_areas_expand_once_populated():
         "COMPLETED",
         "2026-08-03T00:00:00Z",
         "2026-08-03T00:00:01Z",
-        "0.9.0.dev0",
+        "0.9.0",
         MappingProxyType({"total": 3}),
         jobs,
     )
@@ -598,7 +598,7 @@ def test_real_qt_completed_with_errors_is_visually_distinct_from_failed_fast(
             fixed_status,
             "2026-08-02T00:00:00Z",
             "2026-08-02T00:00:01Z",
-            "0.9.0.dev0",
+            "0.9.0",
             MappingProxyType({"total": 5}),
             jobs,
         )

@@ -1,0 +1,5 @@
+{
+  "job_artifact_pattern": "<job_id>.json / <job_id>.csv (via batch_paths.safe_output_name)",
+  "manifest_filename": "batch-result.json",
+  "source": "membrane_vqc/batch_runner.py, docs/outputs_and_manifests.md"
+}

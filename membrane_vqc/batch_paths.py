@@ -89,6 +89,27 @@ def _reject_link_or_reparse(path: Path) -> None:
         raise BatchPathError("path contains a symbolic link or reparse point")
 
 
+def _validate_local_root_syntax(path: str | Path, *, field: str) -> None:
+    """Reject Windows-dangerous syntax before ``Path.absolute()`` can reinterpret it.
+
+    In particular, on Windows ``C:name`` resolves relative to drive C's current directory. If the
+    target happens to exist, checking only the resolved path incorrectly makes acceptance depend on
+    ambient process state. Device names and trailing dots/spaces are likewise lexical component
+    properties and must be checked before filesystem normalization.
+    """
+    windows = PureWindowsPath(str(path))
+    raw = str(windows)
+    if raw.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
+        raise BatchPathError(f"{field} must not be a UNC or device path")
+    if windows.drive and not windows.root:
+        raise BatchPathError(f"{field} must not be drive-relative")
+    for part in windows.parts:
+        if part == windows.anchor:
+            continue
+        if part.endswith((".", " ")) or part.split(".", 1)[0].casefold() in _RESERVED:
+            raise BatchPathError(f"{field} contains a reserved Windows component")
+
+
 def resolve_input_path(root: Path, relative: object, *, field: str) -> Path:
     """Resolve a safe regular file below an approved root without link components.
 
@@ -161,9 +182,7 @@ def resolve_input_directory(root: Path, relative: object, *, field: str) -> Path
 
 def resolve_existing_root(path: str | Path) -> Path:
     """Resolve one existing local directory without following link/reparse components."""
-    raw_windows_text = str(PureWindowsPath(str(path)))
-    if raw_windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
-        raise BatchPathError("local root must not be a UNC or device path")
+    _validate_local_root_syntax(path, field="local root")
     lexical = Path(path).absolute()
     if ".." in lexical.parts:
         raise BatchPathError("local root must not contain traversal components")
@@ -186,9 +205,7 @@ def resolve_existing_root(path: str | Path) -> Path:
 def prepare_output_root(path: str | Path) -> Path:
     """Create or validate one explicit output directory with no link components."""
     root = Path(path)
-    raw_windows_text = str(PureWindowsPath(str(path)))
-    if raw_windows_text.startswith(("\\\\", "\\?\\", "\\.\\", "\\??\\")):
-        raise BatchPathError("output root must not be a UNC or device path")
+    _validate_local_root_syntax(path, field="output root")
     lexical = root.absolute()
     if ".." in lexical.parts:
         raise BatchPathError("output root must not contain traversal components")

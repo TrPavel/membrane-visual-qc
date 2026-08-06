@@ -3,8 +3,8 @@
 Snapshot date: 2026-08-02 (Europe/Moscow).
 
 Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. v0.8.0
-was published as a GitHub prerelease on 2026-08-02, after v0.7.0; development has now reopened as
-`0.9.0.dev0`. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+was published as a GitHub prerelease on 2026-08-02, after v0.7.0; the successor is now frozen as
+the `0.9.0` release candidate pending formal manual acceptance. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
 cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM
 adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate
 coordinates, choose a source, create consensus, rank providers, or make a biological verdict. Exact
@@ -141,8 +141,8 @@ stable-artifact manual smoke-test PASS.
 
 ## Post-v0.8.0 development reset
 
-The active package and build identity is `0.9.0.dev0`, promoted from `0.8.0` after publishing the
-v0.8.0 GitHub prerelease. The reset changes only version-bearing development surfaces, CI artifact
+The package and build identity was `0.9.0.dev0` after publishing v0.8.0 and is now promoted to the
+frozen `0.9.0` release candidate. The reset changes only version-bearing development surfaces, CI artifact
 expectations, and publication evidence; it introduces no runtime or scientific behavior. Schemas
 1.0-1.5 and the batch contracts remain byte-identical; v0.8.0 added no new report schema or retained
 report. `frozen-v0.4.0`, `frozen-v0.5.0`, `frozen-v0.6.0`, `frozen-v0.7.0`, and `frozen-v0.8.0`

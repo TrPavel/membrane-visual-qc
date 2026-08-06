@@ -1,7 +1,7 @@
 # Compatibility statement
 
-The current supported compatibility contract for Membrane Visual QC, as of the `0.9.x`
-development line (active version `0.9.0.dev0`, following the published `0.8.0` release). This is a
+The current supported compatibility contract for Membrane Visual QC, as of the frozen `0.9.0`
+release candidate (following the published `0.8.0` release). This is a
 statement of what is actually verified
 by this repository's own evidence (tests, CI, manual acceptance records) versus what is inherited
 from PyMOL itself and outside this project's control. It does not invent guarantees beyond that

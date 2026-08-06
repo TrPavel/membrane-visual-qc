@@ -1,0 +1,34 @@
+{
+  "job_statuses": [
+    "SUCCESS",
+    "REVIEW_ITEMS",
+    "INSUFFICIENT_CONTEXT",
+    "ANALYSIS_ERROR",
+    "INPUT_REJECTED",
+    "CANCELLED",
+    "SKIPPED_DEPENDENCY"
+  ],
+  "limits": {
+    "max_error_text": 512,
+    "max_job_id": 64,
+    "max_jobs": 100,
+    "max_plan_bytes": 1048576,
+    "max_result_bytes": 4194304
+  },
+  "modes": [
+    "legacy_global_z",
+    "planar_orientation",
+    "pdbtm_local",
+    "pdbtm_cache",
+    "pdbtm_opm_comparison"
+  ],
+  "plan_contract": "mvqc-batch-plan-1.0",
+  "result_contract": "mvqc-batch-result-1.0",
+  "run_overall_status": [
+    "CANCELLED",
+    "COMPLETED",
+    "COMPLETED_WITH_ERRORS",
+    "FAILED_FAST"
+  ],
+  "source": "membrane_vqc/batch_contracts.py"
+}

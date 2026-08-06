@@ -135,6 +135,12 @@ def test_drive_relative_output_root_argument_is_rejected(tmp_path):
         prepare_output_root("C:not_a_real_drive_relative_target_xyz")
 
 
+@pytest.mark.parametrize("component", ["con", "NUL.txt", "folder.", "folder "])
+def test_direct_output_root_rejects_windows_reserved_components(tmp_path, component):
+    with pytest.raises(BatchPathError, match="reserved Windows component"):
+        prepare_output_root(tmp_path / component)
+
+
 @pytest.mark.parametrize("path", [r"\\server\share\x", r"\\?\C:\a.pdb", r"\\.\pipe\name"])
 def test_unc_device_and_pipe_paths_are_rejected(path):
     with pytest.raises(BatchPathError):

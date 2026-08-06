@@ -42,9 +42,26 @@ checkpoint regardless of the worker thread's event-loop state.
 
 from __future__ import annotations
 
+import logging
+
 from .pdbtm_errors import Stage4BError
 from .pdbtm_retrieval import RetrievalOperation
-from .pdbtm_worker import PdbtmWorkerOrchestrator, failure_from_error
+from .pdbtm_worker import PdbtmWorkerOrchestrator, WorkerFailure, failure_from_error
+
+_LOG = logging.getLogger(__name__)
+
+# Emitted when an orchestrator call raises anything other than the typed Stage4BError this
+# worker's four request handlers are otherwise built around (see docs/releases/1.0.0_readiness.md
+# item R-3). Distinct from every real Stage4BErrorCode value so a user-visible message and any
+# log/telemetry reading .code can immediately tell "an unexpected internal error" apart from a
+# normal, anticipated cache/network/validation outcome -- this is a safety net against a
+# programming error escaping the Qt event loop uncaught, not a way of disguising one.
+_UNEXPECTED_ERROR = WorkerFailure(
+    code="UNEXPECTED_ERROR",
+    message="An unexpected internal error occurred; the request was not completed.",
+    retryable=False,
+    existing_cache_usable=False,
+)
 
 
 def make_worker_class(QtCore):
@@ -94,6 +111,10 @@ def make_worker_class(QtCore):
             except Stage4BError as error:
                 self.inspect_finished.emit(request_id, failure_from_error(error))
                 return
+            except Exception:
+                _LOG.exception("unexpected error while inspecting PDBTM cache record")
+                self.inspect_finished.emit(request_id, _UNEXPECTED_ERROR)
+                return
             self.inspect_finished.emit(request_id, result)
 
         def _run_fetch(self, request_id: str, record_id: str) -> None:
@@ -104,6 +125,10 @@ def make_worker_class(QtCore):
             except Stage4BError as error:
                 self.fetch_finished.emit(request_id, failure_from_error(error))
                 return
+            except Exception:
+                _LOG.exception("unexpected error while fetching PDBTM cache record")
+                self.fetch_finished.emit(request_id, _UNEXPECTED_ERROR)
+                return
             self.fetch_finished.emit(request_id, result)
 
         def _run_use_cached(self, request_id: str, record_id: str) -> None:
@@ -112,6 +137,10 @@ def make_worker_class(QtCore):
             except Stage4BError as error:
                 self.use_cached_finished.emit(request_id, failure_from_error(error))
                 return
+            except Exception:
+                _LOG.exception("unexpected error while using cached PDBTM pair")
+                self.use_cached_finished.emit(request_id, _UNEXPECTED_ERROR)
+                return
             self.use_cached_finished.emit(request_id, result)
 
         def _run_clear(self, request_id: str, record_id: str) -> None:
@@ -119,6 +148,10 @@ def make_worker_class(QtCore):
                 result = self._orchestrator.clear(record_id)
             except Stage4BError as error:
                 self.clear_finished.emit(request_id, failure_from_error(error))
+                return
+            except Exception:
+                _LOG.exception("unexpected error while clearing PDBTM cache record")
+                self.clear_finished.emit(request_id, _UNEXPECTED_ERROR)
                 return
             self.clear_finished.emit(request_id, result)
 

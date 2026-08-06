@@ -1,0 +1,14 @@
+{
+  "bands": [
+    "geometrically_close_under_reviewed_tolerance",
+    "measurable_geometric_difference",
+    "not_comparable"
+  ],
+  "method": "planar_axis_geometry_v1",
+  "source": "membrane_vqc/orientation_comparison.py",
+  "thresholds": {
+    "center_displacement_angstrom": 2.0,
+    "normal_axis_angle_degrees": 5.0,
+    "thickness_difference_angstrom": 2.0
+  }
+}
