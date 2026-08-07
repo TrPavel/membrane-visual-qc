@@ -36,6 +36,7 @@ def main(argv: list[str] | None = None) -> int:
                 "valid": True,
             },
             sort_keys=True,
+            allow_nan=False,
         )
     )
     return 0

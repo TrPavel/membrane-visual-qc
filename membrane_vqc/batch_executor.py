@@ -141,9 +141,9 @@ def _coordinate_fingerprint(selection: str, cmd_obj: object) -> str:
             states.append([state, atoms])
         records.append([name, state_count, states])
     return hashlib.sha256(
-        json.dumps(records, sort_keys=False, separators=(",", ":"), ensure_ascii=False).encode(
-            "utf-8"
-        )
+        json.dumps(
+            records, sort_keys=False, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+        ).encode("utf-8")
     ).hexdigest()
 
 

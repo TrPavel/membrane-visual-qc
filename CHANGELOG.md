@@ -8,6 +8,14 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 No feature work has begun beyond the 1.0.0rc1 preparation.
 
+## [1.0.0] - PENDING
+
+- Final stable-release preparation from the owner-accepted `1.0.0rc1` baseline; no feature scope,
+  scientific threshold, schema, cache, batch-contract, CSV, or PyMOL-command change.
+- Added frozen-evidence diff protection, strict JSON non-finite rejection, and focused boundary,
+  command, batch-numeric, and result-browser diagnostic regression coverage.
+- Added explicit supply-chain integrity limits and an uncompleted final owner-acceptance checklist.
+
 ## [1.0.0rc1] - PENDING
 
 Status: frozen release candidate pending focused owner-run manual acceptance. v0.9.0 remains the

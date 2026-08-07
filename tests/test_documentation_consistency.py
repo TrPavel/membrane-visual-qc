@@ -89,6 +89,7 @@ _CANONICAL_USER_DOCS = (
     "v1.0_contract_freeze.md",
     "versioning_policy.md",
     "release_checklist.md",
+    "supply_chain_integrity.md",
     "scientific_background.md",
 )
 
@@ -418,6 +419,7 @@ def test_readme_links_all_primary_guides():
         "docs/v1.0_contract_freeze.md",
         "docs/versioning_policy.md",
         "docs/release_checklist.md",
+        "docs/supply_chain_integrity.md",
         "docs/scientific_background.md",
         "docs/references.bib",
     ):
