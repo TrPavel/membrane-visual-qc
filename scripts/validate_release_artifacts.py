@@ -314,6 +314,9 @@ FROZEN_V090_MANUAL_VALIDATION = {
     "date": "2026-08-06",
     "install_upgrade_rollback_evidence": "docs/releases/v0.9.0_manual_acceptance.md",
 }
+FROZEN_V100RC1_VERSION = "1.0.0rc1"
+FROZEN_V100RC1_RELEASE_EVIDENCE = "docs/v1.0.0rc1_release_evidence.json"
+FROZEN_V100RC1_EVIDENCE_SHA256 = "30fb8e92b56b1e997be18e9b3684cbe824a06d6ecc846df6bbf1fbb5b6005076"
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
     "membrane_vqc/pdbtm_cache_contract.py",
@@ -981,6 +984,20 @@ def verify_frozen_v090_evidence(project_root: Path = ROOT) -> dict[str, object]:
     }
 
 
+def verify_frozen_v100rc1_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify immutable v1.0.0rc1 publication evidence independently of development."""
+    path = project_root.resolve() / FROZEN_V100RC1_RELEASE_EVIDENCE
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != FROZEN_V100RC1_EVIDENCE_SHA256:
+        raise ReleaseArtifactError("Frozen v1.0.0rc1 publication evidence changed")
+    evidence = json.loads(raw)
+    if evidence.get("version") != FROZEN_V100RC1_VERSION:
+        raise ReleaseArtifactError("Frozen v1.0.0rc1 version changed")
+    if evidence.get("tag", {}).get("target") != evidence.get("release_pr", {}).get("squash_commit"):
+        raise ReleaseArtifactError("Frozen v1.0.0rc1 tag target changed")
+    return evidence
+
+
 # Backwards-compatible API name for callers that validate the active build.
 validate_release_artifacts = validate_current_development_artifacts
 
@@ -997,6 +1014,7 @@ def main() -> int:
             "frozen-v0.7.0",
             "frozen-v0.8.0",
             "frozen-v0.9.0",
+            "frozen-v1.0.0rc1",
             "release-candidate",
         ),
         default="current-development",
@@ -1033,6 +1051,10 @@ def main() -> int:
         if args.version is not None:
             parser.error("--version is only valid with --mode release-candidate")
         result = verify_frozen_v090_evidence(args.project_root)
+    elif args.mode == "frozen-v1.0.0rc1":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v100rc1_evidence(args.project_root)
     else:
         if args.version is None:
             parser.error("--mode release-candidate requires --version")
