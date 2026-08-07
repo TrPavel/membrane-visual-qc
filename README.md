@@ -329,7 +329,8 @@ The implementation is clean-room and does not copy GPL PyMOL plugin code. MIT-li
 Published baseline: **`v0.9.0`**, accepted through the exact frozen-artifact procedure in
 [docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md), with
 immutable publication metadata in [docs/v0.9.0_release_evidence.json](docs/v0.9.0_release_evidence.json).
-The hardened **`1.0.0rc1`** candidate is frozen pending its focused manual acceptance; no feature
-work is part of the RC preparation.
+The hardened **`1.0.0rc1`** candidate is owner-accepted and published as a GitHub prerelease. Active
+source development has reopened at **`1.0.0.dev0`**; no feature or production-behaviour change is
+part of the RC evidence freeze.
 Full history:
 [docs/development_state.md](docs/development_state.md) and [CHANGELOG.md](CHANGELOG.md).

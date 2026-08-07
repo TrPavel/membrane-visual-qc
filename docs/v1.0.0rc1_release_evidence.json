@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0rc1",
+  "release_pr": {
+    "number": 42,
+    "final_head": "b2eb89de1e4fc0d5d92061bff0f5f56df180a265",
+    "acceptance_evidence_commit": "b2eb89de1e4fc0d5d92061bff0f5f56df180a265",
+    "squash_commit": "f31fa6598d054a8db7dcfef72920546afb8ccb95",
+    "ci_runs": [31195787732]
+  },
+  "post_merge_workflow": {
+    "id": 31196585351,
+    "artifact_id": 9001054942,
+    "outer_size": 779713,
+    "outer_sha256": "c5dccab7ae649aa70b79644be112e3bbc241497abec788413cdd69f628c733b5"
+  },
+  "tag": {"name": "v1.0.0rc1", "object": "7ab28a1aedba58002120859997886952a42ef389", "target": "f31fa6598d054a8db7dcfef72920546afb8ccb95"},
+  "release": {"url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0rc1", "published_at": "2026-08-07T16:19:36Z", "prerelease": true, "pypi_published": false},
+  "assets": {
+    "MembraneVisualQC-1.0.0rc1.zip": {"size": 205048, "sha256": "6ab5e5e6c2c96110f00510456d3041ccc286e5bc4643f8c463b01b090b3d4006"},
+    "MembraneVisualQC-1.0.0rc1.zip.sha256": {"size": 96, "sha256": "aa0e88dbc7fb9301028194e1b8b1ccc7ead650e4b2ea9b27dd1a6b5a284b55d3"}
+  },
+  "manual_validation": {"owner_verdict": "PASS — OWNER OBSERVED", "all_required_phases": "PASS — OWNER OBSERVED", "deleted_batch_result_evidence": "documented after owner verification; paths and detailed measurements not retained", "acceptance_record": "docs/releases/1.0.0rc1_manual_acceptance.md"},
+  "downloaded_asset_verification": {"zip_size": 205048, "zip_sha256": "6ab5e5e6c2c96110f00510456d3041ccc286e5bc4643f8c463b01b090b3d4006", "checksum_sidecar_matches": true}
+}
