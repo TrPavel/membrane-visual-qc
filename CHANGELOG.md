@@ -6,7 +6,25 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
-Reopened development as `1.0.0rc1.dev0`; v0.9.0 is the accepted baseline.
+No feature work has begun beyond the 1.0.0rc1 preparation.
+
+## [1.0.0rc1] - PENDING
+
+Status: frozen release candidate pending focused owner-run manual acceptance. v0.9.0 remains the
+published, owner-accepted baseline.
+
+### Added
+
+- Added exact contract pins for the public Python API, CSV column order, cache identifier, batch
+  result manifest name, result-browser error codes, and GUI operational error vocabulary.
+- Added focused 1.0.0rc1 manual acceptance and final 1.0 exit-criteria documents.
+
+### Changed
+
+- Reclassified every remaining 1.0 readiness item and closed the RC-only documentation and
+  contract-verification work without changing scientific thresholds or feature scope.
+- Extended Windows CI coverage for real-Qt restart behavior and reserved/Unicode batch paths.
+- Promoted the package identity from `1.0.0rc1.dev0` to `1.0.0rc1`.
 
 ## [0.9.0] - 2026-08-06
 

@@ -43,6 +43,7 @@ the user's PyMOL distribution, not by this project.
 | v0.7.0 | 1.0-1.5 (restores 1.0 read support) | 1.1, 1.2, 1.3, 1.4, 1.5 |
 | v0.8.0 | 1.0-1.5 | 1.1, 1.2, 1.3, 1.4, 1.5 |
 | v0.9.0 | 1.0-1.5 | 1.1, 1.2, 1.3, 1.4, 1.5 |
+| v1.0.0rc1 | 1.0-1.5 | 1.1, 1.2, 1.3, 1.4, 1.5 |
 
 Which schema a *write* path selects depends on the mode/options used (legacy/planar -> 1.1, +context
 -> 1.2, offline PDBTM -> 1.3, cached PDBTM -> 1.4, comparison -> 1.5); see `docs/report_schema.md`.
@@ -57,6 +58,7 @@ restored in v0.7.0; see `docs/adr/0001-report-schema-versioning.md`.
 | v0.1.0-v0.5.0 | Not present (introduced in v0.6.0) |
 | v0.6.0 | Introduced, full support (5 modes, CLI, GUI) |
 | v0.7.0 | Unchanged, full support |
+| v0.8.0-v1.0.0rc1 | Unchanged, full support |
 
 ## Verified upgrade paths
 
@@ -66,12 +68,13 @@ restored in v0.7.0; see `docs/adr/0001-report-schema-versioning.md`.
 | Any release before v0.6.0 | v0.7.x or later | **Not verified.** Upgrade to v0.6.0 first, confirm it works, then follow the verified path above (`docs/upgrade_guide.md#1-supported-upgrade-path`) |
 | v0.7.0 | v0.8.0 | **Verified by owner-observed manual smoke test only** -- clean-replacement upgrade, version display, and outputs/cache preservation confirmed (`docs/v0.8.0_install_upgrade_manual_evidence.json`). No automated `tests/test_plugin_install.py` / `tests/test_plugin_upgrade.py` harness exists for this pair, and rollback was not exercised; `docs/upgrade_guide.md` is intentionally not extended to name this pair "supported" until such a harness exists |
 | v0.8.0 | v0.9.0 | **Verified** -- automated installed-ZIP coverage plus owner-observed frozen-artifact clean replacement, supported retained data, rollback, and final v0.9.0 reinstall (`docs/releases/v0.9.0_manual_acceptance.md`) |
+| v0.9.0 | v1.0.0rc1 | **Automated gate verified; manual acceptance pending** -- clean replacement, installed-ZIP isolation, stale-module safety, and retained contract compatibility are automated; the exact frozen RC upgrade and rollback remain unclaimed until `docs/releases/1.0.0rc1_manual_acceptance.md` is owner-run |
 
 ## Cache format support by release
 
 | Release | Cache format |
 |---|---|
-| v0.5.0-v0.9.0 | `cache-v1`, unchanged byte-for-byte since introduction. No migration is needed across the verified clean-replacement paths because none exists to do. |
+| v0.5.0-v1.0.0rc1 | `cache-v1`, unchanged byte-for-byte since introduction. No migration is needed across the verified clean-replacement paths because none exists to do. |
 
 ## What CI cannot prove (unchanged from `docs/compatibility.md`)
 

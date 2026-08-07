@@ -12,13 +12,35 @@ import inspect
 import json
 from pathlib import Path
 
+import membrane_vqc
 from membrane_vqc import commands, errors
 from membrane_vqc.batch_contracts import MODES, PLAN_CONTRACT, RESULT_CONTRACT, STATUSES
 from membrane_vqc.batch_gui import BATCH_STATES
+from membrane_vqc.batch_runner import MANIFEST_NAME
 from membrane_vqc.pdbtm_cache import _CACHE_SUFFIX
+from membrane_vqc.pdbtm_cache_contract import CACHE_CONTRACT
 from membrane_vqc.pdbtm_errors import Stage4BErrorCode
+from membrane_vqc.report import CSV_FIELDS
 
 ROOT = Path(__file__).resolve().parents[1]
+
+FROZEN_PUBLIC_API = {
+    "OrientationImportResult",
+    "PdbtmApiV1Adapter",
+    "StructureContext",
+    "VERSION",
+    "import_pdbtm_orientation",
+}
+FROZEN_CSV_FIELDS = (
+    "model",
+    "chain",
+    "resi",
+    "resn",
+    "classification",
+    "severity",
+    "reason",
+    "z",
+)
 
 # ---------------------------------------------------------------------------
 # 4. PyMOL commands (frozen: names and existing parameters)
@@ -134,6 +156,14 @@ def test_pdbtm_cached_helpers_remain_internal_not_pymol_commands():
     assert "mvqc_slab_pdbtm_cached" not in recorder.registered
     assert hasattr(commands, "mvqc_check_pdbtm_cached")
     assert hasattr(commands, "mvqc_slab_pdbtm_cached")
+
+
+def test_public_python_api_is_the_frozen_set():
+    assert set(membrane_vqc.__all__) == FROZEN_PUBLIC_API
+
+
+def test_single_structure_csv_column_order_is_frozen():
+    assert tuple(CSV_FIELDS) == FROZEN_CSV_FIELDS
 
 
 # ---------------------------------------------------------------------------
@@ -258,11 +288,16 @@ def test_other_typed_exception_classes_exist_with_frozen_names():
 
 
 def test_cache_path_suffix_and_env_var_are_frozen():
+    assert CACHE_CONTRACT == "pdbtm-api-v1/cache-v1"
     assert _CACHE_SUFFIX == ("pdbtm-api-v1", "cache-v1")
     import membrane_vqc.pdbtm_cache as pdbtm_cache_module
 
     source = inspect.getsource(pdbtm_cache_module.select_cache_root)
     assert "MVQC_CACHE_DIR" in source
+
+
+def test_batch_output_manifest_name_is_frozen():
+    assert MANIFEST_NAME == "batch-result.json"
 
 
 # ---------------------------------------------------------------------------

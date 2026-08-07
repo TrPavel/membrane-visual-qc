@@ -75,7 +75,7 @@ What a result reports, and -- just as importantly -- what it deliberately does n
 |---|---|
 | [Compatibility statement](compatibility.md) | Validated configurations (OS, PyMOL distribution, Python, Qt), supported upgrade path, supported schema/contract versions, cache format, and what CI structurally cannot prove. |
 | [Compatibility matrix](compatibility_matrix.md) | Grid view: platform × validation method, PyMOL distribution, Python version, schema/contract support per release, and validated configurations vs. formally supported ranges. |
-| [Upgrade guide](upgrade_guide.md) | Step-by-step v0.6.0 → `0.7.x` upgrade: before-upgrading checklist, recommended clean-replacement method, post-upgrade verification, existing-data compatibility table, rollback, and troubleshooting. Version-neutral enough to extend as later pairs are verified. |
+| [Upgrade guide](upgrade_guide.md) | Clean-replacement upgrade and rollback procedures, including the owner-accepted v0.8.0-to-v0.9.0 path and focused v0.9.0-to-v1.0.0rc1 candidate path. |
 | [Manual install/upgrade checklist](manual_install_upgrade_checklist.md) | The owner-observed manual PASS record for the v0.6.0 → `0.7.0.dev0` install/upgrade/rollback path -- real evidence, not a template to assume passed for other version pairs. |
 
 ## Developer/release
@@ -91,6 +91,9 @@ the guide above wins.
 | [v1.0 contract freeze](v1.0_contract_freeze.md) | The audit of every public/machine-readable interface (PyMOL commands, report schemas, batch contracts, cache format, error codes, output layout) and its frozen/not-frozen/internal status ahead of v1.0. |
 | [Versioning policy](versioning_policy.md) | How the package version, report schema versions, and batch contract versions are meant to change, and the deprecation process required before a frozen interface can break. |
 | [Release checklist](release_checklist.md) | The exact two-PR release process (prepare → tag/publish → evidence-freeze/reopen), developer-facing -- not user installation instructions (see [Installation and maintenance](#installation-and-maintenance) for that). |
+| [1.0.0rc1 release notes](1.0.0rc1_release_notes.md) | The release-hardening delta, compatibility boundary, artifact identity, and pending manual status for the RC candidate. |
+| [1.0.0rc1 manual acceptance](releases/1.0.0rc1_manual_acceptance.md) | Focused owner-run checklist for the frozen RC; deliberately contains no fabricated results. |
+| [Final 1.0 exit criteria](releases/1.0.0_exit_criteria.md) | Evidence and acceptance conditions that remain required before the final 1.0 release. |
 
 **Architecture Decision Records** (`adr/`) -- the reasoning behind specific design decisions:
 orientation geometry (`0002`), exposure/SASA semantics (`0003-exposure-semantics.md`), the optional

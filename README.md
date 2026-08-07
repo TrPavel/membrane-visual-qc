@@ -25,7 +25,7 @@
 > membrane-inserted, or experimentally validated -- see [Scientific interpretation](docs/scientific_interpretation.md).
 
 Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.9.0**. It is
-the owner-accepted baseline for the active **`1.0.0rc1.dev0`** development line.
+the owner-accepted baseline for the frozen **`1.0.0rc1`** release candidate.
 
 <p align="center">
   <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab in Legacy global-z mode: a loaded structure with the manually defined membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
@@ -288,7 +288,7 @@ Start PyMOL in the checkout root and run `run load_mvqc.py`. Do not execute
 
 Use GitHub's **Cite this repository** action (top of this repository's page, reads `CITATION.cff`)
 to cite Membrane Visual QC as software. `CITATION.cff` intentionally names the latest **published**
-release (`v0.9.0`), not the active `1.0.0rc1.dev0` development line -- cite the exact release
+release (`v0.9.0`), not the unaccepted `1.0.0rc1` candidate -- cite the exact release
 version you used, together with its release URL, not just the repository in general.
 
 Citing this software is not a substitute for citing the source databases/methods an optional
@@ -329,6 +329,7 @@ The implementation is clean-room and does not copy GPL PyMOL plugin code. MIT-li
 Published baseline: **`v0.9.0`**, accepted through the exact frozen-artifact procedure in
 [docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md), with
 immutable publication metadata in [docs/v0.9.0_release_evidence.json](docs/v0.9.0_release_evidence.json).
-Development is reopened as **`1.0.0rc1.dev0`**; no feature work is part of the release-evidence PR.
+The hardened **`1.0.0rc1`** candidate is frozen pending its focused manual acceptance; no feature
+work is part of the RC preparation.
 Full history:
 [docs/development_state.md](docs/development_state.md) and [CHANGELOG.md](CHANGELOG.md).

@@ -48,6 +48,16 @@
     "CANCELLED",
     "FAILED"
   ],
+  "gui_operational_error_codes": [
+    "BATCH_EXECUTION_FAILED",
+    "BATCH_FINALIZE_FAILED",
+    "BATCH_START_FAILED",
+    "OUTPUT_DIRECTORY_UNAVAILABLE",
+    "OUTPUT_UNAVAILABLE",
+    "PLAN_INVALID",
+    "RESULT_BUNDLE_INVALID",
+    "RESULT_MANIFEST_UNAVAILABLE"
+  ],
   "report_overall_status": [
     "NO_FLAGS",
     "REVIEW_ITEMS",
@@ -57,6 +67,20 @@
   "result_bundle_artifact_availability": [
     "MISSING",
     "VERIFIED"
+  ],
+  "result_bundle_error_codes": [
+    "OUTPUT_IDENTITY_CHANGED",
+    "OUTPUT_INVENTORY_INVALID",
+    "OUTPUT_PATH_UNSAFE",
+    "OUTPUT_SIZE_INVALID",
+    "OUTPUT_TOTAL_LIMIT_EXCEEDED",
+    "OUTPUT_UNAVAILABLE",
+    "REPORT_INVALID",
+    "REPORT_JSON_INVALID",
+    "REPORT_RESULT_CONTRADICTION",
+    "REPORT_SCHEMA_MISMATCH",
+    "RESULT_MANIFEST_CHANGED",
+    "RESULT_MANIFEST_INVALID"
   ],
   "source": "docs/status_vocabulary.md (canonical prose); values below are live imports"
 }

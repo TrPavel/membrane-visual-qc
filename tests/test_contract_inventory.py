@@ -76,6 +76,17 @@ def test_result_bundle_availability_literals_still_present_in_source():
         )
 
 
+def test_status_document_covers_every_inventoried_literal():
+    text = (ROOT / "docs" / "status_vocabulary.md").read_text(encoding="utf-8")
+    inventory = _committed("status_vocabulary")
+    for category in (
+        "result_bundle_error_codes",
+        "gui_operational_error_codes",
+    ):
+        for literal in inventory[category]:
+            assert f"`{literal}`" in text, f"{literal} is missing from docs/status_vocabulary.md"
+
+
 def test_readme_documents_every_inventory_file():
     readme = (OUT_DIR / "README.md").read_text(encoding="utf-8")
     for path in sorted(OUT_DIR.glob("*.json")):

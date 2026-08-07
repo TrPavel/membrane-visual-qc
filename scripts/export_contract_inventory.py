@@ -14,6 +14,7 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+import re
 import sys
 from typing import get_args
 
@@ -127,6 +128,44 @@ def _result_bundle_availability() -> list[str]:
     return ["MISSING", "VERIFIED"]
 
 
+def _exception_codes(module_name: str, exception_name: str) -> list[str]:
+    """Extract exact string codes raised through a named exception constructor."""
+    source = (REPOSITORY_ROOT / "membrane_vqc" / module_name).read_text("utf-8")
+    tree = ast.parse(source)
+    codes = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not node.args:
+            continue
+        if isinstance(node.func, ast.Name) and node.func.id == exception_name:
+            value = node.args[0]
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                codes.add(value.value)
+    return sorted(codes)
+
+
+def _gui_operational_error_codes() -> list[str]:
+    """Extract stable user-visible failure codes passed to the batch GUI state helpers."""
+    source = (REPOSITORY_ROOT / "membrane_vqc" / "batch_gui.py").read_text("utf-8")
+    tree = ast.parse(source)
+    codes = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        if node.func.attr == "_set_state" and len(node.args) >= 2:
+            value = node.args[1]
+        elif node.func.attr == "_finish_failed" and node.args:
+            value = node.args[0]
+        else:
+            continue
+        if (
+            isinstance(value, ast.Constant)
+            and isinstance(value.value, str)
+            and re.fullmatch(r"[A-Z][A-Z0-9_]+", value.value)
+        ):
+            codes.add(value.value)
+    return sorted(codes)
+
+
 def build_inventory() -> dict[str, object]:
     return {
         "public_api": {
@@ -182,6 +221,11 @@ def build_inventory() -> dict[str, object]:
                 code.value for code in pdbtm_errors.Stage4BErrorCode
             ),
             "result_bundle_artifact_availability": _result_bundle_availability(),
+            "result_bundle_error_codes": sorted(
+                set(_exception_codes("batch_result_browser.py", "BatchResultBrowserError"))
+                | set(_exception_codes("batch_gui.py", "BatchResultBrowserError"))
+            ),
+            "gui_operational_error_codes": _gui_operational_error_codes(),
         },
         "comparison": {
             "source": "membrane_vqc/orientation_comparison.py",
