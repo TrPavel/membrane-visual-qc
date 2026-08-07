@@ -237,7 +237,9 @@ def export_report(
     output = Path(path)
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
-        _atomic_write_text(output, json.dumps(report, indent=2, sort_keys=True) + "\n")
+        _atomic_write_text(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n"
+        )
         written = [output]
         if write_csv:
             csv_path = output.with_suffix(".csv")
@@ -246,7 +248,7 @@ def export_report(
             )
             written.append(csv_path)
         return written
-    except OSError as exc:
+    except (OSError, TypeError, ValueError) as exc:
         raise ReportError(f"Could not export report to {output}: {exc}") from exc
 
 

@@ -16,6 +16,8 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -39,9 +41,17 @@ jobs:
           python scripts/build_plugin_zip.py --output .local/determinism/second.zip
           cmp --silent .local/determinism/first.zip .local/determinism/second.zip
           python scripts/build_plugin_zip.py
-          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-1.0.0.dev0.zip
+          python scripts/build_plugin_zip.py --validate dist/MembraneVisualQC-1.0.0.zip
       - name: Validate current development artifacts
         run: python scripts/validate_release_artifacts.py --mode current-development
+      - name: Guard frozen historical evidence
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="$(git merge-base HEAD origin/${{ github.event.repository.default_branch }})"
+          fi
+          python scripts/check_frozen_evidence_diff.py --base "$BASE_SHA"
       - name: Verify frozen v0.4.0 evidence
         run: python scripts/validate_release_artifacts.py --mode frozen-v0.4.0
       - name: Verify frozen v0.5.0 evidence
@@ -62,10 +72,10 @@ jobs:
         with:
           name: membrane-vqc-build
           path: |
-            dist/MembraneVisualQC-1.0.0.dev0.zip
-            dist/MembraneVisualQC-1.0.0.dev0.zip.sha256
-            dist/membrane_vqc_pymol-1.0.0.dev0-py3-none-any.whl
-            dist/membrane_vqc_pymol-1.0.0.dev0.tar.gz
+            dist/MembraneVisualQC-1.0.0.zip
+            dist/MembraneVisualQC-1.0.0.zip.sha256
+            dist/membrane_vqc_pymol-1.0.0-py3-none-any.whl
+            dist/membrane_vqc_pymol-1.0.0.tar.gz
 
   freesasa-reference:
     name: FreeSASA reference (Python 3.11)

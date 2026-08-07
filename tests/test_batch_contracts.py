@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
-from membrane_vqc.batch_contracts import BatchContractError, load_plan, validate_plan
+from membrane_vqc.batch_contracts import (
+    BatchContractError,
+    canonical_json_bytes,
+    load_plan,
+    validate_plan,
+)
 
 
 def valid_job(job_id="legacy", analysis=None):
@@ -28,6 +33,63 @@ def valid_plan(jobs=None):
 
 def test_valid_minimal_plan():
     assert validate_plan(valid_plan())["jobs"][0]["id"] == "legacy"
+
+
+@pytest.mark.parametrize(
+    ("zmin", "zmax", "valid"),
+    [
+        (-1, 0, True),
+        (0, 1, True),
+        (-1.0, 1.0, True),
+        (0, 0, False),
+        (1, 0, False),
+        (float("nan"), 1, False),
+        (-1, float("nan"), False),
+        (float("-inf"), 1, False),
+        (-1, float("inf"), False),
+    ],
+)
+def test_legacy_batch_slab_numeric_boundaries(zmin, zmax, valid):
+    plan = valid_plan()
+    plan["jobs"][0]["analysis"].update({"zmin": zmin, "zmax": zmax})
+    if valid:
+        assert validate_plan(plan)["jobs"][0]["analysis"]["zmin"] == zmin
+    else:
+        with pytest.raises(BatchContractError):
+            validate_plan(plan)
+
+
+@pytest.mark.parametrize(
+    ("cutoff", "valid"),
+    [
+        (-1, False),
+        (0, False),
+        (0.000001, True),
+        (1, True),
+        (100, True),
+        (100.000001, False),
+        (float("nan"), False),
+        (float("inf"), False),
+        (float("-inf"), False),
+    ],
+)
+def test_batch_ligand_cutoff_numeric_boundaries(cutoff, valid):
+    plan = valid_plan()
+    plan["jobs"][0]["ligand"] = {"selection": "organic", "cutoff": cutoff}
+    if valid:
+        assert validate_plan(plan)["jobs"][0]["ligand"]["cutoff"] == cutoff
+    else:
+        with pytest.raises(BatchContractError):
+            validate_plan(plan)
+
+
+def test_canonical_json_rejects_nested_nonfinite_numbers_and_preserves_valid_bytes():
+    assert (
+        canonical_json_bytes({"nested": [1.0, {"ok": True}]}) == b'{"nested":[1.0,{"ok":true}]}\n'
+    )
+    for value in (float("nan"), float("inf"), -float("inf")):
+        with pytest.raises(ValueError, match="Out of range float values"):
+            canonical_json_bytes({"nested": [value]})
 
 
 def test_all_five_modes_are_closed_and_accepted():

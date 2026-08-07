@@ -252,7 +252,8 @@ guides directly:
   [docs/batch_plan_reference.md](docs/batch_plan_reference.md).
 - **Troubleshooting**: [docs/troubleshooting.md](docs/troubleshooting.md).
 - **Contract and release governance**: [docs/v1.0_contract_freeze.md](docs/v1.0_contract_freeze.md),
-  [docs/versioning_policy.md](docs/versioning_policy.md), [docs/release_checklist.md](docs/release_checklist.md).
+  [docs/versioning_policy.md](docs/versioning_policy.md), [docs/release_checklist.md](docs/release_checklist.md),
+  [docs/supply_chain_integrity.md](docs/supply_chain_integrity.md).
 - **Visual identity**: [docs/visual_identity.md](docs/visual_identity.md) (this README's own design
   conventions, for contributors).
 
