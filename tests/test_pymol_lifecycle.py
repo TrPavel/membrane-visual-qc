@@ -17,6 +17,7 @@ from membrane_vqc.context_models import (
     LocalContextConfig,
     ResidueLocalContext,
 )
+from membrane_vqc.membrane import AtomRecord
 
 
 class FakeCmd:
@@ -182,6 +183,62 @@ def test_register_commands_includes_clear():
     commands.register_commands(Registry())
 
     assert registered["mvqc_clear"] is commands.mvqc_clear
+
+
+def test_hydropathy_command_colours_expected_residues_without_mutating_atoms(monkeypatch):
+    atoms = [
+        AtomRecord("m", "A", "1", "ILE", "CA", 1.0, 2.0, 3.0),
+        AtomRecord("m", "A", "2", "ARG", "CA", 4.0, 5.0, 6.0),
+    ]
+    coloured = []
+    monkeypatch.setattr(commands, "protein_atoms", lambda selection: atoms)
+    monkeypatch.setattr(
+        commands,
+        "color_hydropathy",
+        lambda selection, residues: coloured.extend((selection, residues)),
+    )
+
+    result = commands.mvqc_color_hydropathy(" protein ")
+
+    assert [item["resn"] for item in result] == ["ILE", "ARG"]
+    assert coloured[0] == "protein"
+    assert [(atom.x, atom.y, atom.z) for atom in atoms] == [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)]
+
+
+@pytest.mark.parametrize("selection", ["", "   "])
+def test_hydropathy_command_rejects_empty_selection(selection):
+    with pytest.raises(ValueError, match="selection must not be empty"):
+        commands.mvqc_color_hydropathy(selection)
+
+
+def test_ligand_shell_command_handles_boundary_and_empty_ligand(monkeypatch):
+    protein = [AtomRecord("m", "A", "1", "ALA", "CA", 0.0, 0.0, 0.0)]
+    ligand = [AtomRecord("m", "L", "9", "LIG", "C1", 5.0, 0.0, 0.0)]
+    shown = []
+    monkeypatch.setattr(commands, "protein_atoms", lambda selection: protein)
+    monkeypatch.setattr(commands, "ligand_atoms", lambda selection, ligand_name: ligand)
+    monkeypatch.setattr(
+        commands,
+        "show_ligand_shell",
+        lambda selection, ligand_name, neighbours: shown.append(
+            (selection, ligand_name, neighbours)
+        ),
+    )
+
+    assert commands.mvqc_ligand_shell("protein", "organic", 5.0) == ["m/A/1/ALA"]
+    assert shown[0][0:2] == ("protein", "organic")
+    assert [(atom.x, atom.y, atom.z) for atom in protein + ligand] == [
+        (0.0, 0.0, 0.0),
+        (5.0, 0.0, 0.0),
+    ]
+    assert commands.mvqc_ligand_shell("protein", "  ") == []
+    assert shown[-1] == ("protein", "", [])
+
+
+@pytest.mark.parametrize("cutoff", [0, -1, "nan", float("inf")])
+def test_ligand_shell_command_rejects_invalid_cutoff(cutoff):
+    with pytest.raises(ValueError, match="cutoff"):
+        commands.mvqc_ligand_shell(cutoff=cutoff)
 
 
 def test_mvqc_check_forwards_explicit_input_path(monkeypatch):

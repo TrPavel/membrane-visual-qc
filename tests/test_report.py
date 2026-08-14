@@ -1,4 +1,5 @@
 import json
+import math
 
 import pytest
 
@@ -27,7 +28,7 @@ def test_build_report_contains_required_fields_and_timestamp():
     assert report["plugin"] == "membrane-vqc-pymol"
     assert report["schema_version"] == "1.1"
     assert report["software"]["name"] == "membrane-vqc-pymol"
-    assert report["software"]["version"] == "1.0.0.dev0"
+    assert report["software"]["version"] == "1.0.0"
     assert report["software"]["commit_status"] == "recorded"
     assert report["runtime"]["pymol_status"] == "unavailable"
     assert report["input"]["provenance_status"] == "input_path_not_supplied"
@@ -77,6 +78,25 @@ def test_export_report_creates_parent_directory_and_valid_json(tmp_path):
     assert loaded["summary"]["charged_core_residues"] == 1
     assert loaded["summary"]["overall_status"] == "REVIEW_ITEMS"
     assert loaded["review_items"] == loaded["flagged_residues"]
+
+
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
+def test_export_report_rejects_nonfinite_json_numbers_with_project_error(tmp_path, value):
+    report = build_report(
+        selection="all",
+        zmin=-15,
+        zmax=15,
+        ligand_selection="",
+        cutoff=5,
+        total_residues=1,
+        flagged_residues=[],
+        ligand_neighbours=[],
+        warnings=[],
+    )
+    report["summary"]["total_residues"] = value
+
+    with pytest.raises(ReportError, match="Out of range float values"):
+        export_report(report, tmp_path / "report.json")
 
 
 def test_empty_analysis_reports_insufficient_context():

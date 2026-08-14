@@ -28,7 +28,7 @@ ADRs under [`adr/`](adr/) → the internal design documents (see
 [Developer/release](#developer-release) below) → [known_limitations.md](known_limitations.md).
 
 **Reviewer/auditor** -- verifying a claim or a release:
-[Compatibility statement](compatibility.md) → [Manual install/upgrade checklist](manual_install_upgrade_checklist.md)
+[Release integrity](supply_chain_integrity.md) → [Compatibility statement](compatibility.md) → [Manual install/upgrade checklist](manual_install_upgrade_checklist.md)
 → release notes and `*_release_evidence.json` files → [Offline guarantees and safety](offline_and_safety.md).
 
 ## Using the plugin
@@ -91,8 +91,11 @@ the guide above wins.
 | [v1.0 contract freeze](v1.0_contract_freeze.md) | The audit of every public/machine-readable interface (PyMOL commands, report schemas, batch contracts, cache format, error codes, output layout) and its frozen/not-frozen/internal status ahead of v1.0. |
 | [Versioning policy](versioning_policy.md) | How the package version, report schema versions, and batch contract versions are meant to change, and the deprecation process required before a frozen interface can break. |
 | [Release checklist](release_checklist.md) | The exact two-PR release process (prepare → tag/publish → evidence-freeze/reopen), developer-facing -- not user installation instructions (see [Installation and maintenance](#installation-and-maintenance) for that). |
+| [Release integrity](supply_chain_integrity.md) | Implemented deterministic-build, checksum, tag, publication-verification, and immutable-evidence controls, plus their explicit limits. |
 | [1.0.0rc1 release notes](1.0.0rc1_release_notes.md) | The release-hardening delta, compatibility boundary, artifact identity, and pending manual status for the RC candidate. |
+| [1.0.0 release notes](v1.0.0_release_notes.md) | Stable-release preparation scope, integrity boundary, compatibility statement, and pending owner acceptance. |
 | [1.0.0rc1 manual acceptance](releases/1.0.0rc1_manual_acceptance.md) | Focused owner-run checklist for the frozen RC; deliberately contains no fabricated results. |
+| [1.0.0 manual acceptance](releases/1.0.0_manual_acceptance.md) | Uncompleted owner-run final-candidate acceptance procedure; no owner results are implied. |
 | [Final 1.0 exit criteria](releases/1.0.0_exit_criteria.md) | Evidence and acceptance conditions that remain required before the final 1.0 release. |
 
 **Architecture Decision Records** (`adr/`) -- the reasoning behind specific design decisions:

@@ -103,6 +103,44 @@ def test_exact_boundaries_interfaces_and_distances(
     assert result.normalized_depth == depth
 
 
+@pytest.mark.parametrize(
+    ("distance", "classification", "depth"),
+    [
+        (-15.000001, "lower_interface", None),
+        (-15.0, "core", 0.0),
+        (-14.999999, "core", pytest.approx(1 / 15_000_000)),
+        (14.999999, "core", pytest.approx(1 / 15_000_000)),
+        (15.0, "core", 0.0),
+        (15.000001, "upper_interface", None),
+        (-18.0, "lower_interface", None),
+        (-18.000001, "outside", None),
+        (18.0, "upper_interface", None),
+        (18.000001, "outside", None),
+    ],
+)
+def test_slab_and_interface_equality_conventions(distance, classification, depth):
+    result = measure_point((0, 0, distance), plane())
+    assert result.classification == classification
+    assert result.normalized_depth == depth
+
+
+@pytest.mark.parametrize("signed_zero", [-0.0, 0.0])
+def test_signed_zero_is_canonical_and_has_center_depth(signed_zero):
+    result = measure_point((0, 0, signed_zero), plane())
+    assert result.signed_distance == 0.0
+    assert math.copysign(1.0, result.signed_distance) == 1.0
+    assert result.classification == "core"
+    assert result.normalized_depth == 1.0
+
+
+def test_zero_width_has_no_interface_band():
+    membrane = plane(width=0)
+    assert measure_point((0, 0, -15), membrane).classification == "core"
+    assert measure_point((0, 0, 15), membrane).classification == "core"
+    assert measure_point((0, 0, -15.000001), membrane).classification == "outside"
+    assert measure_point((0, 0, 15.000001), membrane).classification == "outside"
+
+
 def test_non_bracketing_slab_has_no_normalized_depth():
     result = measure_point((0, 0, 10), plane(lower=5, upper=15))
     assert result.classification == "core"
