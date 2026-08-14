@@ -33,7 +33,7 @@ def test_upgrade_guide_names_the_owner_accepted_v080_to_v090_path():
 def test_upgrade_guide_matches_the_v090_baseline_for_the_v100rc1_line():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     version = project_version(ROOT)
-    assert version == "1.0.0"
+    assert version == "1.0.1.dev0"
     assert "v0.8.0 to v0.9.0" in text
     assert "v0.9.0 to v1.0.0rc1" in text
     assert "owner-accepted" in text.lower()

@@ -75,7 +75,7 @@ What a result reports, and -- just as importantly -- what it deliberately does n
 |---|---|
 | [Compatibility statement](compatibility.md) | Validated configurations (OS, PyMOL distribution, Python, Qt), supported upgrade path, supported schema/contract versions, cache format, and what CI structurally cannot prove. |
 | [Compatibility matrix](compatibility_matrix.md) | Grid view: platform × validation method, PyMOL distribution, Python version, schema/contract support per release, and validated configurations vs. formally supported ranges. |
-| [Upgrade guide](upgrade_guide.md) | Clean-replacement upgrade and rollback procedures, including the owner-accepted v0.8.0-to-v0.9.0 path and focused v0.9.0-to-v1.0.0rc1 candidate path. |
+| [Upgrade guide](upgrade_guide.md) | Clean-replacement upgrade and rollback procedures, including the owner-accepted v0.8.0-to-v0.9.0 and v0.9.0-to-v1.0.0 paths. |
 | [Manual install/upgrade checklist](manual_install_upgrade_checklist.md) | The owner-observed manual PASS record for the v0.6.0 → `0.7.0.dev0` install/upgrade/rollback path -- real evidence, not a template to assume passed for other version pairs. |
 
 ## Developer/release
@@ -92,11 +92,12 @@ the guide above wins.
 | [Versioning policy](versioning_policy.md) | How the package version, report schema versions, and batch contract versions are meant to change, and the deprecation process required before a frozen interface can break. |
 | [Release checklist](release_checklist.md) | The exact two-PR release process (prepare → tag/publish → evidence-freeze/reopen), developer-facing -- not user installation instructions (see [Installation and maintenance](#installation-and-maintenance) for that). |
 | [Release integrity](supply_chain_integrity.md) | Implemented deterministic-build, checksum, tag, publication-verification, and immutable-evidence controls, plus their explicit limits. |
-| [1.0.0rc1 release notes](1.0.0rc1_release_notes.md) | The release-hardening delta, compatibility boundary, artifact identity, and pending manual status for the RC candidate. |
-| [1.0.0 release notes](v1.0.0_release_notes.md) | Stable-release preparation scope, integrity boundary, compatibility statement, and pending owner acceptance. |
-| [1.0.0rc1 manual acceptance](releases/1.0.0rc1_manual_acceptance.md) | Focused owner-run checklist for the frozen RC; deliberately contains no fabricated results. |
-| [1.0.0 manual acceptance](releases/1.0.0_manual_acceptance.md) | Uncompleted owner-run final-candidate acceptance procedure; no owner results are implied. |
-| [Final 1.0 exit criteria](releases/1.0.0_exit_criteria.md) | Evidence and acceptance conditions that remain required before the final 1.0 release. |
+| [1.0.0rc1 release notes](1.0.0rc1_release_notes.md) | The release-hardening delta, compatibility boundary, and frozen RC artifact identity. |
+| [1.0.0 release notes](v1.0.0_release_notes.md) | Published first-stable-release scope, integrity boundary, and compatibility statement. |
+| [1.0.0rc1 manual acceptance](releases/1.0.0rc1_manual_acceptance.md) | Completed owner-run checklist for the frozen RC. |
+| [1.0.0 manual acceptance](releases/1.0.0_manual_acceptance.md) | Completed 31-step owner-observed final acceptance record for the frozen stable artifact. |
+| [1.0.0 release evidence](v1.0.0_release_evidence.json) | Immutable CI, tag, release, asset, download, checksum, manual-acceptance, and no-PyPI evidence. |
+| [Final 1.0 exit criteria](releases/1.0.0_exit_criteria.md) | Historical evidence and acceptance gate completed before the final 1.0 release. |
 
 **Architecture Decision Records** (`adr/`) -- the reasoning behind specific design decisions:
 orientation geometry (`0002`), exposure/SASA semantics (`0003-exposure-semantics.md`), the optional

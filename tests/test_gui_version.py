@@ -4,4 +4,4 @@ from membrane_vqc.gui import DIALOG_TITLE
 
 def test_dialog_title_displays_the_active_release_version():
     assert DIALOG_TITLE == f"Membrane Visual QC {VERSION}"
-    assert VERSION == "1.0.0"
+    assert VERSION == "1.0.1.dev0"

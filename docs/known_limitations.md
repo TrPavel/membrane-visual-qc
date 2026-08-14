@@ -1,17 +1,16 @@
 # Known Limitations
 
-## 1.0.0rc1 candidate limitations
+## 1.0.0 stable limitations
 
-- The 1.0.0rc1 automated gate does not replace the focused owner-run manual acceptance in
-  `docs/releases/1.0.0rc1_manual_acceptance.md`; that checklist is deliberately uncompleted until
-  the frozen RC artifact is exercised in real PyMOL.
+- Automated gates do not replace owner-run graphical acceptance. The frozen RC and stable
+  checklists were completed by owner observation in `docs/releases/1.0.0rc1_manual_acceptance.md`
+  and `docs/releases/1.0.0_manual_acceptance.md`.
 - The validated graphical scope remains Windows 10/11 with Incentive PyMOL. Linux and macOS receive
   pure-Python CI coverage only, and other PyMOL distributions remain unverified rather than known
   incompatible.
-- This candidate intentionally preserves the accepted v0.9.0 scientific thresholds, report and
+- Stable v1.0.0 intentionally preserves the accepted v0.9.0 scientific thresholds, report and
   batch contracts, cache format, output layout, and GUI workflow. It does not add feature scope.
-- Items classified `REQUIRED BEFORE FINAL` in `docs/releases/1.0.0_readiness.md` remain final-release
-  evidence work; they do not weaken or waive the RC acceptance gate.
+- All items classified `REQUIRED BEFORE FINAL` in `docs/releases/1.0.0_readiness.md` are closed.
 
 ## v0.9.0 limitations
 
