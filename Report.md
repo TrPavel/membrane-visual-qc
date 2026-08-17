@@ -12,8 +12,9 @@ format. v0.8.0 was published as a GitHub prerelease for limited public testing o
 contract-freeze and documentation-consolidation release with no scientific, GUI, batch execution,
 cache-format, report-schema, or batch-contract behavior changes of its own -- see
 `docs/v1.0_contract_freeze.md` and `docs/v0.8.0_release_notes.md`. v0.9.0 was owner-accepted and
-published as a GitHub prerelease on 2026-08-06; the hardened `1.0.0rc1` candidate is frozen, with
-v0.9.0 as its immutable accepted baseline.
+published as a GitHub prerelease on 2026-08-06; `1.0.0rc1` was the owner-accepted release-candidate
+baseline for v1.0.0. Stable v1.0.0 was owner-accepted and published on 2026-08-14. Development is
+reopened at `1.0.1.dev0` for patch maintenance only.
 
 The exact v0.7.0 publication evidence is frozen in `docs/v0.7.0_release_evidence.json`; downloaded
 assets were byte-verified against the authoritative post-merge workflow. The `0.7.0.dev0`

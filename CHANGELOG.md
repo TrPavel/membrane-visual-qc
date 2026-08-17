@@ -6,20 +6,20 @@ The format follows Keep a Changelog style, and this project intends to use seman
 
 ## [Unreleased]
 
-No feature work has begun beyond the 1.0.0rc1 preparation.
+Development reopened at `1.0.1.dev0` for patch maintenance after the first stable release. No
+feature work or production-behaviour change is part of the evidence/reopen change.
 
-## [1.0.0] - PENDING
+## [1.0.0] - 2026-08-14
 
 - Final stable-release preparation from the owner-accepted `1.0.0rc1` baseline; no feature scope,
   scientific threshold, schema, cache, batch-contract, CSV, or PyMOL-command change.
 - Added frozen-evidence diff protection, strict JSON non-finite rejection, and focused boundary,
   command, batch-numeric, and result-browser diagnostic regression coverage.
-- Added explicit supply-chain integrity limits and an uncompleted final owner-acceptance checklist.
+- Added explicit supply-chain integrity limits and the completed 31-step owner-acceptance record.
 
-## [1.0.0rc1] - PENDING
+## [1.0.0rc1] - 2026-08-07
 
-Status: frozen release candidate pending focused owner-run manual acceptance. v0.9.0 remains the
-published, owner-accepted baseline.
+Status: owner-accepted GitHub prerelease and immutable baseline for stable v1.0.0.
 
 ### Added
 

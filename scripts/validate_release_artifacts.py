@@ -317,6 +317,9 @@ FROZEN_V090_MANUAL_VALIDATION = {
 FROZEN_V100RC1_VERSION = "1.0.0rc1"
 FROZEN_V100RC1_RELEASE_EVIDENCE = "docs/v1.0.0rc1_release_evidence.json"
 FROZEN_V100RC1_EVIDENCE_SHA256 = "30fb8e92b56b1e997be18e9b3684cbe824a06d6ecc846df6bbf1fbb5b6005076"
+FROZEN_V100_VERSION = "1.0.0"
+FROZEN_V100_RELEASE_EVIDENCE = "docs/v1.0.0_release_evidence.json"
+FROZEN_V100_EVIDENCE_SHA256 = "c228404731e464e7418a99fb7d833cfd282e8e34e99684d4e4ff54e911a7d2d0"
 STAGE4B1_RUNTIME_MODULES = {
     "membrane_vqc/pdbtm_cache.py",
     "membrane_vqc/pdbtm_cache_contract.py",
@@ -998,6 +1001,29 @@ def verify_frozen_v100rc1_evidence(project_root: Path = ROOT) -> dict[str, objec
     return evidence
 
 
+def verify_frozen_v100_evidence(project_root: Path = ROOT) -> dict[str, object]:
+    """Verify immutable v1.0.0 publication evidence independently of development."""
+    path = project_root.resolve() / FROZEN_V100_RELEASE_EVIDENCE
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != FROZEN_V100_EVIDENCE_SHA256:
+        raise ReleaseArtifactError("Frozen v1.0.0 publication evidence changed")
+    evidence = json.loads(raw)
+    if evidence.get("version") != FROZEN_V100_VERSION:
+        raise ReleaseArtifactError("Frozen v1.0.0 version changed")
+    tag = evidence.get("tag", {})
+    release_pr = evidence.get("release_pr", {})
+    release = evidence.get("release", {})
+    if tag.get("target") != release_pr.get("squash_commit"):
+        raise ReleaseArtifactError("Frozen v1.0.0 tag target changed")
+    if tag.get("annotated") is not True:
+        raise ReleaseArtifactError("Frozen v1.0.0 annotated-tag state changed")
+    if release.get("draft") is not False or release.get("prerelease") is not False:
+        raise ReleaseArtifactError("Frozen v1.0.0 stable-release state changed")
+    if release.get("pypi_published") is not False:
+        raise ReleaseArtifactError("Frozen v1.0.0 PyPI state changed")
+    return evidence
+
+
 # Backwards-compatible API name for callers that validate the active build.
 validate_release_artifacts = validate_current_development_artifacts
 
@@ -1015,6 +1041,7 @@ def main() -> int:
             "frozen-v0.8.0",
             "frozen-v0.9.0",
             "frozen-v1.0.0rc1",
+            "frozen-v1.0.0",
             "release-candidate",
         ),
         default="current-development",
@@ -1055,6 +1082,10 @@ def main() -> int:
         if args.version is not None:
             parser.error("--version is only valid with --mode release-candidate")
         result = verify_frozen_v100rc1_evidence(args.project_root)
+    elif args.mode == "frozen-v1.0.0":
+        if args.version is not None:
+            parser.error("--version is only valid with --mode release-candidate")
+        result = verify_frozen_v100_evidence(args.project_root)
     else:
         if args.version is None:
             parser.error("--mode release-candidate requires --version")

@@ -1,6 +1,5 @@
-"""Lightweight consistency checks between the install/upgrade documentation and the
-actual version/contract constants -- not a claim that the prose itself is correct, only
-that it has not silently drifted from the values it describes."""
+"""Consistency checks between install/upgrade documentation, release evidence, and the
+actual version/contract constants."""
 
 from __future__ import annotations
 
@@ -21,6 +20,25 @@ def test_readme_links_to_the_upgrade_guide_and_compatibility_statement():
     assert "docs/compatibility.md" in text
 
 
+def test_readme_installation_matches_published_stable_release_evidence():
+    readme = (ROOT / "README.md").read_text("utf-8")
+    evidence = json.loads((ROOT / "docs" / "v1.0.0_release_evidence.json").read_text("utf-8"))
+    citation = (ROOT / "CITATION.cff").read_text("utf-8")
+    version = evidence["version"]
+    installation = readme.split("## Installation and compatibility", 1)[1].split(
+        "## Citation and references", 1
+    )[0]
+
+    assert evidence["release"]["draft"] is False
+    assert evidence["release"]["prerelease"] is False
+    assert f"Current published release: **v{version}**" in readme
+    assert f"MembraneVisualQC-{version}.zip" in installation
+    assert evidence["release"]["url"] in installation
+    assert "GitHub prerelease" not in installation
+    assert f"version: {version}" in citation
+    assert evidence["release"]["url"] in citation
+
+
 def test_upgrade_guide_names_the_owner_accepted_v080_to_v090_path():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     assert "v0.8.0" in text
@@ -33,7 +51,7 @@ def test_upgrade_guide_names_the_owner_accepted_v080_to_v090_path():
 def test_upgrade_guide_matches_the_v090_baseline_for_the_v100rc1_line():
     text = (ROOT / "docs" / "upgrade_guide.md").read_text("utf-8")
     version = project_version(ROOT)
-    assert version == "1.0.0"
+    assert version == "1.0.1.dev0"
     assert "v0.8.0 to v0.9.0" in text
     assert "v0.9.0 to v1.0.0rc1" in text
     assert "owner-accepted" in text.lower()

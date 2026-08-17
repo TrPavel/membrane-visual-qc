@@ -39,6 +39,7 @@ from scripts.validate_release_artifacts import (
     verify_frozen_v070_evidence,
     verify_frozen_v080_evidence,
     verify_frozen_v090_evidence,
+    verify_frozen_v100_evidence,
     verify_frozen_v100rc1_evidence,
 )
 
@@ -175,7 +176,7 @@ def test_version_agreement_rejects_package_from_wrong_origin(tmp_path, monkeypat
     monkeypatch.setenv("PYTHONPATH", str(ROOT))
 
     with pytest.raises(ReleaseArtifactError, match="resolved outside") as captured:
-        _validate_version_agreement(project, "1.0.0")
+        _validate_version_agreement(project, "1.0.1.dev0")
 
     assert str(ROOT / "membrane_vqc") in str(captured.value)
     assert str(project / "membrane_vqc") in str(captured.value)
@@ -292,7 +293,7 @@ def test_frozen_v050_evidence_is_verified_independently_of_active_version(tmp_pa
         shutil.copytree(ROOT / directory, tmp_path / directory)
     result = verify_frozen_v050_evidence(tmp_path)
 
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["version"] == "0.5.0"
     assert set(result["schemas"]) == {"1.0", "1.1", "1.2", "1.3", "1.4", "1.5"}
     assert set(result["reports"]) == {
@@ -331,7 +332,7 @@ def test_frozen_v060_evidence_is_verified_independently_of_active_version(tmp_pa
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v060_evidence(tmp_path)
 
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["version"] == "0.6.0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
@@ -359,7 +360,7 @@ def test_frozen_v070_evidence_is_verified_independently_of_active_version(tmp_pa
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v070_evidence(tmp_path)
 
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["version"] == "0.7.0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
@@ -388,7 +389,7 @@ def test_frozen_v080_evidence_is_verified_independently_of_active_version(tmp_pa
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v080_evidence(tmp_path)
 
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["version"] == "0.8.0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
@@ -417,7 +418,7 @@ def test_frozen_v090_evidence_is_verified_independently_of_active_version(tmp_pa
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v090_evidence(tmp_path)
 
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["version"] == "0.9.0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
@@ -444,10 +445,31 @@ def test_frozen_v090_evidence_rejects_publication_identity_changes(tmp_path):
 def test_frozen_v100rc1_evidence_is_verified_independently_of_active_version(tmp_path):
     shutil.copytree(ROOT / "docs", tmp_path / "docs")
     result = verify_frozen_v100rc1_evidence(tmp_path)
-    assert project_version(ROOT) == "1.0.0"
+    assert project_version(ROOT) == "1.0.1.dev0"
     assert result["release"]["prerelease"] is True
     assert result["release"]["pypi_published"] is False
     assert result["tag"]["target"] == result["release_pr"]["squash_commit"]
+
+
+def test_frozen_v100_evidence_is_verified_independently_of_active_version(tmp_path):
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    result = verify_frozen_v100_evidence(tmp_path)
+    assert project_version(ROOT) == "1.0.1.dev0"
+    assert result["version"] == "1.0.0"
+    assert result["release"]["draft"] is False
+    assert result["release"]["prerelease"] is False
+    assert result["release"]["pypi_published"] is False
+    assert result["tag"]["annotated"] is True
+    assert result["tag"]["target"] == result["release_pr"]["squash_commit"]
+
+
+def test_frozen_v100_evidence_rejects_byte_changes(tmp_path):
+    shutil.copytree(ROOT / "docs", tmp_path / "docs")
+    evidence = tmp_path / "docs" / "v1.0.0_release_evidence.json"
+    evidence.write_bytes(evidence.read_bytes() + b"\n")
+
+    with pytest.raises(ReleaseArtifactError, match="Frozen v1.0.0 publication evidence changed"):
+        verify_frozen_v100_evidence(tmp_path)
 
 
 def test_stage4c_schema_is_current_only_and_frozen_scope_stays_unchanged():

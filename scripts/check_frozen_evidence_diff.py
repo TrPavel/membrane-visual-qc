@@ -19,6 +19,7 @@ FROZEN_PATHS = (
     "docs/releases/v0.9.0_manual_acceptance.md",
     "docs/releases/1.0.0rc1_manual_acceptance.md",
     "docs/v1.0.0rc1_release_evidence.json",
+    "docs/releases/1.0.0_manual_acceptance.md",
     "reports/pdbtm_synthetic_mvqc.json",
     "reports/pdbtm_local_v050_mvqc.json",
     "reports/pdbtm_acquisition_v050_mvqc.json",

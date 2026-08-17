@@ -1,0 +1,77 @@
+{
+  "version": "1.0.0",
+  "preparation": {
+    "final_preparation_commit": "8a567195ebb94b7081863352bf1996b4f9b8becb",
+    "owner_acceptance_evidence_commit": "aa94e30d8b0b6c799adeed7145851ad60d44adb0"
+  },
+  "release_pr": {
+    "number": 44,
+    "final_head": "aa94e30d8b0b6c799adeed7145851ad60d44adb0",
+    "squash_commit": "ccfdc40e41d0ea743580443d5d222824a2ae6a59",
+    "push_ci_url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/31836474713",
+    "pull_request_ci_url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/31836477189"
+  },
+  "post_merge_workflow": {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/actions/runs/31836640766",
+    "artifact_id": 9232730879,
+    "outer_size": 782855,
+    "outer_sha256": "994fd251d5dba587a68ca37747b8574e64afce106d10c7e36f1ee453a8aba039",
+    "accepted_zip_byte_identical": true,
+    "checksum_sidecar_byte_identical": true
+  },
+  "tag": {
+    "name": "v1.0.0",
+    "object": "8f8ccc445f3f0aacc9ab78a306f163136750d466",
+    "target": "ccfdc40e41d0ea743580443d5d222824a2ae6a59",
+    "annotated": true
+  },
+  "release": {
+    "url": "https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0",
+    "published_at": "2026-08-14T20:14:11Z",
+    "draft": false,
+    "prerelease": false,
+    "first_stable_release": true,
+    "pypi_published": false,
+    "pypi_version_endpoint_status": 404
+  },
+  "assets": {
+    "MembraneVisualQC-1.0.0.zip": {
+      "size": 205067,
+      "sha256": "36d768266d4b56f4a510a93bc36e5a6e9dd0604f0c2a1db5251a321e9fc0f6fa",
+      "member_count": 58,
+      "unique_members": true,
+      "ordinally_sorted": true,
+      "all_members_under": "membrane_vqc/"
+    },
+    "MembraneVisualQC-1.0.0.zip.sha256": {
+      "size": 93,
+      "sha256": "4d298625979407c0b2fc4ea8026e6b6e9bab041b7ce3fb52a77eeca41d466449",
+      "names_exact_zip_and_hash": true
+    }
+  },
+  "downloaded_asset_verification": {
+    "zip_size": 205067,
+    "zip_sha256": "36d768266d4b56f4a510a93bc36e5a6e9dd0604f0c2a1db5251a321e9fc0f6fa",
+    "zip_byte_identical_to_accepted_candidate": true,
+    "checksum_sidecar_byte_identical_to_accepted_sidecar": true,
+    "unexpected_assets": []
+  },
+  "manual_validation": {
+    "owner_verdict": "PASS \u2014 OWNER OBSERVED",
+    "all_31_required_steps": "PASS \u2014 OWNER OBSERVED",
+    "final_decision": "READY TO PUBLISH STABLE v1.0.0",
+    "acceptance_record": "docs/releases/1.0.0_manual_acceptance.md",
+    "environment_metadata": "not recorded",
+    "deviations": "none reported"
+  },
+  "build_and_determinism": {
+    "preparation_ci_double_build": "PASS",
+    "post_merge_ci": "PASS",
+    "post_merge_zip_matches_owner_accepted_candidate": true,
+    "published_download_matches_owner_accepted_candidate": true
+  },
+  "historical_evidence_validation": {
+    "frozen_v0.4.0_through_v1.0.0rc1": "PASS",
+    "frozen_evidence_diff_guard": "PASS"
+  }
+}

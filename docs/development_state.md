@@ -1,15 +1,18 @@
 # Development state
 
-Snapshot date: 2026-08-06 (Europe/Moscow).
+Snapshot date: 2026-08-14 (Europe/London).
 
-Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`. v0.9.0
-was owner-accepted and published as a GitHub prerelease on 2026-08-06; it is the immutable baseline
-for the frozen `1.0.0rc1` candidate. Stage 4 provides offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
+Stage 4A, Stage 4B1–4B4, Stage 4C, Stage 5A, and Stage 5B are complete and merged into `main`.
+v1.0.0 was owner-accepted and published as the first stable release on 2026-08-14; its immutable
+publication evidence is in `docs/v1.0.0_release_evidence.json`. Patch-maintenance development is
+reopened at `1.0.1.dev0`, with no feature work in the evidence/reopen change. Stage 4 provides
+offline PDBTM pairs, bounded direct PDBTM retrieval, a validated local
 cache with explicit Fetch versus Use behavior, schema 1.4 acquisition provenance, an offline-only OPM
 adapter, and explicit schema 1.5 PDBTM–OPM geometric comparison. It does not fetch OPM, fit or mutate
 coordinates, choose a source, create consensus, rank providers, or make a biological verdict. Exact
 v0.7.0, v0.8.0, and v0.9.0 release, tag, post-merge artifact, and downloaded-asset identities are
-frozen in their corresponding `docs/vX.Y.Z_release_evidence.json` records. PyPI is not used.
+frozen in their corresponding `docs/vX.Y.Z_release_evidence.json` records, followed by frozen
+v1.0.0rc1 and v1.0.0 evidence. PyPI is not used.
 
 ## v0.9.0 visual-identity and premium-README phase
 

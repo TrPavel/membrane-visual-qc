@@ -2,7 +2,7 @@
 
 PLUGIN_NAME = "membrane-vqc-pymol"
 DISPLAY_NAME = "Membrane Visual QC"
-VERSION = "1.0.0"
+VERSION = "1.0.1.dev0"
 
 DEFAULT_ZMIN = -15.0
 DEFAULT_ZMAX = 15.0

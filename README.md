@@ -24,8 +24,8 @@
 > Membrane Visual QC is a review assistant. It does not prove that a structure is correct, stable,
 > membrane-inserted, or experimentally validated -- see [Scientific interpretation](docs/scientific_interpretation.md).
 
-Distributed as a **GitHub prerelease** (not on PyPI). Current published release: **v0.9.0**. It is
-the owner-accepted baseline for the frozen **`1.0.0rc1`** release candidate.
+Distributed as a **stable GitHub Release** (not on PyPI). Current published release: **v1.0.0**,
+the owner-accepted first stable Membrane Visual QC release.
 
 <p align="center">
   <img src="docs/assets/screenshots/hero-single-structure.png" alt="Membrane Visual QC's Single structure tab in Legacy global-z mode: a loaded structure with the manually defined membrane slab boundaries drawn in the PyMOL viewport, next to the dialog's populated Results panel" width="880">
@@ -276,10 +276,11 @@ guides directly:
 
 ## Installation and compatibility
 
-Download `MembraneVisualQC-0.9.0.zip` and its `.zip.sha256` checksum from the
-[v0.9.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.9.0), verify
-the checksum, install through PyMOL Plugin Manager using **clean replacement**, and fully restart
-PyMOL. GitHub Releases is the only distribution channel; this project is not published to PyPI.
+Download `MembraneVisualQC-1.0.0.zip` and its `.zip.sha256` checksum from the
+[v1.0.0 stable GitHub Release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0),
+verify the checksum, install through PyMOL Plugin Manager using **clean replacement**, and fully
+restart PyMOL. GitHub Releases is the only distribution channel; this project is not published to
+PyPI.
 
 Primary development and all graphical/manual acceptance to date target **Windows** with **Incentive
 PyMOL 3.1.8**; the pure-Python logic is additionally tested cross-platform on `ubuntu-latest` in CI,
@@ -305,9 +306,9 @@ Start PyMOL in the checkout root and run `run load_mvqc.py`. Do not execute
 ## Citation and references
 
 Use GitHub's **Cite this repository** action (top of this repository's page, reads `CITATION.cff`)
-to cite Membrane Visual QC as software. `CITATION.cff` intentionally names the latest **published**
-release (`v0.9.0`), not the unaccepted `1.0.0rc1` candidate -- cite the exact release
-version you used, together with its release URL, not just the repository in general.
+to cite Membrane Visual QC as software. `CITATION.cff` names the latest **published** release
+(`v1.0.0`). Cite the exact release version you used, together with its release URL, not just the
+repository in general.
 
 Citing this software is not a substitute for citing the source databases/methods an optional
 workflow drew on -- cite these separately when that workflow was used:
@@ -332,9 +333,9 @@ Full records and exactly what each supports: [docs/references.bib](docs/referenc
   title   = {Membrane Visual QC},
   author  = {Trofimchik, Pavel},
   year    = {2026},
-  version = {0.9.0},
-  url     = {https://github.com/TrPavel/membrane-visual-qc},
-  note    = {GitHub prerelease; cite the exact version you used}
+  version = {1.0.0},
+  url     = {https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0},
+  note    = {First stable GitHub release; cite the exact version you used}
 }
 ```
 
@@ -344,11 +345,10 @@ The implementation is clean-room and does not copy GPL PyMOL plugin code. MIT-li
 
 ## Development status
 
-Published baseline: **`v0.9.0`**, accepted through the exact frozen-artifact procedure in
-[docs/releases/v0.9.0_manual_acceptance.md](docs/releases/v0.9.0_manual_acceptance.md), with
-immutable publication metadata in [docs/v0.9.0_release_evidence.json](docs/v0.9.0_release_evidence.json).
-The hardened **`1.0.0rc1`** candidate is owner-accepted and published as a GitHub prerelease. Active
-source development has reopened at **`1.0.0.dev0`**; no feature or production-behaviour change is
-part of the RC evidence freeze.
+Published baseline: **`v1.0.0`**, accepted through the 31-step frozen-artifact procedure in
+[docs/releases/1.0.0_manual_acceptance.md](docs/releases/1.0.0_manual_acceptance.md), with immutable
+publication metadata in [docs/v1.0.0_release_evidence.json](docs/v1.0.0_release_evidence.json).
+Patch-maintenance development has reopened at **`1.0.1.dev0`**. This evidence/reopen change adds no
+feature or production-behaviour change.
 Full history:
 [docs/development_state.md](docs/development_state.md) and [CHANGELOG.md](CHANGELOG.md).
