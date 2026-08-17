@@ -276,10 +276,11 @@ guides directly:
 
 ## Installation and compatibility
 
-Download `MembraneVisualQC-0.9.0.zip` and its `.zip.sha256` checksum from the
-[v0.9.0 GitHub prerelease](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v0.9.0), verify
-the checksum, install through PyMOL Plugin Manager using **clean replacement**, and fully restart
-PyMOL. GitHub Releases is the only distribution channel; this project is not published to PyPI.
+Download `MembraneVisualQC-1.0.0.zip` and its `.zip.sha256` checksum from the
+[v1.0.0 stable GitHub Release](https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0),
+verify the checksum, install through PyMOL Plugin Manager using **clean replacement**, and fully
+restart PyMOL. GitHub Releases is the only distribution channel; this project is not published to
+PyPI.
 
 Primary development and all graphical/manual acceptance to date target **Windows** with **Incentive
 PyMOL 3.1.8**; the pure-Python logic is additionally tested cross-platform on `ubuntu-latest` in CI,
