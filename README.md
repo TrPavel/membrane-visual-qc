@@ -33,13 +33,20 @@ the owner-accepted baseline for the frozen **`1.0.0rc1`** release candidate.
 
 <p align="center"><sub>Single structure tab, <strong>Legacy global-z</strong> mode -- a manually defined <code>zmin</code>/<code>zmax</code> slab, not a source-derived PDBTM/OPM orientation (real screenshot, own capture against the current UI).</sub></p>
 
-> **Watch the v1.0 walkthrough:**
-> [*I Built a PyMOL Plugin for Membrane Protein Quality Control*](https://youtu.be/lowQey_D610?si=y5jtr_AV41XB0qLA)
->
-> A user-facing walkthrough of the released software: scientific motivation, membrane-aware QC,
-> hydropathy and ligand context, orientation provenance, Batch Review, PDBTM-OPM comparison, and
-> the path to the stable v1.0 release. The video is not formal scientific evidence or part of the
-> frozen v1.0.0 release evidence.
+## v1.0 video walkthrough
+
+<p align="center">
+  <a href="https://youtu.be/lowQey_D610?si=y5jtr_AV41XB0qLA">
+    <img src="docs/assets/video/v1-youtube-walkthrough.png" alt="Video thumbnail for I Built a PyMOL Plugin for Membrane Protein Quality Control" width="760">
+  </a>
+</p>
+
+<p align="center"><strong><a href="https://youtu.be/lowQey_D610?si=y5jtr_AV41XB0qLA">I Built a PyMOL Plugin for Membrane Protein Quality Control</a></strong></p>
+
+A user-facing walkthrough of the released software: scientific motivation, membrane-aware QC,
+hydropathy and ligand context, orientation provenance, Batch Review, PDBTM-OPM comparison, and the
+path to the stable v1.0 release. The video is not formal scientific evidence or part of the frozen
+v1.0.0 release evidence.
 
 ## Real product preview
 
