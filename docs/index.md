@@ -1,10 +1,10 @@
 # Documentation map
 
-This page is the entry point into Membrane Visual QC's documentation, grouped into five sections:
+This page is the entry point into Membrane Visual QC's documentation, grouped into six sections:
 **Using the plugin**, **Reference**, **Scientific boundaries**, **Installation and maintenance**,
-and **Developer/release**. No document in the first four sections requires knowing this project's
-internal development-stage numbering to use. It links to documents; it does not duplicate their
-content.
+**External records and project write-ups**, and **Developer/release**. No document in the first
+four sections requires knowing this project's internal development-stage numbering to use. It links
+to documents; it does not duplicate their content.
 
 If you only read one thing: start with the [README](../README.md), then
 [docs/quick_start.md](quick_start.md).
@@ -77,6 +77,19 @@ What a result reports, and -- just as importantly -- what it deliberately does n
 | [Compatibility matrix](compatibility_matrix.md) | Grid view: platform × validation method, PyMOL distribution, Python version, schema/contract support per release, and validated configurations vs. formally supported ranges. |
 | [Upgrade guide](upgrade_guide.md) | Clean-replacement upgrade and rollback procedures, including the owner-accepted v0.8.0-to-v0.9.0 and v0.9.0-to-v1.0.0 paths. |
 | [Manual install/upgrade checklist](manual_install_upgrade_checklist.md) | The owner-observed manual PASS record for the v0.6.0 → `0.7.0.dev0` install/upgrade/rollback path -- real evidence, not a template to assume passed for other version pairs. |
+
+## External records and project write-ups
+
+Repository documentation, contracts, and frozen release evidence are canonical. These external
+records improve citation and discoverability, or explain the project; they do not replace that
+canonical material or constitute scientific validation.
+
+| Resource | Role |
+|---|---|
+| [Zenodo v1.0.0 record](https://zenodo.org/records/21999555) ([DOI `10.5281/zenodo.21999555`](https://doi.org/10.5281/zenodo.21999555)) | Durable archive and citation record for the exact stable v1.0.0 software release. |
+| [bio.tools](https://bio.tools/membrane_visual_qc) (`biotools:membrane_visual_qc`) | Life-science software registry entry; registration is not certification or endorsement. |
+| [The Missing Coordinate Frame: Building Membrane Visual QC](https://paveltrofimchik.substack.com/p/the-missing-coordinate-frame-building) | Non-canonical long-form development and methodology write-up, not a peer-reviewed publication or release-evidence record. |
+| [v1.0 video walkthrough](https://youtu.be/lowQey_D610) | Explanatory user-facing walkthrough already presented in the README; not formal scientific or frozen release evidence. |
 
 ## Developer/release
 

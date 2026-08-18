@@ -27,9 +27,13 @@ LOGO_FILES = (
     "wordmark-on-dark.svg",
 )
 
-# README badges are legitimately external (GitHub's own badge endpoint, shields.io) -- only these
-# exact hosts are permitted for an external <img>/markdown-image reference in README.md.
-_ALLOWED_EXTERNAL_IMAGE_HOSTS = ("https://github.com/", "https://img.shields.io/")
+# README badges are legitimately external (GitHub, Shields, and Zenodo's DOI badge endpoint) --
+# only these exact hosts are permitted for an external <img>/markdown-image reference in README.md.
+_ALLOWED_EXTERNAL_IMAGE_HOSTS = (
+    "https://github.com/",
+    "https://img.shields.io/",
+    "https://zenodo.org/badge/DOI/",
+)
 
 _MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 _HTML_IMG = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
