@@ -44,6 +44,7 @@ def test_citation_cff_exists_and_has_required_top_level_fields():
         "title",
         "type",
         "version",
+        "doi",
         "url",
         "repository-code",
         "license",
@@ -72,13 +73,24 @@ def test_citation_cff_cited_version_is_an_actual_published_release():
     )
 
 
-def test_citation_cff_has_no_placeholder_doi_or_orcid():
+def test_citation_cff_pins_published_software_doi_without_placeholder_identifiers():
     text = _read(CITATION)
-    assert "doi:" not in text.lower(), "CITATION.cff must not invent a DOI"
+    assert text.count("doi: 10.5281/zenodo.21999555") == 1
     assert "orcid:" not in text.lower(), "CITATION.cff must not invent an ORCID"
     assert "identifiers:" not in text, "CITATION.cff must not invent identifiers"
     for placeholder in ("10.0000", "0000-0000-0000-0000", "xxxx", "XXXX"):
         assert placeholder not in text
+
+
+def test_external_records_are_consistent_across_current_documentation():
+    readme = _readme()
+    index = _read(ROOT / "docs" / "index.md")
+    for text in (readme, index):
+        assert "https://doi.org/10.5281/zenodo.21999555" in text
+        assert "https://bio.tools/membrane_visual_qc" in text
+        assert (
+            "https://paveltrofimchik.substack.com/p/the-missing-coordinate-frame-building" in text
+        )
 
 
 def test_citation_cff_has_no_private_paths():

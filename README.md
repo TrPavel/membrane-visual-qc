@@ -11,6 +11,9 @@
 [![Latest release](https://img.shields.io/github/v/release/TrPavel/membrane-visual-qc?include_prereleases&label=release)](https://github.com/TrPavel/membrane-visual-qc/releases)
 [![License: MIT](https://img.shields.io/github/license/TrPavel/membrane-visual-qc)](LICENSE)
 ![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21999555.svg)](https://doi.org/10.5281/zenodo.21999555)
+[![bio.tools registry](https://img.shields.io/badge/bio.tools-membrane__visual__qc-4c9f70)](https://bio.tools/membrane_visual_qc)
 ![Validated: Windows | Incentive PyMOL](https://img.shields.io/badge/validated-Windows%20%7C%20Incentive%20PyMOL-informational)
 
 [Install](#installation-and-compatibility) ·
@@ -47,6 +50,18 @@ A user-facing walkthrough of the released software: scientific motivation, membr
 hydropathy and ligand context, orientation provenance, Batch Review, PDBTM-OPM comparison, and the
 path to the stable v1.0 release. The video is not formal scientific evidence or part of the frozen
 v1.0.0 release evidence.
+
+## External records and project story
+
+- [Zenodo DOI](https://doi.org/10.5281/zenodo.21999555) provides a durable archive and citation
+  record for the exact stable v1.0.0 software release.
+- [bio.tools](https://bio.tools/membrane_visual_qc) lists the project in its life-science software
+  registry as `biotools:membrane_visual_qc`; registration is not certification or endorsement.
+- [The Missing Coordinate Frame: Building Membrane Visual QC](https://paveltrofimchik.substack.com/p/the-missing-coordinate-frame-building)
+  is a non-canonical long-form development and methodology write-up.
+
+The repository documentation, contracts, and frozen release evidence remain canonical. The article
+and video are explanatory resources, not peer-reviewed publications or scientific validation.
 
 ## Real product preview
 
@@ -305,10 +320,12 @@ Start PyMOL in the checkout root and run `run load_mvqc.py`. Do not execute
 
 ## Citation and references
 
-Use GitHub's **Cite this repository** action (top of this repository's page, reads `CITATION.cff`)
-to cite Membrane Visual QC as software. `CITATION.cff` names the latest **published** release
-(`v1.0.0`). Cite the exact release version you used, together with its release URL, not just the
-repository in general.
+Use the [Zenodo DOI for v1.0.0](https://doi.org/10.5281/zenodo.21999555) to cite the archived stable
+software release. Zenodo's formatted citation is: **Trofimchik, P. (2026). *Membrane Visual QC
+v1.0.0* (Version 1.0.0) [Computer software]. Zenodo.
+https://doi.org/10.5281/zenodo.21999555**. This is a software DOI, not a paper DOI or peer-review
+claim. `CITATION.cff` remains the machine-readable metadata used by GitHub's **Cite this repository**
+action. It names the latest **published** release (`v1.0.0`); cite the exact release you used.
 
 Citing this software is not a substitute for citing the source databases/methods an optional
 workflow drew on -- cite these separately when that workflow was used:
@@ -334,8 +351,9 @@ Full records and exactly what each supports: [docs/references.bib](docs/referenc
   author  = {Trofimchik, Pavel},
   year    = {2026},
   version = {1.0.0},
-  url     = {https://github.com/TrPavel/membrane-visual-qc/releases/tag/v1.0.0},
-  note    = {First stable GitHub release; cite the exact version you used}
+  doi     = {10.5281/zenodo.21999555},
+  url     = {https://doi.org/10.5281/zenodo.21999555},
+  note    = {Archived stable v1.0.0 software release; cite the exact version you used}
 }
 ```
 
